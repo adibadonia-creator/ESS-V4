@@ -1,0 +1,98 @@
+{
+  "version": "physical-diagnostic-v1",
+  "goods": [
+    { "id": "food", "bulk": 1, "divisible": true },
+    { "id": "wood", "bulk": 0.2, "divisible": true },
+    { "id": "stone", "bulk": 0.4, "divisible": true },
+    { "id": "fibre", "bulk": 0.1, "divisible": true }
+  ],
+  "terrain": [
+    {
+      "id": "grass",
+      "speedFactor": 1,
+      "passable": true,
+      "opaque": false,
+      "color": 9272680
+    },
+    {
+      "id": "forest",
+      "speedFactor": 0.75,
+      "passable": true,
+      "opaque": true,
+      "color": 5674340
+    },
+    {
+      "id": "scrub",
+      "speedFactor": 0.85,
+      "passable": true,
+      "opaque": false,
+      "color": 10858865
+    },
+    {
+      "id": "rock",
+      "speedFactor": 0.65,
+      "passable": true,
+      "opaque": false,
+      "color": 10590871
+    },
+    {
+      "id": "water",
+      "speedFactor": 0,
+      "passable": false,
+      "opaque": false,
+      "color": 4481667
+    },
+    {
+      "id": "ford",
+      "speedFactor": 0.6,
+      "passable": true,
+      "opaque": false,
+      "color": 8161705
+    },
+    {
+      "id": "cliff",
+      "speedFactor": 0,
+      "passable": false,
+      "opaque": true,
+      "color": 7169387
+    }
+  ],
+  "spatial": {
+    "width": 256,
+    "height": 192,
+    "cellKm": 0.1,
+    "regionCells": 32,
+    "bucketKm": 0.6
+  },
+  "movement": {
+    "baseKmPerSd": 80,
+    "fatiguePenalty": 0.2,
+    "workRadiusKm": 0.08,
+    "sightKm": 0.6
+  },
+  "generator": {
+    "scales": [15, 7, 3],
+    "weights": [0.6, 0.3, 0.1],
+    "warpCells": 3,
+    "forestMoisture": 0.55,
+    "scrubMoisture": 0.35,
+    "rockGeology": 0.65,
+    "cliffElevation": 0.72,
+    "riverFlow": 25,
+    "fordModulo": 11,
+    "floodEpsilon": 0.000001
+  },
+  "diagnostic": {
+    "actors": 8,
+    "sites": 24,
+    "cacheCapacityCu": 12,
+    "nominalCargoCu": 1.5,
+    "cacheFoodFu": 2,
+    "sourceFoodFu": 12,
+    "sourceWood": 21,
+    "sourceStone": 120,
+    "sourceFibre": 16.8,
+    "quantityTolerance": 1e-9,
+    "routeExpansionsPerResume": 4096
+  }
+}

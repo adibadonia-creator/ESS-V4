@@ -1,0 +1,142 @@
+{
+  "fixture": "Pack0A physical diagnostic, canonical raster, 8 shells, 24 finite sites, until 1 SD; no biology/minds",
+  "runtime": "v24.19.0",
+  "machine": "AMD EPYC 9V74 80-Core Processor",
+  "platform": "linux x64",
+  "repetitions": 5,
+  "medianMs": {
+    "generateMs": 996.9001600000001,
+    "fixtureMs": 149.778773,
+    "advanceMs": 3.3795869999999013,
+    "checkpointMs": 195.61578999999983,
+    "hashMs": 1.8996290000004592,
+    "snapshotMs": 2.224537000000055
+  },
+  "rows": [
+    {
+      "generateMs": 964.409876,
+      "fixtureMs": 149.778773,
+      "advanceMs": 4.170343000000003,
+      "checkpointMs": 280.23979800000006,
+      "hashMs": 3.0638349999999264,
+      "snapshotMs": 3.765675999999985,
+      "checkpointBytes": 4704503,
+      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "counters": {
+        "events": 231,
+        "staleEvents": 0,
+        "heapPushes": 231,
+        "heapPops": 231,
+        "heapCompactions": 0,
+        "transactionCommits": 32,
+        "transactionRejections": 0,
+        "routeSearches": 8,
+        "routeExpansions": 1627,
+        "spatialQueries": 229,
+        "projectionEntities": 96,
+        "checkpoints": 1,
+        "checkpointBytes": 4704503
+      }
+    },
+    {
+      "generateMs": 1094.440521,
+      "fixtureMs": 222.45184599999993,
+      "advanceMs": 3.3795869999999013,
+      "checkpointMs": 190.7720820000004,
+      "hashMs": 1.639737999999852,
+      "snapshotMs": 3.104264999999941,
+      "checkpointBytes": 4704503,
+      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "counters": {
+        "events": 231,
+        "staleEvents": 0,
+        "heapPushes": 231,
+        "heapPops": 231,
+        "heapCompactions": 0,
+        "transactionCommits": 32,
+        "transactionRejections": 0,
+        "routeSearches": 8,
+        "routeExpansions": 1627,
+        "spatialQueries": 229,
+        "projectionEntities": 96,
+        "checkpoints": 1,
+        "checkpointBytes": 4704503
+      }
+    },
+    {
+      "generateMs": 1170.2448489999997,
+      "fixtureMs": 170.6125520000005,
+      "advanceMs": 4.653167999999823,
+      "checkpointMs": 195.61578999999983,
+      "hashMs": 1.9033140000001367,
+      "snapshotMs": 1.9221619999998438,
+      "checkpointBytes": 4704503,
+      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "counters": {
+        "events": 231,
+        "staleEvents": 0,
+        "heapPushes": 231,
+        "heapPops": 231,
+        "heapCompactions": 0,
+        "transactionCommits": 32,
+        "transactionRejections": 0,
+        "routeSearches": 8,
+        "routeExpansions": 1627,
+        "spatialQueries": 229,
+        "projectionEntities": 96,
+        "checkpoints": 1,
+        "checkpointBytes": 4704503
+      }
+    },
+    {
+      "generateMs": 996.9001600000001,
+      "fixtureMs": 111.04351899999983,
+      "advanceMs": 1.766779999999926,
+      "checkpointMs": 207.6115690000006,
+      "hashMs": 1.713459999999941,
+      "snapshotMs": 2.224537000000055,
+      "checkpointBytes": 4704503,
+      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "counters": {
+        "events": 231,
+        "staleEvents": 0,
+        "heapPushes": 231,
+        "heapPops": 231,
+        "heapCompactions": 0,
+        "transactionCommits": 32,
+        "transactionRejections": 0,
+        "routeSearches": 8,
+        "routeExpansions": 1627,
+        "spatialQueries": 229,
+        "projectionEntities": 96,
+        "checkpoints": 1,
+        "checkpointBytes": 4704503
+      }
+    },
+    {
+      "generateMs": 865.1630089999999,
+      "fixtureMs": 117.61977200000001,
+      "advanceMs": 1.7977670000000217,
+      "checkpointMs": 181.23307699999987,
+      "hashMs": 1.8996290000004592,
+      "snapshotMs": 1.8128090000000157,
+      "checkpointBytes": 4704503,
+      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "counters": {
+        "events": 231,
+        "staleEvents": 0,
+        "heapPushes": 231,
+        "heapPops": 231,
+        "heapCompactions": 0,
+        "transactionCommits": 32,
+        "transactionRejections": 0,
+        "routeSearches": 8,
+        "routeExpansions": 1627,
+        "spatialQueries": 229,
+        "projectionEntities": 96,
+        "checkpoints": 1,
+        "checkpointBytes": 4704503
+      }
+    }
+  ]
+}
