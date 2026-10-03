@@ -1,0 +1,7 @@
+{
+  "name": "ess-v4", "version": "0.0.1", "private": true, "type": "module",
+  "scripts": { "dev": "vite --host 0.0.0.0", "build": "node scripts/stamp.mjs && tsc -p tsconfig.core.json && vite build", "typecheck": "tsc --noEmit", "test": "vitest run", "check:boundaries": "node scripts/boundaries.mjs", "headless": "tsx src/runners/headless.ts", "benchmark": "tsx src/runners/benchmark.ts", "verify:browser": "node scripts/browser-check.mjs", "check": "npm run check:boundaries && npm run typecheck && npm test && npm run build" },
+  "dependencies": { "pixi.js": "8.22.0" },
+  "devDependencies": { "@types/node": "24.10.1", "typescript": "5.9.3", "tsx": "4.21.0", "vite": "8.3.2", "vitest": "5.0.3" },
+  "engines": { "node": ">=24" }
+}
