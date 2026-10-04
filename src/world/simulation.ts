@@ -44,11 +44,41 @@ import {
   type Point,
   type Regions,
 } from "./terrain";
+import {
+  EvidenceService,
+  beliefKey,
+  clone,
+  type EvidenceState,
+} from "../evidence/service";
+import type {
+  PersonalView,
+  PerceptibleFact,
+  ExactSelf,
+} from "../evidence/types";
+import { TaskRuntime } from "../runtime/runtime";
+import type { SelectedIntention, RuntimeState, Task } from "../runtime/types";
+import {
+  visible,
+  visibleTerrain,
+  detection,
+  entryFraction,
+} from "./perception";
 type PhysicalEvent =
   | { kind: "leg"; actor: Key; generation: number }
   | { kind: "lease"; reservation: Key }
   | { kind: "contact"; a: Key; b: Key; ga: number; gb: number; radius: number }
-  | { kind: "diagnostic"; actor: Key };
+  | { kind: "diagnostic"; actor: Key }
+  | {
+      kind: "perceive";
+      actor: Key;
+      motion: Key;
+      generation: number;
+      focus?: Key;
+      mandatory?: boolean;
+    }
+  | { kind: "runtime-boundary"; actor: Key }
+  | { kind: "runtime-operation"; taskId: string; event: "operation" | "budget" }
+  | { kind: "representative-closure"; actor: Key };
 interface RouteRequest {
   actor: Key;
   target: Point;
@@ -78,6 +108,9 @@ interface Save {
   actors: PersonShell[];
   goods: GoodsState;
   routes: RouteRequest[];
+  evidence: EvidenceState;
+  runtime: RuntimeState;
+  epistemicActors: Key[];
 }
 const FIELDS = [
   "kind",
@@ -103,6 +136,10 @@ export class PhysicalSimulation {
   private movement: Movement;
   private spatial: SpatialIndex;
   private routes = new Map<Key, RouteRequest>();
+  private evidence: EvidenceService;
+  private runtime: TaskRuntime;
+  private epistemicActors = new Set<Key>();
+  private carriedByActor = new Map<Key, Key>();
   private fork: ForkMetadata = { parentCheckpoint: null, intervention: null };
   constructor(
     readonly seed: string,
@@ -136,6 +173,119 @@ export class PhysicalSimulation {
     this.spatial = new SpatialIndex(config.spatial.bucketKm, this.counters);
     if (!saved) this.foundDiagnosticFixture();
     this.rebuildSpatial();
+    for (const c of this.ledger.state.containers)
+      if (c.location.kind === "carrier")
+        this.carriedByActor.set(c.location.actor, c.key);
+    this.evidence = new EvidenceService(seed, this.counters, saved?.evidence);
+    this.epistemicActors = new Set(saved?.epistemicActors ?? []);
+    this.runtime = new TaskRuntime(
+      {
+        now: () => this.kernel.state.now,
+        personal: (actor) => this.personalView(actor),
+        exactSelf: (actor) => this.exactSelf(actor),
+        blockedCells: (actor, cells) =>
+          this.evidence.blockedCells(actor, cells),
+        version: (actor, key) => this.evidence.version(actor, key),
+        startPrefix: (actor, target) => this.startPersonalPrefix(actor, target),
+        stopMove: (actor) => {
+          this.movement.interrupt(this.actor(actor), this.kernel.state.now);
+          this.kernel.invalidate(motionScope(actor));
+        },
+        observe: (actor, duration) =>
+          this.perceive(actor, "paid directed Attend", true, duration),
+        schedule: (task, at, kind) =>
+          this.kernel.schedule(
+            digest(["task-operation", task.actor, task.semanticKey]),
+            at,
+            kind === "budget"
+              ? PHASE.close
+              : task.steps[task.cursor]?.family === "Transfer"
+                ? PHASE.commit
+                : PHASE.observe,
+            { kind: "runtime-operation", taskId: task.taskId, event: kind },
+          ),
+        cancel: (task) =>
+          this.kernel.invalidate(
+            digest(["task-operation", task.actor, task.semanticKey]),
+          ),
+        transfer: (task, step, reservation) => {
+          const from = this.evidence.reference(task.actor, step.from),
+            to = this.evidence.reference(task.actor, step.to);
+          if (!from || !to)
+            return {
+              ok: false,
+              observed: "bound container not personally known",
+            };
+          const p = this.position(task.actor);
+          for (const k of [from, to]) {
+            const q = this.ledger.location(k);
+            if (
+              math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2) >
+              this.config.movement.workRadiusKm
+            )
+              return { ok: false, observed: "no local transfer access" };
+          }
+          this.perceive(task.actor, "attempted local transfer", true);
+          if (
+            this.ledger.get(from).custodian !== task.actor ||
+            this.ledger.get(to).custodian !== task.actor
+          )
+            return { ok: false, observed: "own custody not authorised" };
+          try {
+            this.goods({
+              kind: "transfer",
+              basis: "own-custody",
+              actor: task.actor,
+              from,
+              to,
+              good: step.good,
+              quantity: step.quantity,
+              ...(reservation ? { reservation } : {}),
+            });
+            for (const key of [from, to]) {
+              const c = this.ledger.get(key),
+                subject = this.evidence.subjectFor(task.actor, key)!;
+              this.evidence.fact(
+                task.actor,
+                subject,
+                c.location.kind === "carrier" ? "stocks" : "own-local-stocks",
+                { ...c.stocks },
+                this.kernel.state.now,
+                "completed own transfer",
+                "self",
+              );
+            }
+            this.perceive(task.actor, "completed own transfer", true);
+            return { ok: true };
+          } catch {
+            return { ok: false, observed: "local transfer unavailable" };
+          }
+        },
+        reserve: (actor, subject, good, quantity, expires) => {
+          const from = this.evidence.reference(actor, subject);
+          if (!from || this.ledger.get(from).custodian !== actor)
+            throw Error("No own reservation authority");
+          return this.goods({
+            kind: "reserve",
+            actor,
+            from,
+            good,
+            quantity,
+            expires,
+          });
+        },
+        release: (actor, key) => {
+          if (this.ledger.reservation(key).status === "active")
+            this.goods({ kind: "release", actor, reservation: key });
+        },
+        routeEvidence: (actor, subject, cells, status, at) =>
+          this.evidence.route(actor, subject, cells, status, at),
+        record: (kind, actor, detail) =>
+          this.kernel.record(kind, actor, detail),
+      },
+      this.counters,
+      saved?.runtime,
+    );
   }
   private actor(key: Key): PersonShell {
     const a = this.byActor.get(key);
@@ -250,6 +400,331 @@ export class PhysicalSimulation {
       .filter((c) => !actor || c.custodian === actor)
       .map((c) => c.key);
   }
+  // Explicit diagnostic endowment/selection, never autonomous choice.
+  enablePersonal(actor: Key): void {
+    if (this.epistemicActors.has(actor)) return;
+    if (this.actor(actor).motion?.status === "moving")
+      throw Error("Enable personal fixture before physical motion");
+    this.epistemicActors.add(actor);
+    this.evidence.register(actor);
+    const carried = this.evidence.selfHandle(
+      actor,
+      this.carriedByActor.get(actor)!,
+    );
+    this.evidence.fact(
+      actor,
+      "self",
+      "identity",
+      actor,
+      this.kernel.state.now,
+      "exact own identity",
+      "self",
+    );
+    this.evidence.fact(
+      actor,
+      carried,
+      "stocks",
+      { ...this.ledger.get(this.carriedByActor.get(actor)!).stocks },
+      this.kernel.state.now,
+      "founding carried goods",
+      "self",
+    );
+    this.evidence.foundMethods(
+      actor,
+      this.config.evidence.foundingMethods,
+      this.kernel.state.now,
+    );
+    for (const c of this.ledger.state.containers.filter(
+      (c) => c.custodian === actor && c.location.kind === "ground",
+    )) {
+      const p = this.ledger.location(c.key),
+        q = this.position(actor);
+      if (
+        math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2) >
+        this.config.movement.workRadiusKm
+      )
+        continue;
+      const subject = this.evidence.selfHandle(actor, c.key);
+      this.evidence.fact(
+        actor,
+        subject,
+        "existence",
+        true,
+        this.kernel.state.now,
+        "founding local own endowment",
+        "self",
+      );
+      this.evidence.fact(
+        actor,
+        subject,
+        "kind",
+        c.kind,
+        this.kernel.state.now,
+        "founding local own endowment",
+        "self",
+      );
+      this.evidence.fact(
+        actor,
+        subject,
+        "location",
+        p,
+        this.kernel.state.now,
+        "founding local own endowment",
+        "self",
+      );
+      this.evidence.fact(
+        actor,
+        subject,
+        "own-local-stocks",
+        { ...c.stocks },
+        this.kernel.state.now,
+        "founding local own endowment",
+        "self",
+      );
+    }
+    this.perceive(actor, "founding current perception", false);
+    const offset = parseInt(actor.slice(-5), 16),
+      now = this.kernel.state.now;
+    const first = Math.floor(now / QUANTA) * QUANTA + offset;
+    this.kernel.schedule(
+      digest(["representative-closure", actor]),
+      first > now ? first : first + QUANTA,
+      PHASE.lifeCourse,
+      { kind: "representative-closure", actor },
+    );
+  }
+  personalView(actor: Key): PersonalView {
+    if (!this.epistemicActors.has(actor))
+      throw Error("No personal evidence fixture");
+    return this.evidence.view(
+      actor,
+      this.kernel.state.now,
+      this.config.spatial,
+      this.exactSelf(actor),
+    );
+  }
+  private exactSelf(actor: Key): ExactSelf {
+    const carried = this.ledger.get(this.carriedByActor.get(actor)!);
+    const subject = this.evidence.subjectFor(actor, carried.key)!,
+      leg = this.actor(actor).motion?.leg;
+    return {
+      identity: actor,
+      location: this.position(actor),
+      currentLeg: leg
+        ? {
+            from: { ...leg.from },
+            to: { ...leg.to },
+            start: leg.start,
+            end: leg.end,
+          }
+        : null,
+      carried: { subject, stocks: { ...carried.stocks } },
+      reservations: this.ledger.state.reservations
+        .filter((r) => r.actor === actor)
+        .map((r) => ({
+          key: r.key,
+          good: r.good,
+          remaining: r.remaining,
+          expires: r.expires,
+          status: r.status,
+        })),
+    };
+  }
+  personalLens(actor: Key) {
+    return {
+      personal: this.personalView(actor),
+      execution: this.runtime.projection(actor),
+    };
+  }
+  diagnosticSelect(input: SelectedIntention): Task {
+    if (!this.epistemicActors.has(input.actor))
+      throw Error("Enable personal fixture first");
+    return this.runtime.select(input);
+  }
+  diagnosticTaskInterrupt(actor: Key): void {
+    this.runtime.interrupt(actor);
+  }
+  diagnosticTaskResume(actor: Key): void {
+    this.runtime.resume(actor);
+  }
+  diagnosticTaskAbandon(actor: Key): void {
+    this.runtime.abandon(actor);
+  }
+  resumePersonalRouting(
+    slice = this.config.diagnostic.routeExpansionsPerResume,
+  ): boolean {
+    return this.runtime.resumeRouting(slice);
+  }
+  diagnosticObserve(actor: Key, directed = false): void {
+    this.perceive(actor, "explicit diagnostic observation", directed);
+  }
+  private perceive(
+    actor: Key,
+    context: string,
+    directed = false,
+    duration = 0,
+    focus?: Key,
+  ): void {
+    if (!this.epistemicActors.has(actor)) return;
+    const p = this.position(actor),
+      sight = this.config.movement.sightKm,
+      terrain = visibleTerrain(this.terrain, p, sight),
+      facts: PerceptibleFact[] = [];
+    for (const key of this.spatial.query(
+      p,
+      sight + this.config.spatial.cellKm * 2,
+    )) {
+      if (key === actor || (focus && key !== focus)) continue;
+      this.counters.perceptionCandidateChecks++;
+      const other = this.byActor.get(key),
+        c = other ? null : this.ledger.get(key),
+        q = other ? this.position(key) : this.ledger.location(key);
+      if (!visible(this.terrain, p, q, sight)) continue;
+      const distance = math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2),
+        local = distance <= this.config.movement.workRadiusKm;
+      const properties: PerceptibleFact["properties"] = other
+        ? [
+            {
+              property: "presence",
+              value: true,
+              volatility: "fast",
+              uncertainty: 0,
+            },
+          ]
+        : Object.entries(c!.stocks).map(([good, quantity]) => ({
+            property: "stock:" + good,
+            value: quantity,
+            volatility: "fast" as const,
+            uncertainty: local ? 0 : this.config.evidence.stockLogSd,
+          }));
+      // Own remote cache balances remain dated; exact own data is refreshed only locally.
+      if (c?.custodian === actor && local)
+        properties.push({
+          property: "own-local-stocks",
+          value: { ...c.stocks },
+          volatility: "slow",
+          uncertainty: 0,
+        });
+      facts.push({
+        reference: key,
+        kind: other ? "person" : c!.kind === "site" ? "site" : "cache",
+        position: q,
+        properties,
+        detection: detection(distance, sight),
+      });
+    }
+    if (focus && !facts.length) return;
+    facts.sort(
+      (a, b) =>
+        (a.position.x - p.x) ** 2 +
+          (a.position.y - p.y) ** 2 -
+          ((b.position.x - p.x) ** 2 + (b.position.y - p.y) ** 2) ||
+        a.position.y - b.position.y ||
+        a.position.x - b.position.x ||
+        (a.kind < b.kind ? -1 : a.kind > b.kind ? 1 : 0),
+    );
+    const geometryOnly = context === "consequential movement geometry";
+    const selected = this.runtime?.task(actor);
+    const relevant = selected?.route
+      ? new Set(
+          selected.route.path.slice(Math.max(0, selected.routeCursor - 1)),
+        )
+      : null;
+    const observedTerrain = focus
+      ? []
+      : geometryOnly && relevant
+        ? terrain.filter((c) => relevant.has(c.cell))
+        : terrain;
+    this.evidence.observe(
+      actor,
+      {
+        terrain: observedTerrain,
+        facts: geometryOnly ? [] : facts,
+        footprint: {
+          cells: observedTerrain.map((c) => ({
+            cell: c.cell,
+            detection: c.detection,
+          })),
+          duration,
+        },
+      },
+      this.kernel.state.now,
+      context,
+      directed,
+    );
+    // A newly visible obstruction of the selected physical path is consequential.
+    const task = this.runtime?.task(actor);
+    if (task?.active?.family === "Move" && task.route) {
+      const remaining = new Set(
+        task.route.path.slice(Math.max(0, task.routeCursor - 1)),
+      );
+      const blocked = terrain.filter(
+        (c) => !c.passable && remaining.has(c.cell),
+      );
+      if (blocked.length)
+        this.evidence.observe(
+          actor,
+          {
+            terrain: blocked,
+            facts: [],
+            footprint: {
+              cells: blocked.map((c) => ({
+                cell: c.cell,
+                detection: c.detection,
+              })),
+              duration: 0,
+            },
+          },
+          this.kernel.state.now,
+          "observable selected-route obstruction",
+          true,
+        );
+      this.runtime.evidenceBoundary(actor);
+    }
+  }
+  private startPersonalPrefix(
+    actor: Key,
+    target: Point,
+  ): { ok: true; end: number } | { ok: false; observed: string } {
+    const a = this.actor(actor),
+      now = this.kernel.state.now,
+      p = this.position(actor);
+    if (a.motion?.status === "moving")
+      throw Error("Personal activity overlaps physical movement");
+    this.perceive(actor, "consequential movement geometry", true);
+    if (this.runtime.task(actor)?.status === "blocked")
+      return { ok: false, observed: "route blocked here" };
+    // Only the selected adjacent prefix is validated. No truth search or remote lookahead.
+    const chunks = segments(this.terrain, p, target);
+    if (!chunks) return { ok: false, observed: "route blocked here" };
+    const key = this.kernel.ids.allocate("motion", actor).key;
+    this.kernel.invalidate(motionScope(actor));
+    a.motion = {
+      key,
+      points: [p, { ...target }],
+      segments: chunks,
+      segmentCursor: 0,
+      leg: null,
+      inputs: this.inputs(actor),
+      started: now,
+      paidThrough: now,
+      generation: 0,
+      status: "moving",
+    };
+    this.kernel.record("personal-movement-prefix", actor, { target });
+    this.launchLeg(a);
+    if (!a.motion.leg) return { ok: false, observed: "route blocked here" };
+    // Prefix can contain two cell segments. Budget deadline is bounded by the full actual prefix.
+    let duration = 0;
+    for (const c of chunks)
+      duration += Math.ceil(
+        (math.sqrt((c.to.x - c.from.x) ** 2 + (c.to.y - c.from.y) ** 2) /
+          (baseSpeed(a.motion.inputs, this.config) *
+            this.terrain.speed[c.cell]!)) *
+          QUANTA,
+      );
+    return { ok: true, end: now + duration };
+  }
   private inputs(actor: Key): MotionInputs {
     const a = this.actor(actor),
       carried = this.ledger.state.containers.find(
@@ -277,6 +752,8 @@ export class PhysicalSimulation {
     )
       throw new Error("Invalid movement target");
     const a = this.actor(actor);
+    if (this.epistemicActors.has(actor))
+      throw Error("Personal actor must use generic task runtime");
     if (a.motion?.status === "moving" || this.routes.has(actor))
       throw new Error("Actor already has physical movement work");
     const motionInputs = inputs ? { ...inputs } : this.inputs(actor);
@@ -377,6 +854,89 @@ export class PhysicalSimulation {
         generation: m.generation,
       });
       this.scheduleContacts(a);
+      if (this.epistemicActors.has(a.key)) {
+        const candidates: Point[] = [],
+          s = this.config.spatial,
+          r = this.config.movement.sightKm;
+        // Potential raster footprints depend on public geometry only, not hidden occlusion.
+        for (
+          let y = Math.max(
+            0,
+            Math.floor((Math.min(leg.from.y, leg.to.y) - r) / s.cellKm),
+          );
+          y <=
+          Math.min(
+            s.height - 1,
+            Math.floor((Math.max(leg.from.y, leg.to.y) + r) / s.cellKm),
+          );
+          y++
+        )
+          for (
+            let x = Math.max(
+              0,
+              Math.floor((Math.min(leg.from.x, leg.to.x) - r) / s.cellKm),
+            );
+            x <=
+            Math.min(
+              s.width - 1,
+              Math.floor((Math.max(leg.from.x, leg.to.x) + r) / s.cellKm),
+            );
+            x++
+          )
+            candidates.push({
+              x: (x + 0.5) * s.cellKm,
+              y: (y + 0.5) * s.cellKm,
+            });
+        const times = new Set<number>();
+        for (const p of candidates) {
+          const u = entryFraction(leg.from, leg.to, p, r);
+          if (u !== null)
+            times.add(leg.start + Math.ceil((leg.end - leg.start) * u));
+        }
+        for (const at of [...times].sort((a, b) => a - b))
+          this.kernel.schedule(
+            digest(["sight-grid", a.key, at]),
+            at,
+            PHASE.observe,
+            {
+              kind: "perceive",
+              actor: a.key,
+              motion: m.key,
+              generation: m.generation,
+            },
+          );
+        const mid = {
+          x: (leg.from.x + leg.to.x) / 2,
+          y: (leg.from.y + leg.to.y) / 2,
+        };
+        for (const key of this.spatial.query(mid, r + s.cellKm * 2)) {
+          if (this.byActor.has(key)) continue;
+          for (const radius of [r, this.config.movement.workRadiusKm]) {
+            const u = entryFraction(
+              leg.from,
+              leg.to,
+              this.ledger.location(key),
+              radius,
+            );
+            if (u !== null) {
+              const at = leg.start + Math.ceil((leg.end - leg.start) * u);
+              this.kernel.schedule(
+                digest(["sight-site", a.key, key, radius]),
+                at,
+                PHASE.observe,
+                {
+                  kind: "perceive",
+                  actor: a.key,
+                  motion: m.key,
+                  generation: m.generation,
+                  focus: key,
+                  mandatory: radius === this.config.movement.workRadiusKm,
+                },
+              );
+            }
+          }
+        }
+      }
     } else
       this.kernel.record(
         m.status === "arrived" ? "movement-arrival" : "movement-interruption",
@@ -454,10 +1014,38 @@ export class PhysicalSimulation {
     // Headless/worker host drain: each resume is bounded, even for large routes.
     // Establish pending truth-side geometry before advancing the causal clock.
     while (this.resumeRouting()) {}
-    this.kernel.advance(target, (e) => this.execute(e));
+    while (this.resumePersonalRouting()) {}
+    this.kernel.advance(target, (e) => {
+      this.execute(e);
+      while (this.resumePersonalRouting()) {}
+    });
   }
   private execute(e: Event<PhysicalEvent>): void {
     const p = e.payload;
+    if (p.kind === "perceive") {
+      const m = this.actor(p.actor).motion;
+      if (m?.key === p.motion && m.generation === p.generation)
+        this.perceive(
+          p.actor,
+          p.mandatory ? "physical site contact" : "swept sight entry",
+          !!p.mandatory,
+          0,
+          p.focus,
+        );
+    }
+    if (p.kind === "runtime-boundary") {
+      this.perceive(p.actor, "movement arrival");
+      this.runtime.movementBoundary(p.actor);
+    }
+    if (p.kind === "runtime-operation")
+      this.runtime.operation(p.taskId, p.event);
+    if (p.kind === "representative-closure") {
+      this.runtime.closure(p.actor);
+      this.kernel.schedule(e.subject, e.at + QUANTA, PHASE.lifeCourse, {
+        kind: "representative-closure",
+        actor: p.actor,
+      });
+    }
     if (p.kind === "diagnostic")
       this.kernel.record("diagnostic-unrelated-event", p.actor, {});
     if (p.kind === "leg") {
@@ -467,6 +1055,26 @@ export class PhysicalSimulation {
       this.movement.finishLeg(a, e.at);
       this.spatial.put(a.key, a.position);
       this.launchLeg(a);
+      if (this.epistemicActors.has(a.key)) {
+        this.kernel.schedule(
+          digest(["personal-boundary", a.key]),
+          e.at,
+          PHASE.observe,
+          {
+            kind: "perceive",
+            actor: a.key,
+            motion: a.motion!.key,
+            generation: a.motion!.generation,
+          },
+        );
+        if ((a.motion as PersonShell["motion"])?.status === "arrived")
+          this.kernel.schedule(
+            digest(["runtime-boundary", a.key]),
+            e.at,
+            PHASE.decide,
+            { kind: "runtime-boundary", actor: a.key },
+          );
+      }
     }
     if (p.kind === "lease") {
       const r = this.ledger.reservation(p.reservation);
@@ -479,12 +1087,15 @@ export class PhysicalSimulation {
       if (
         p.ga === this.kernel.generation(motionScope(a.key)) &&
         p.gb === this.kernel.generation(motionScope(b.key))
-      )
+      ) {
+        this.perceive(p.a, "physical contact boundary", true);
+        this.perceive(p.b, "physical contact boundary", true);
         this.kernel.record("spatial-radius-crossing", e.subject, {
           a: p.a,
           b: p.b,
           radius: p.radius,
         });
+      }
     }
   }
   private goods(request: GoodsRequest): Key {
@@ -527,9 +1138,12 @@ export class PhysicalSimulation {
     return key;
   }
   diagnosticGoods(request: Exclude<GoodsRequest, { kind: "expire" }>): Key {
+    if ("actor" in request && this.epistemicActors.has(request.actor))
+      throw Error("Personal actor must use generic task runtime");
     return this.goods(request);
   }
   diagnosticInterrupt(actor: Key): void {
+    if (this.epistemicActors.has(actor)) throw Error("Use task interruption");
     const a = this.actor(actor);
     this.movement.interrupt(a, this.kernel.state.now);
     this.kernel.invalidate(motionScope(actor));
@@ -539,6 +1153,8 @@ export class PhysicalSimulation {
     });
   }
   diagnosticInputs(actor: Key, inputs: MotionInputs): void {
+    if (this.epistemicActors.has(actor))
+      throw Error("Personal motion inputs are supplied by the physical law");
     baseSpeed(inputs, this.config);
     const a = this.actor(actor);
     if (!a.motion || a.motion.status !== "moving")
@@ -566,6 +1182,7 @@ export class PhysicalSimulation {
       ? this.actors.filter((a) => {
           const m = a.motion;
           if (m?.status !== "moving") return false;
+          if (this.epistemicActors.has(a.key)) return m.leg?.cell === k;
           return !passable
             ? m.segments
                 .slice(m.segmentCursor)
@@ -580,6 +1197,10 @@ export class PhysicalSimulation {
       this.kernel.invalidate(motionScope(a.key));
       if (!passable) {
         this.movement.interrupt(a, this.kernel.state.now);
+        if (this.epistemicActors.has(a.key)) {
+          this.perceive(a.key, "local terrain change", true);
+          this.runtime.interrupt(a.key, "local route interruption");
+        }
         this.kernel.record("terrain-motion-interruption", a.key, {
           cell: k,
           position: a.position,
@@ -639,13 +1260,18 @@ export class PhysicalSimulation {
       seed: this.seed,
       hash: this.causalHash(),
       eventHash: this.kernel.state.historyHash,
-      fixture: "Diagnostic physical execution fixture — no autonomous choice",
+      fixture: this.epistemicActors.size
+        ? "Pack 0B diagnostic selected-intention fixture — no autonomous choice"
+        : "Diagnostic physical execution fixture — no autonomous choice",
       actors,
       containers,
       reservations: this.ledger.state.reservations.map((r) => ({ ...r })),
       history: this.kernel.state.history
         .slice(-30)
         .map(({ key, at, kind, subject }) => ({ key, at, kind, subject })),
+      personalLenses: [...this.epistemicActors]
+        .sort()
+        .map((actor) => this.personalLens(actor)),
       counters: { ...this.counters },
       reconciliation: this.ledger.reconciliation(),
       ...(terrain ? { terrain } : {}),
@@ -676,6 +1302,9 @@ export class PhysicalSimulation {
       terrain,
       actors: this.actors,
       goods: this.ledger.state,
+      evidence: this.evidence.state,
+      runtime: this.runtime.state,
+      epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
         compareKey(a.actor, b.actor),
       ),
@@ -706,6 +1335,9 @@ export class PhysicalSimulation {
       terrainHash: this.terrainDigestCache.hash,
       actors: this.actors,
       goods: this.ledger.state,
+      evidence: this.evidence.state,
+      runtime: this.runtime.state,
+      epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
         compareKey(a.actor, b.actor),
       ),
@@ -827,6 +1459,162 @@ function restoreTerrain(
   return t;
 }
 function validateSaved(s: Save): void {
+  if (
+    !s.evidence ||
+    !Array.isArray(s.evidence.people) ||
+    !s.runtime ||
+    !Array.isArray(s.runtime.tasks) ||
+    !Array.isArray(s.runtime.activity) ||
+    !Array.isArray(s.epistemicActors)
+  )
+    throw Error("Checkpoint lacks Pack0B causal records");
+  const owners = new Set(s.actors.map((a) => a.key));
+  if (
+    new Set(s.epistemicActors).size !== s.epistemicActors.length ||
+    s.epistemicActors.some((k) => !owners.has(k))
+  )
+    throw Error("Invalid personal owners");
+  for (const p of s.evidence.people) {
+    if (
+      !s.epistemicActors.includes(p.owner) ||
+      !Array.isArray(p.records) ||
+      !p.versions ||
+      !p.cells ||
+      !p.coverage ||
+      !p.links ||
+      !p.delivered
+    )
+      throw Error("Invalid evidence owner/state");
+    const latest = new Map<string, number>();
+    for (const e of p.records) {
+      checkTime(e.observedAt);
+      checkTime(e.receivedAt);
+      const key = beliefKey(e.subject, e.property);
+      if (
+        e.owner !== p.owner ||
+        e.observedAt > e.receivedAt ||
+        e.receivedAt > s.time ||
+        !Number.isSafeInteger(e.version) ||
+        e.version !== (latest.get(key) ?? 0) + 1 ||
+        !Number.isFinite(e.reliability) ||
+        e.reliability < 0 ||
+        e.reliability > 1 ||
+        !Number.isFinite(e.uncertainty) ||
+        e.uncertainty < 0
+      )
+        throw Error("Invalid evidence record/version");
+      latest.set(key, e.version);
+    }
+    if (canonical(Object.fromEntries(latest)) !== canonical(p.versions))
+      throw Error("Evidence versions do not reconcile");
+    if (
+      p.routine.count < 0 ||
+      p.routine.count > s.config.evidence.routineObservations
+    )
+      throw Error("Invalid routine attention account");
+    for (const [k, c] of Object.entries(p.cells))
+      if (
+        +k !== c.cell ||
+        c.version !== p.versions[beliefKey("cell:" + k, "geometry")] ||
+        !Number.isFinite(c.speed) ||
+        !Number.isFinite(c.detection)
+      )
+        throw Error("Invalid personal geography");
+  }
+  const taskIds = new Set<string>();
+  for (const t of s.runtime.tasks) {
+    const budget = s.runtime.budgets[t.actor + ":" + t.semanticKey];
+    if (
+      !owners.has(t.actor) ||
+      taskIds.has(t.taskId) ||
+      !budget ||
+      t.source !== "diagnostic-selected-intention" ||
+      t.steps.length > s.config.evidence.maxTaskSteps ||
+      t.cursor < 0 ||
+      t.cursor > t.steps.length
+    )
+      throw Error("Invalid runtime task");
+    taskIds.add(t.taskId);
+    if (
+      t.active &&
+      (t.status !== "running" ||
+        t.active.paidThrough > s.time ||
+        t.active.paidThrough < t.active.start)
+    )
+      throw Error("Invalid operation cursor");
+    if (t.route) {
+      const r = t.route;
+      if (
+        !r.nodes ||
+        !Array.isArray(r.open) ||
+        !Array.isArray(r.path) ||
+        !Number.isSafeInteger(r.expansions) ||
+        r.expansions < 0 ||
+        r.expansions > r.effortLimit
+      )
+        throw Error("Invalid personal frontier");
+      for (const [k, n] of Object.entries(r.nodes))
+        if (
+          !Number.isSafeInteger(+k) ||
+          +k < 0 ||
+          +k >= s.config.spatial.width * s.config.spatial.height ||
+          !Number.isFinite(n.g) ||
+          n.g < 0 ||
+          (n.parent !== -1 && !r.nodes[n.parent])
+        )
+          throw Error("Invalid personal search node");
+    }
+    for (const reservation of t.reservations)
+      if (
+        !s.goods.reservations.some(
+          (r) => r.key === reservation.key && r.actor === t.actor,
+        )
+      )
+        throw Error("Missing task reservation backing");
+  }
+  const paid = new Map<string, number>();
+  for (const a of s.runtime.activity) {
+    if (!owners.has(a.actor)) throw Error("Invalid activity owner");
+    let end = 0;
+    const totals: Record<number, Record<string, number>> = {};
+    for (const p of a.prefixes) {
+      checkTime(p.start);
+      checkTime(p.end);
+      if (p.start < end || p.end < p.start || p.end > s.time)
+        throw Error("Overlapping paid prefixes");
+      end = p.end;
+      const key = a.actor + ":" + p.semanticKey;
+      paid.set(key, (paid.get(key) ?? 0) + p.end - p.start);
+      for (let x = p.start; x < p.end;) {
+        const day = Math.floor(x / QUANTA),
+          to = Math.min(p.end, (day + 1) * QUANTA),
+          v = totals[day] ?? {};
+        v[p.category] = (v[p.category] ?? 0) + to - x;
+        totals[day] = v;
+        x = to;
+      }
+    }
+    if (
+      canonical(totals) !== canonical(a.totals) ||
+      Object.values(totals).some(
+        (v) => Object.values(v).reduce((a, b) => a + b, 0) > QUANTA,
+      )
+    )
+      throw Error("Activity allocation does not reconcile");
+  }
+  for (const [key, b] of Object.entries(s.runtime.budgets)) {
+    checkTime(b.spent.time);
+    checkTime(b.authorised.time);
+    if (
+      b.spent.time > b.authorised.time ||
+      b.spent.time !== (paid.get(key) ?? 0) ||
+      Object.entries(b.spent.goods).some(
+        ([good, q]) =>
+          !Number.isFinite(q) || q < 0 || q > (b.authorised.goods[good] ?? 0),
+      )
+    )
+      throw Error("Semantic budget does not reconcile");
+  }
   const identities = s.kernel.ids;
   if (
     !Number.isSafeInteger(identities.nextHandle) ||

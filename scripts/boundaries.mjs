@@ -19,6 +19,9 @@ for (const p of files("src").filter((p) => p.endsWith(".ts"))) {
   const pure = [
     "kernel",
     "world",
+    "evidence",
+    "runtime",
+    "mind",
     "content",
     "projection",
     "measurement",
@@ -59,8 +62,15 @@ for (const p of files("src").filter((p) => p.endsWith(".ts"))) {
         errors.push(`${p}: substrate depends on ${spec}`);
       if (organ === "world" && /\/mind(\/|$)/.test(target))
         errors.push(`${p}: law imports mind`);
-      if (organ === "mind" && /\/world(\/|$)/.test(target))
-        errors.push(`${p}: mind imports truth`);
+      if (
+        ["mind", "evidence", "runtime"].includes(organ) &&
+        /\/(world|runners|presentation|measurement)(\/|$)/.test(target)
+      )
+        errors.push(
+          `${p}: personal organ imports authoritative/read-side surface`,
+        );
+      if (organ === "mind" && /\/evidence\/service$/.test(target))
+        errors.push(`${p}: mind imports evidence writer`);
       if (
         organ === "content" &&
         !target.startsWith("src/content") &&
@@ -77,6 +87,11 @@ for (const p of files("src").filter((p) => p.endsWith(".ts"))) {
     if (
       pure &&
       ts.isIdentifier(node) &&
+      !(
+        ts.isPropertyAccessExpression(node.parent) && node.parent.name === node
+      ) &&
+      !(ts.isPropertySignature(node.parent) && node.parent.name === node) &&
+      !(ts.isPropertyAssignment(node.parent) && node.parent.name === node) &&
       [
         "document",
         "window",
@@ -108,6 +123,14 @@ for (const p of files("src").filter((p) => p.endsWith(".ts"))) {
       ].includes(node.name.text)
     )
       errors.push(`${p}: unadapted causal math ${node.name.text}`);
+    if (
+      pure &&
+      ts.isIdentifier(node) &&
+      node.text === "globalThis" &&
+      ts.isPropertyAccessExpression(node.parent) &&
+      ["self", "window", "document"].includes(node.parent.name.text)
+    )
+      errors.push(`${p}: forbidden browser global`);
     ts.forEachChild(node, visit);
   }
   visit(source);

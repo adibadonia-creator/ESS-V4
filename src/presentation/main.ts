@@ -8,9 +8,9 @@ import type {
 } from "../projection/types";
 import "./style.css";
 const root = document.querySelector<HTMLDivElement>("#app")!;
-root.innerHTML = `<header><div><strong>ESS <span>V4</span></strong><small>Pack 0A · Deterministic physical spine</small></div><div id="clock">0.000 SD</div></header>
+root.innerHTML = `<header><div><strong>ESS <span>V4</span></strong><small>Pack 0B · Evidence & task runtime</small></div><div id="clock">0.000 SD</div></header>
 <section class="controls"><label>Seed <input id="seed" value="spine"></label><button id="new">New world</button><button id="play">Play</button><button id="step">+0.01 SD</button><label>Speed <select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="max">Max</option></select></label><button id="save">Save</button><button id="load">Load</button><input id="file" type="file" accept=".json" hidden></section>
-<main><section class="map-wrap"><div id="map"></div><div class="caption">DIAGNOSTIC EXECUTION FIXTURE · No autonomous decisions<br>Click a shell to inspect. Select Move, then click terrain. Wheel to zoom; drag to pan.</div></section><aside><h2>Physical world</h2><p id="meta"></p><label>Inspect entity <select id="actor"></select></label><div id="inspect"></div><h3>Diagnostic operations</h3><button id="move">Move selected shell</button><label>Source <select id="from"></select></label><label>Destination <select id="to"></select></label><label>Good <select id="good"><option>food</option><option>wood</option><option>stone</option><option>fibre</option></select></label><label>Quantity <input id="quantity" type="number" min="0.01" value="0.5" step="0.1"></label><div class="row"><button id="transfer">Transfer</button><button id="consume">Consume</button><button id="reserve">Reserve 0.5 SD</button><button id="release">Release</button></div><p id="message" role="status"></p><h3>Consequential record</h3><div id="history"></div><details><summary>Measurement counters</summary><pre id="counters"></pre></details></aside></main><footer>Pack 0 is not yet complete. Bodies, minds, evidence, tasks and social life are deferred. <span id="hash"></span></footer>`;
+<main><section class="map-wrap"><div id="map"></div><div class="caption">DIAGNOSTIC EXECUTION FIXTURE · No autonomous decisions<br>Click a shell to inspect its Personal Lens. Wheel to zoom; drag to pan.</div></section><aside><h2>Analyst truth</h2><p id="meta"></p><label>Inspect entity <select id="actor"></select></label><div id="inspect"></div><details id="personal-lens" open><summary>Personal Lens · remembered evidence</summary><canvas id="personal-map" width="384" height="288"></canvas><p id="lens-summary"></p><div id="task-state"></div><div class="row"><button id="interrupt-task">Interrupt task</button><button id="resume-task">Resume task</button><button id="abandon-task">Abandon task</button></div><h3>Dated evidence</h3><div id="evidence-records"></div></details><h3>Diagnostic operations</h3><button id="move">Move selected shell</button><label>Source <select id="from"></select></label><label>Destination <select id="to"></select></label><label>Good <select id="good"><option>food</option><option>wood</option><option>stone</option><option>fibre</option></select></label><label>Quantity <input id="quantity" type="number" min="0.01" value="0.5" step="0.1"></label><div class="row"><button id="transfer">Transfer</button><button id="consume">Consume</button><button id="reserve">Reserve 0.5 SD</button><button id="release">Release</button></div><p id="message" role="status"></p><h3>Consequential record</h3><div id="history"></div><details><summary>Measurement counters</summary><pre id="counters"></pre></details></aside></main><footer>Pack 0 is not yet complete. Diagnostic selected intentions prove knowing and executing. Autonomous choice and the remaining Pack-0 proof are deferred. <span id="hash"></span></footer>`;
 const element = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 const worker = new Worker(new URL("../runners/worker.ts", import.meta.url), {
@@ -254,6 +254,7 @@ function inspect() {
       .map((r) => r.good + " " + r.remaining)
       .join(", ");
   panel.append(reserved);
+  inspectPersonal();
 }
 element<HTMLSelectElement>("actor").onchange = (e) => {
   selected = (e.target as HTMLSelectElement).value;
@@ -276,7 +277,10 @@ element("new").onclick = () => {
   actors.clear();
   sites.clear();
   fit = false;
-  send({ kind: "create", seed: element<HTMLInputElement>("seed").value });
+  send({
+    kind: "create-evidence",
+    seed: element<HTMLInputElement>("seed").value,
+  });
 };
 element("move").onclick = () => {
   moveMode = true;
@@ -428,4 +432,134 @@ app.ticker.add(() => {
     }
   }
 });
-await send({ kind: "create", seed: "spine" });
+await send({ kind: "create-evidence", seed: "spine" });
+
+interface LensDTO {
+  personal: {
+    owner: string;
+    time: number;
+    profile: { width: number; height: number; cellKm: number };
+    geography: {
+      cell: number;
+      terrain: number;
+      passable: boolean;
+      observedAt: number;
+    }[];
+    places: {
+      subject: string;
+      property: string;
+      value: unknown;
+      observedAt: number;
+    }[];
+    routes: { cells: number[]; status: string }[];
+    evidence: {
+      subject: string;
+      property: string;
+      value: unknown;
+      observedAt: number;
+      receivedAt: number;
+      provenance: string;
+      modality: string;
+      version: number;
+    }[];
+    self: { location: { x: number; y: number } };
+  };
+  execution: {
+    task: {
+      objective: string;
+      method: string;
+      status: string;
+      cursor: number;
+      steps: { family: string }[];
+      progress: unknown[];
+      failure: string | null;
+      semanticKey: string;
+    } | null;
+    budget: {
+      authorised: { time: number; goods: unknown };
+      spent: { time: number; goods: unknown };
+    } | null;
+  };
+}
+function inspectPersonal() {
+  const lens = (snapshot?.personalLenses as LensDTO[]).find(
+    (l) => l.personal.owner === selected,
+  );
+  element("personal-lens").hidden = !lens;
+  if (!lens) return;
+  const p = lens.personal,
+    t = lens.execution.task,
+    b = lens.execution.budget;
+  const canvas = element<HTMLCanvasElement>("personal-map"),
+    ctx = canvas.getContext("2d")!;
+  // A local window keeps sparse personal knowledge readable without filling unseen ground.
+  const cell = p.profile.cellKm,
+    ox = p.self.location.x / cell - 12,
+    oy = p.self.location.y / cell - 9;
+  const dx = canvas.width / 24,
+    dy = canvas.height / 18;
+  ctx.fillStyle = "#182326";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for (const c of p.geography) {
+    const color = terrain?.colors[c.terrain] ?? 0x6e8b70;
+    ctx.fillStyle = c.passable
+      ? "#" + color.toString(16).padStart(6, "0")
+      : "#e09868";
+    ctx.fillRect(
+      ((c.cell % p.profile.width) - ox) * dx,
+      (Math.floor(c.cell / p.profile.width) - oy) * dy,
+      Math.max(1, dx),
+      Math.max(1, dy),
+    );
+  }
+  for (const r of p.routes) {
+    ctx.strokeStyle = r.status === "blocked" ? "#ffb384" : "#d4e4a8";
+    ctx.beginPath();
+    r.cells.forEach((k, i) => {
+      const x = ((k % p.profile.width) + 0.5 - ox) * dx,
+        y = (Math.floor(k / p.profile.width) + 0.5 - oy) * dy;
+      if (i) ctx.lineTo(x, y);
+      else ctx.moveTo(x, y);
+    });
+    ctx.stroke();
+  }
+  for (const place of p.places.filter((e) => e.property === "location")) {
+    const q = place.value as { x: number; y: number };
+    ctx.fillStyle = "#e9d592";
+    ctx.fillRect((q.x / cell - ox) * dx - 2, (q.y / cell - oy) * dy - 2, 4, 4);
+  }
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(
+    (p.self.location.x / cell - ox) * dx,
+    (p.self.location.y / cell - oy) * dy,
+    3,
+    0,
+    Math.PI * 2,
+  );
+  ctx.fill();
+  element("lens-summary").textContent =
+    `${p.geography.length} seen cells · ${p.profile.width * p.profile.height - p.geography.length} unseen. Local window: 2.4 × 1.8 km. Dark ground is unknown. Places and routes are dated personal memory.`;
+  element("task-state").textContent = t
+    ? `DIAGNOSTIC SELECTED INTENTION: ${t.objective} · method ${t.method}\n${t.status} · step ${t.cursor + 1}/${t.steps.length}: ${t.steps[t.cursor]?.family ?? "complete"}\nLocated progress: ${t.progress.length} records\nTime authorised/spent: ${((b?.authorised.time ?? 0) / 2 ** 20).toFixed(5)} / ${((b?.spent.time ?? 0) / 2 ** 20).toFixed(5)} SD\nGoods authorised/spent: ${JSON.stringify(b?.authorised.goods)} / ${JSON.stringify(b?.spent.goods)}\n${t.failure ?? ""}`
+    : "No diagnostic task selected";
+  element("evidence-records").replaceChildren(
+    ...p.evidence
+      .slice(-10)
+      .reverse()
+      .map((e) => {
+        const div = document.createElement("div");
+        div.className = "event";
+        div.textContent = `${(e.observedAt / 2 ** 20).toFixed(5)} SD observed · ${(e.receivedAt / 2 ** 20).toFixed(5)} received · ${e.modality} · ${e.subject}/${e.property} v${e.version} · provenance ${e.provenance.slice(0, 10)}`;
+        return div;
+      }),
+  );
+  for (const id of ["move", "transfer", "consume", "reserve", "release"])
+    element<HTMLButtonElement>(id).disabled = true;
+}
+element("interrupt-task").onclick = () =>
+  send({ kind: "task-interrupt", actor: selected });
+element("resume-task").onclick = () =>
+  send({ kind: "task-resume", actor: selected });
+element("abandon-task").onclick = () =>
+  send({ kind: "task-abandon", actor: selected });

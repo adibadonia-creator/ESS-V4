@@ -55,6 +55,7 @@ export interface TerrainView {
   readonly colors: readonly number[];
 }
 export interface Snapshot {
+  readonly personalLenses: readonly unknown[];
   readonly time: number;
   readonly seed: string;
   readonly hash: string;
@@ -81,6 +82,12 @@ export interface Snapshot {
 }
 export type Command =
   | { id: number; kind: "create"; seed: string }
+  | { id: number; kind: "create-evidence"; seed: string }
+  | {
+      id: number;
+      kind: "task-interrupt" | "task-resume" | "task-abandon";
+      actor: string;
+    }
   | { id: number; kind: "advance"; time: number }
   | { id: number; kind: "snapshot"; terrain?: boolean }
   | { id: number; kind: "checkpoint" }

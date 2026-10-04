@@ -1,0 +1,103 @@
+// Mind-safe values: no authoritative handles, registries or scheduler references.
+export interface Point {
+  x: number;
+  y: number;
+}
+export interface MapProfile {
+  width: number;
+  height: number;
+  cellKm: number;
+  regionCells: number;
+}
+export interface SeenCell {
+  cell: number;
+  terrain: number;
+  passable: boolean;
+  speed: number;
+  detection: number;
+}
+export interface Footprint {
+  cells: { cell: number; detection: number }[];
+  duration: number;
+}
+export type Value =
+  | string
+  | number
+  | boolean
+  | null
+  | Point
+  | SeenCell[]
+  | Record<string, number>;
+export interface Evidence {
+  owner: string;
+  subject: string;
+  property: string;
+  value: Value;
+  observedAt: number;
+  receivedAt: number;
+  modality: "direct" | "self" | "trial" | "report" | "record" | "inference";
+  provenance: string;
+  context: string;
+  reliability: number;
+  uncertainty: number;
+  volatilityClass: "fixed" | "slow" | "fast";
+  expiry: number | null;
+  pinned: boolean;
+  version: number;
+  footprint?: Footprint;
+}
+export interface CellBelief extends SeenCell {
+  observedAt: number;
+  version: number;
+}
+export interface RouteBelief {
+  subject: string;
+  cells: number[];
+  status: "established" | "blocked" | "deferred" | "unknown";
+  observedAt: number;
+  version: number;
+}
+export interface ExactSelf {
+  identity: string;
+  location: Point;
+  currentLeg: { from: Point; to: Point; start: number; end: number } | null;
+  carried: { subject: string; stocks: Record<string, number> };
+  reservations: {
+    key: string;
+    good: string;
+    remaining: number;
+    expires: number;
+    status: string;
+  }[];
+}
+export interface PersonalView {
+  owner: string;
+  time: number;
+  profile: MapProfile;
+  self: ExactSelf;
+  geography: CellBelief[];
+  regions: { id: number; cells: number[]; neighbors: number[] }[];
+  routes: RouteBelief[];
+  evidence: Evidence[];
+  methods: Evidence[];
+  places: Evidence[];
+  people: Evidence[];
+}
+// Only physically filtered facts may be delivered through this contract.
+export interface PerceptibleFact {
+  reference: string;
+  kind: "site" | "cache" | "person";
+  position: Point;
+  properties: {
+    property: string;
+    value: Value;
+    volatility: Evidence["volatilityClass"];
+    uncertainty: number;
+  }[];
+  detection: number;
+}
+export interface PerceptionPacket {
+  terrain: SeenCell[];
+  facts: PerceptibleFact[];
+  footprint: Footprint;
+}

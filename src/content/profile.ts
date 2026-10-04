@@ -47,3 +47,5 @@ function deepFreeze<T>(o: T): T {
   return o;
 }
 export const CONTENT_HASH = digest(data);
+
+export const EVIDENCE_PROFILE = Object.freeze(data.evidence);

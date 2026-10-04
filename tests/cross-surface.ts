@@ -1,4 +1,5 @@
 import type { Command, Response, Snapshot } from "../src/projection/types";
+import { digest } from "../src/kernel/canonical";
 import { math } from "../src/kernel/numerics";
 import { philox } from "../src/kernel/random";
 export interface Stage {
@@ -8,6 +9,7 @@ export interface Stage {
   time: number;
   paid: number[];
   goods: Snapshot["reconciliation"];
+  personalHash?: string;
 }
 export async function crossSurface(
   handle: (c: Command) => Promise<Response>,
@@ -29,6 +31,9 @@ export async function crossSurface(
       time: s.time,
       paid: s.actors.map((a) => a.paidTravelSd),
       goods: s.reconciliation,
+      ...(s.personalLenses.length
+        ? { personalHash: digest(s.personalLenses) }
+        : {}),
     });
   };
   const first = (await call({ kind: "create", seed: "spine" })).snapshot!,
@@ -85,6 +90,41 @@ export async function crossSurface(
   stage("chunked-observed-restored", chunked);
   if (chunked.hash !== end.hash || chunked.eventHash !== end.eventHash)
     throw Error("Partition/replay mismatch");
+  const personal = (await call({ kind: "create-evidence", seed: "spine" }))
+    .snapshot!;
+  stage("pack0b-selected", personal);
+  const own = personal.actors[0]!;
+  await call({ kind: "advance", time: Math.ceil(0.005 * 2 ** 20) });
+  const beforeInterrupt = (await call({ kind: "snapshot" })).snapshot!;
+  stage("pack0b-active-reservation", beforeInterrupt);
+  await call({ kind: "task-interrupt", actor: own.key });
+  const interrupted = (await call({ kind: "snapshot" })).snapshot!;
+  stage("pack0b-interrupted", interrupted);
+  const personalSave = (await call({ kind: "checkpoint" })).checkpoint!;
+  await call({ kind: "task-resume", actor: own.key });
+  const personalEnd = (await call({ kind: "advance", time: 2 ** 20 }))
+    .snapshot!;
+  stage("pack0b-uninterrupted", personalEnd);
+  const personalRestored = (
+    await call({ kind: "restore", checkpoint: personalSave })
+  ).snapshot!;
+  if (personalRestored.hash !== interrupted.hash)
+    throw Error("Personal runtime restore mismatch");
+  await call({ kind: "task-resume", actor: own.key });
+  for (let q = Math.ceil(0.005 * 2 ** 20) + 20017; q < 2 ** 20; q += 20017) {
+    await call({ kind: "advance", time: q });
+    await call({ kind: "snapshot" });
+    await frame();
+  }
+  const personalChunked = (await call({ kind: "advance", time: 2 ** 20 }))
+    .snapshot!;
+  stage("pack0b-restored-chunked", personalChunked);
+  if (
+    personalChunked.hash !== personalEnd.hash ||
+    digest(personalChunked.personalLenses) !==
+      digest(personalEnd.personalLenses)
+  )
+    throw Error("Pack0B personal/physical partition mismatch");
   return {
     math: [
       math.exp(-0.2),
