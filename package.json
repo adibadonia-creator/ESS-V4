@@ -1,7 +1,38 @@
 {
-  "name": "ess-v4", "version": "0.0.1", "private": true, "type": "module",
-  "scripts": { "dev": "vite --host 0.0.0.0", "build": "node scripts/stamp.mjs && tsc -p tsconfig.core.json && vite build", "typecheck": "tsc --noEmit", "test": "vitest run", "check:boundaries": "node scripts/boundaries.mjs", "headless": "tsx src/runners/headless.ts", "benchmark": "tsx src/runners/benchmark.ts", "verify:browser": "node scripts/browser-check.mjs", "check": "npm run check:boundaries && npm run typecheck && npm test && npm run build" },
-  "dependencies": { "pixi.js": "8.22.0" },
-  "devDependencies": { "@types/node": "24.10.1", "typescript": "5.9.3", "tsx": "4.21.0", "vite": "8.3.2", "vitest": "5.0.3" },
-  "engines": { "node": ">=24" }
+  "name": "ess-v4",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "node scripts/stamp.mjs && tsc -p tsconfig.core.json && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check:boundaries": "node scripts/boundaries.mjs",
+    "headless": "node --import tsx src/runners/headless.ts",
+    "benchmark": "node --import tsx src/runners/benchmark.ts",
+    "verify:browser": "node scripts/stamp.mjs && node --import tsx scripts/browser-check.ts",
+    "check": "npm run check:boundaries && npm run typecheck && npm test && npm run build",
+    "pretest": "node scripts/stamp.mjs",
+    "preheadless": "node scripts/stamp.mjs",
+    "prebenchmark": "node scripts/stamp.mjs",
+    "test:browser": "npm run verify:browser && npm run build && playwright test",
+    "format": "prettier --write \"src/**/*.{ts,json,css}\" \"tests/**/*.ts\" \"scripts/*.{ts,mjs}\" \"*.{ts,json,html}\""
+  },
+  "dependencies": {
+    "pixi.js": "8.22.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@sparticuz/chromium": "153.0.0",
+    "@types/node": "24.10.1",
+    "prettier": "3.9.9",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  },
+  "engines": {
+    "node": ">=24"
+  }
 }

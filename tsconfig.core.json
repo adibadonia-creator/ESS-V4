@@ -1,1 +1,18 @@
-{"extends":"./tsconfig.json","compilerOptions":{"outDir":"dist/core","declaration":true,"lib":["ES2022"],"types":[]},"include":["src/kernel","src/world","src/content","src/projection","src/measurement","src/runners/session.ts"],"exclude":["tests"]}
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/core",
+    "declaration": true,
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": [
+    "src/kernel",
+    "src/world",
+    "src/content",
+    "src/projection",
+    "src/measurement",
+    "src/runners/session.ts"
+  ],
+  "exclude": ["tests"]
+}

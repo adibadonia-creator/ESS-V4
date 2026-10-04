@@ -2,3 +2,7 @@ node_modules/
 dist/
 .artifacts/
 *.checkpoint.json
+
+public/browser-reference.json
+test-results/
+playwright-report/

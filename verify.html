@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ESS V4 browser parity gate</title>
+  </head>
+  <body>
+    <h1>Pack0A browser-worker parity gate</h1>
+    <p>
+      Actual browser worker versus a Node reference from the same
+      source/profile; this is an engineering determinism gate.
+    </p>
+    <pre id="results">Preparing…</pre>
+    <script type="module" src="/tests/browser-harness.ts"></script>
+  </body>
+</html>
