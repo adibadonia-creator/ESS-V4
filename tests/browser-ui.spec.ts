@@ -50,3 +50,23 @@ test("Pixi WebGL app renders and UI observation/camera controls leave paused cau
   expect(errors).toEqual([]);
   await expect(page.locator("vite-error-overlay")).toHaveCount(0);
 });
+
+test("body execution fixture exposes an inert analyst card and personal body evidence", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/");
+  await expect(page.locator("#meta")).toContainText("conservation verified");
+  await page.getByRole("button", { name: "Body fixture", exact: true }).click();
+  await expect(page.locator("#inspect")).toContainText("Enjoyment");
+  await expect(page.locator("#inspect")).toContainText("Mastery (analyst)");
+  await expect(page.locator("#evidence-records")).toContainText(
+    "body-experience",
+  );
+  const hash = await page.locator("#hash").textContent();
+  await page.locator("#actor").selectOption({ label: "Shell 2" });
+  await expect(page.locator("#hash")).toHaveText(hash!);
+  await page.screenshot({
+    path: testInfo.outputPath("body-fixture.png"),
+    fullPage: true,
+  });
+});

@@ -1,3 +1,4 @@
+import { EXTRACTION_INDEX } from "../content/extraction";
 import { METHOD_INDEX } from "../content/methods";
 import {
   entries,
@@ -39,7 +40,22 @@ import type {
   MapObservation,
   RegionPrecedent,
 } from "./types";
+interface RateStatistic {
+  at: number;
+  weight: number;
+  logSum: number;
+  samples: number;
+}
+interface RateSample {
+  context: string;
+  at: number;
+  weight: number;
+  logRate: number;
+}
 export interface PersonEvidence {
+  rateStatistics: Record<string, RateStatistic>;
+  // Exact provenance backing is historical, never enumerated by a current estimate.
+  rateProvenance: Record<string, RateSample>;
   owner: string;
   geographyRevision: number;
   records: Evidence[];
@@ -114,6 +130,26 @@ export class EvidenceService {
         (this.geographyPinCounts.get(id) ?? 0) + 1,
       );
     for (const p of state.people) {
+      if (!p.rateStatistics || !p.rateProvenance)
+        throw Error("Missing rate continuation state");
+      for (const stat of Object.values(p.rateStatistics))
+        if (
+          !Number.isSafeInteger(stat.at) ||
+          ![stat.weight, stat.logSum, stat.samples].every(Number.isFinite) ||
+          stat.weight < 0 ||
+          !Number.isSafeInteger(stat.samples) ||
+          stat.samples < 0
+        )
+          throw Error("Invalid rate sufficient statistics");
+      for (const sample of Object.values(p.rateProvenance))
+        if (
+          !p.rateStatistics[sample.context] ||
+          !Number.isSafeInteger(sample.at) ||
+          !Number.isFinite(sample.weight) ||
+          sample.weight <= 0 ||
+          !Number.isFinite(sample.logRate)
+        )
+          throw Error("Invalid rate provenance backing");
       this.people.set(p.owner, p);
       this.reverseLinks.set(
         p.owner,
@@ -159,6 +195,8 @@ export class EvidenceService {
     if (this.people.has(owner)) return;
     const p: PersonEvidence = {
       owner,
+      rateStatistics: {},
+      rateProvenance: {},
       geographyRevision: 0,
       records: [],
       versions: {},
@@ -460,7 +498,79 @@ export class EvidenceService {
       ...(footprint ? { footprint } : {}),
     });
   }
+  observePerformance(
+    owner: string,
+    method: string,
+    context: string,
+    output: number,
+    paidSd: number,
+    provenance: string,
+    at: number,
+    cognitive: number,
+    field: number,
+  ): void {
+    const schema = EXTRACTION_INDEX.method(method);
+    if (!schema || paidSd <= 0 || output <= 0) return; // Censored zero yield is stock evidence, not log(0) capability.
+    const p = this.person(owner),
+      key = canonical([method, context]);
+    const variance = (0.35 / Math.max(0.25, math.sqrt(cognitive * field))) ** 2;
+    const logRate =
+      math.log(output / paidSd) +
+      math.sqrt(variance) *
+        normal(this.seed, "own-performance-inference", [owner, provenance]);
+    const previous = p.rateProvenance[provenance];
+    if (previous && previous.context !== key)
+      throw Error("Performance provenance context changed");
+    const stat = p.rateStatistics[key] ?? {
+      at,
+      weight: 0,
+      logSum: 0,
+      samples: 0,
+    };
+    const decay = math.exp(-(at - stat.at) / QUANTA / 3);
+    stat.weight *= decay;
+    stat.logSum *= decay;
+    stat.at = at;
+    if (previous) {
+      const old = previous.weight * math.exp(-(at - previous.at) / QUANTA / 3);
+      stat.weight -= old;
+      stat.logSum -= old * previous.logRate;
+    } else stat.samples++;
+    const weight = 1 / variance;
+    stat.weight += weight;
+    stat.logSum += weight * logRate;
+    p.rateStatistics[key] = stat;
+    p.rateProvenance[provenance] = { context: key, at, weight, logRate };
+    // One ordinary cultural prior sample. No latent ability/mastery is returned.
+    const priorWeight = 1 / 0.35 ** 2,
+      mean =
+        (stat.logSum + priorWeight * math.log(schema.referenceRate)) /
+        (stat.weight + priorWeight);
+    this.fact(
+      owner,
+      "self",
+      `rate:${method}:${context}`,
+      {
+        rate: math.exp(mean),
+        logVariance: 1 / (stat.weight + priorWeight),
+        samples: stat.samples,
+        output,
+        paidSd,
+        weight: stat.weight,
+        logSum: stat.logSum,
+        anchorAt: at,
+        priorRate: schema.referenceRate,
+        priorWeight,
+      },
+      at,
+      "experienced paid performance",
+      "inference",
+      math.sqrt(1 / (stat.weight + priorWeight)),
+      "slow",
+    );
+  }
   foundMethods(owner: string, methods: string[], at: number): void {
+    this.foundPerformancePriors(owner, methods, at);
     for (const method of methods)
       this.fact(
         owner,
@@ -471,6 +581,72 @@ export class EvidenceService {
         "declared founding diagnostic library",
         "record",
       );
+  }
+  observeResourceStock(
+    owner: string,
+    subject: string,
+    kind: string,
+    good: string,
+    stock: number,
+    at: number,
+    cognitive: number,
+    field: number,
+  ): void {
+    const logSd = 0.35 / Math.max(0.25, math.sqrt(cognitive * field));
+    const value =
+      stock > 0
+        ? stock *
+          math.exp(
+            logSd *
+              normal(this.seed, "physical-resource-observation", [
+                owner,
+                subject,
+                String(at),
+                good,
+              ]),
+          )
+        : 0;
+    this.fact(
+      owner,
+      subject,
+      `stock:${good}`,
+      value,
+      at,
+      "direct local resource observation",
+      "direct",
+      stock > 0 ? logSd : 0,
+      kind === "food-patch" ? "fast" : "slow",
+    );
+  }
+  foundPerformancePriors(
+    owner: string,
+    methods: readonly string[],
+    at: number,
+  ): void {
+    for (const method of methods) {
+      const m = EXTRACTION_INDEX.method(method);
+      if (!m) continue;
+      this.fact(
+        owner,
+        "self",
+        `rate:${method}:${m.siteKind}`,
+        {
+          rate: m.referenceRate,
+          logVariance: 0.35 ** 2,
+          samples: 0,
+          weight: 0,
+          logSum: 0,
+          anchorAt: at,
+          priorRate: m.referenceRate,
+          priorWeight: 1 / 0.35 ** 2,
+        },
+        at,
+        "declared ordinary cultural rate prior",
+        "record",
+        0.35,
+        "fixed",
+      );
+    }
   }
   observe(
     owner: string,

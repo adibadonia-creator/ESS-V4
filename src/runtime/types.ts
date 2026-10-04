@@ -18,8 +18,22 @@ export type Operation =
       good: string;
       quantity: number;
       basis: "own-custody";
+      use?: "consume";
     }
-  | { family: "Work" | "Recover" | "Engage"; law: string; duration: number };
+  | {
+      family: "Work";
+      law: string;
+      duration: number;
+      site?: string;
+      compulsory?: boolean;
+    }
+  | {
+      family: "Recover";
+      law: string;
+      duration: number;
+      mode?: "rest" | "leisure";
+    }
+  | { family: "Engage"; law: string; duration: number };
 export interface Budget {
   time: number;
   goods: Record<string, number>;
@@ -54,6 +68,7 @@ export interface ActiveOperation {
 export interface Task extends SelectedIntention {
   bindingRevision: number;
   paidForStep: number;
+  physicalStepOutput: number;
   cursor: number;
   status:
     | "ready"
@@ -115,6 +130,17 @@ export interface RuntimeState {
 }
 // Runtime can read beliefs and exact own state, and execute real operations. No truth queries.
 export interface RuntimePort {
+  beginPhysical(
+    task: Task,
+    step: Operation,
+    remaining: number,
+  ): { ok: true; end: number } | { ok: false; observed: string };
+  endPhysical(
+    task: Task,
+    final: boolean,
+  ): { quantity: number; good?: string; reason?: string };
+  paidPhysical(task: Task, start: number, end: number): void;
+  physicalClosure(actor: string): void;
   pin(task: Task): void;
   unpin(task: Task): void;
   now(): number;

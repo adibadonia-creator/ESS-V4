@@ -81,6 +81,19 @@ export class TaskRuntime {
     const view = this.port.personal(input.actor);
     // Reject malformed bindings before committing budgets, reservations or history.
     for (const step of input.steps) {
+      if (
+        step.family === "Work" &&
+        step.compulsory !== undefined &&
+        typeof step.compulsory !== "boolean"
+      )
+        throw Error("Invalid compulsory-service declaration");
+      if (
+        step.family === "Transfer" &&
+        (!Number.isFinite(step.quantity) ||
+          step.quantity <= 0 ||
+          (step.use !== undefined && step.use !== "consume"))
+      )
+        throw Error("Invalid transfer quantity/use");
       if (step.family === "Move") {
         const p = view.profile;
         if (
@@ -169,6 +182,7 @@ export class TaskRuntime {
       dependsOn: clone(prior?.dependsOn ?? input.dependsOn),
       bindingRevision: prior?.bindingRevision ?? 0,
       paidForStep: prior?.paidForStep ?? 0,
+      physicalStepOutput: prior?.physicalStepOutput ?? 0,
       cursor: prior?.cursor ?? 0,
       status: "ready",
       reservations: [],
@@ -241,7 +255,9 @@ export class TaskRuntime {
       return;
     }
     const step = t.steps[t.cursor]!;
-    if (!["Move", "Attend", "Transfer"].includes(step.family)) {
+    if (
+      !["Move", "Attend", "Transfer", "Work", "Recover"].includes(step.family)
+    ) {
       t.status = "failed";
       t.failure = `not-yet-implemented law: ${step.family}`;
       this.release(t);
@@ -300,7 +316,13 @@ export class TaskRuntime {
       paidThrough: now,
       end: now + duration,
     };
-    this.port.schedule(t, now + duration, "operation");
+    const physical = this.port.beginPhysical(t, step, duration);
+    if (!physical.ok) {
+      this.block(t, physical.observed);
+      return;
+    }
+    t.active.end = physical.end;
+    this.port.schedule(t, physical.end, "operation");
   }
   resumeRouting(slice: number): boolean {
     const t = this.routing.values().next().value as Task | undefined;
@@ -338,6 +360,7 @@ export class TaskRuntime {
         paidThrough: this.port.now(),
         end: null,
       };
+      this.port.beginPhysical(t, t.steps[t.cursor]!, this.remaining(t));
       this.movePrefix(t);
     }
     return this.routing.size > 0;
@@ -469,6 +492,8 @@ export class TaskRuntime {
       at: this.port.now(),
     });
     t.routeCursor++;
+    this.settlePhysical(t, false);
+    this.port.beginPhysical(t, t.steps[t.cursor]!, this.remaining(t));
     this.movePrefix(t);
   }
   operation(taskId: string, kind: "operation" | "budget"): void {
@@ -481,8 +506,23 @@ export class TaskRuntime {
       return;
     }
     const step = t.steps[t.cursor]!;
+    const physical = this.settlePhysical(t, true);
+    if (physical.good) {
+      t.progress.push({
+        kind: "physical-output",
+        location: this.port.exactSelf(t.actor).location,
+        at: this.port.now(),
+        quantity:
+          step.family === "Work" ? t.physicalStepOutput : physical.quantity,
+        good: physical.good,
+      });
+    }
+    if (physical.reason) {
+      this.block(t, physical.reason);
+      return;
+    }
     if (step.family === "Attend") this.port.observe(t.actor, step.duration);
-    if (step.family === "Transfer") {
+    if (step.family === "Transfer" && step.use !== "consume") {
       const reservation = t.reservations.find(
         (r) => r.subject === step.from && r.good === step.good,
       );
@@ -504,11 +544,33 @@ export class TaskRuntime {
     }
     this.complete(t);
   }
+  private settlePhysical(t: Task, final: boolean) {
+    const result = this.port.endPhysical(t, final),
+      step = t.steps[t.cursor];
+    if (step?.family === "Work") t.physicalStepOutput += result.quantity;
+    if (
+      step?.family === "Transfer" &&
+      step.use === "consume" &&
+      result.quantity > 0
+    ) {
+      const budget = this.budget(t);
+      budget.spent.goods[step.good] =
+        (budget.spent.goods[step.good] ?? 0) + result.quantity;
+      if (
+        budget.spent.goods[step.good]! >
+        (budget.authorised.goods[step.good] ?? 0) + 1e-9
+      )
+        throw Error("Consumption budget overrun");
+    }
+    return result;
+  }
   private complete(t: Task): void {
     this.pay(t);
+    this.settlePhysical(t, true);
     t.active = null;
     t.cursor++;
     t.paidForStep = 0;
+    t.physicalStepOutput = 0;
     t.route = null;
     this.port.unpinGeography(t.taskId);
     this.counts.runtimeStepCompletions++;
@@ -543,11 +605,16 @@ export class TaskRuntime {
     if (b.spent.time + now - start > b.authorised.time)
       throw Error("Unauthorised time overrun");
     const category =
-      op.family === "Move"
-        ? "travel"
-        : op.family === "Attend"
-          ? "attention"
-          : "handling";
+      op.family === "Work"
+        ? "work"
+        : op.family === "Recover"
+          ? ((t.steps[t.cursor] as Extract<Operation, { family: "Recover" }>)
+              .mode ?? "rest")
+          : op.family === "Move"
+            ? "travel"
+            : op.family === "Attend"
+              ? "attention"
+              : "handling";
     for (let x = start; x < now;) {
       const day = Math.floor(x / QUANTA),
         end = Math.min(now, (day + 1) * QUANTA),
@@ -567,6 +634,7 @@ export class TaskRuntime {
       start,
       end: now,
     });
+    this.port.paidPhysical(t, start, now);
     a.lastPaidEnd = now;
     t.paidForStep += now - start;
     b.spent.time += now - start;
@@ -576,6 +644,24 @@ export class TaskRuntime {
     const t = this.task(actor);
     if (t?.status === "running") this.pay(t);
     const activity = this.activity(actor);
+    if (t?.status === "running") this.settlePhysical(t, false);
+    this.port.physicalClosure(actor);
+    if (t?.status === "running" && t.active) {
+      const step = t.steps[t.cursor]!;
+      const result = this.port.beginPhysical(
+        t,
+        step,
+        step.family === "Move"
+          ? this.remaining(t)
+          : step.duration - t.paidForStep,
+      );
+      if (!result.ok) this.block(t, result.observed);
+      else if (step.family !== "Move") {
+        this.port.cancel(t);
+        t.active.end = result.end;
+        this.port.schedule(t, result.end, "operation");
+      }
+    }
     activity.closedThrough = this.port.now();
     const day = Math.floor(this.port.now() / QUANTA);
     for (const [key, totals] of Object.entries(activity.totals))
@@ -589,6 +675,7 @@ export class TaskRuntime {
     if (!t || !["running", "routing", "ready"].includes(t.status)) return;
     this.pay(t);
     if (t.active?.family === "Move") this.port.stopMove(actor);
+    this.settlePhysical(t, true);
     this.port.cancel(t);
     this.routing.delete(t.actor);
     t.active = null;
@@ -612,6 +699,7 @@ export class TaskRuntime {
         paidThrough: this.port.now(),
         end: null,
       };
+      this.port.beginPhysical(t, t.steps[t.cursor]!, this.remaining(t));
       this.movePrefix(t);
     } else if (t.route?.status === "unresolved") {
       t.status = "routing";
@@ -633,13 +721,20 @@ export class TaskRuntime {
           paidThrough: this.port.now(),
           end: this.port.now() + remaining,
         };
-        this.port.schedule(t, t.active.end!, "operation");
+        const result = this.port.beginPhysical(t, step, remaining);
+        if (!result.ok) {
+          this.block(t, result.observed);
+          return;
+        }
+        t.active.end = result.end;
+        this.port.schedule(t, result.end, "operation");
       } else this.start(t);
     }
   }
   private block(t: Task, reason: string): void {
     this.pay(t);
     if (t.active?.family === "Move") this.port.stopMove(t.actor);
+    this.settlePhysical(t, true);
     this.port.cancel(t);
     this.routing.delete(t.actor);
     t.active = null;

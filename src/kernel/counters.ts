@@ -1,5 +1,22 @@
 // Measurement only: never serialized into causal state or used by a law.
 export interface Counters {
+  workSettlements: number;
+  extractionBoundaries: number;
+  conditionSegments: number;
+  fatigueClosures: number;
+  enjoymentClosures: number;
+  bodyMaterialisations: number;
+  bodyCommits: number;
+  resourceMaterialisations: number;
+  workGoodsTransactions: number;
+  workSegmentsStarted: number;
+  consumptionSettlements: number;
+  learningSettlements: number;
+  representativeBodyClosures: number;
+  bodyEvidenceDeliveries: number;
+  methodRecordsConsulted: number;
+  recoverPaidSegments: number;
+
   currentTaskLookups: number;
   terminalTaskRowsVisited: number;
   activeTaskRowsVisited: number;
@@ -49,6 +66,23 @@ export interface Counters {
 }
 export function counters(): Counters {
   return {
+    workSettlements: 0,
+    extractionBoundaries: 0,
+    conditionSegments: 0,
+    fatigueClosures: 0,
+    enjoymentClosures: 0,
+    bodyMaterialisations: 0,
+    bodyCommits: 0,
+    resourceMaterialisations: 0,
+    workGoodsTransactions: 0,
+    workSegmentsStarted: 0,
+    consumptionSettlements: 0,
+    learningSettlements: 0,
+    representativeBodyClosures: 0,
+    bodyEvidenceDeliveries: 0,
+    methodRecordsConsulted: 0,
+    recoverPaidSegments: 0,
+
     currentTaskLookups: 0,
     terminalTaskRowsVisited: 0,
     activeTaskRowsVisited: 0,

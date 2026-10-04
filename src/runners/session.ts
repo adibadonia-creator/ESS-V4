@@ -1,4 +1,5 @@
 import { PhysicalSimulation } from "../world/simulation";
+import { launchBodyFixture } from "./bodyFixture";
 import { launchEvidenceFixture } from "./evidenceFixture";
 import { launchPhysicalFixture } from "./fixture";
 import { future } from "../kernel/time";
@@ -7,9 +8,15 @@ export class Session {
   private simulation: PhysicalSimulation | null = null;
   handle(command: Command): Response {
     try {
-      if (command.kind === "create" || command.kind === "create-evidence") {
+      if (
+        command.kind === "create" ||
+        command.kind === "create-evidence" ||
+        command.kind === "create-body"
+      ) {
         this.simulation = new PhysicalSimulation(command.seed);
         if (command.kind === "create") launchPhysicalFixture(this.simulation);
+        else if (command.kind === "create-body")
+          launchBodyFixture(this.simulation);
         else launchEvidenceFixture(this.simulation);
         return {
           id: command.id,

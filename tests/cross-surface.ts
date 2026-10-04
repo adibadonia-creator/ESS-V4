@@ -125,6 +125,31 @@ export async function crossSurface(
       digest(personalEnd.personalLenses)
   )
     throw Error("Pack0B personal/physical partition mismatch");
+  const body = (await call({ kind: "create-body", seed: "spine" })).snapshot!;
+  stage("pack0c1-selected", body);
+  await call({ kind: "advance", time: Math.ceil(0.07 * 2 ** 20) });
+  const bodySave = (await call({ kind: "checkpoint" })).checkpoint!;
+  const bodyEnd = (await call({ kind: "advance", time: 5 * 2 ** 20 }))
+    .snapshot!;
+  stage("pack0c1-complete-chain", bodyEnd);
+  await call({ kind: "restore", checkpoint: bodySave });
+  for (
+    let q = Math.ceil(0.07 * 2 ** 20) + 172319;
+    q < 5 * 2 ** 20;
+    q += 172319
+  ) {
+    await call({ kind: "advance", time: q });
+    await call({ kind: "snapshot" });
+    await frame();
+  }
+  const bodyChunked = (await call({ kind: "advance", time: 5 * 2 ** 20 }))
+    .snapshot!;
+  stage("pack0c1-restored-partitioned", bodyChunked);
+  if (
+    bodyChunked.hash !== bodyEnd.hash ||
+    digest(bodyChunked.personalLenses) !== digest(bodyEnd.personalLenses)
+  )
+    throw Error("Body/work partition mismatch");
   return {
     math: [
       math.exp(-0.2),
