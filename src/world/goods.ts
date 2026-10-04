@@ -31,7 +31,7 @@ export type GoodsRequest =
   | { kind: "source"; source: Source; to: Key; good: string; quantity: number }
   | {
       kind: "transfer";
-      basis: "diagnostic-physical";
+      basis: "diagnostic-physical" | "own-custody";
       actor: Key;
       from: Key;
       to: Key;
@@ -288,10 +288,11 @@ export class GoodsLedger {
           deltas.set(from.key, -quantity);
           if (request.kind === "transfer") {
             if (
-              request.basis !== "diagnostic-physical" ||
+              (!["diagnostic-physical", "own-custody"].includes(request.basis)) ||
               request.from === request.to
             )
               throw new Error("Invalid transaction basis");
+            if(request.basis === "own-custody" && (from.custodian !== request.actor || this.get(request.to).custodian !== request.actor)) throw Error("No own custody authority");
             const to = this.get(request.to),
               q = this.location(to.key);
             if (

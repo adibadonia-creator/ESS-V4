@@ -1,4 +1,5 @@
 import { PhysicalSimulation } from "../world/simulation";
+import { launchEvidenceFixture } from "./evidenceFixture";
 import { launchPhysicalFixture } from "./fixture";
 import { future } from "../kernel/time";
 import type { Command, Response } from "../projection/types";
@@ -6,9 +7,10 @@ export class Session {
   private simulation: PhysicalSimulation | null = null;
   handle(command: Command): Response {
     try {
-      if (command.kind === "create") {
+      if (command.kind === "create" || command.kind === "create-evidence") {
         this.simulation = new PhysicalSimulation(command.seed);
-        launchPhysicalFixture(this.simulation);
+        if (command.kind === "create") launchPhysicalFixture(this.simulation);
+        else launchEvidenceFixture(this.simulation);
         return {
           id: command.id,
           ok: true,
@@ -25,6 +27,12 @@ export class Session {
       }
       const sim = this.simulation;
       if (!sim) throw new Error("No simulation");
+      if (command.kind === "task-interrupt")
+        sim.diagnosticTaskInterrupt(command.actor);
+      if (command.kind === "task-resume")
+        sim.diagnosticTaskResume(command.actor);
+      if (command.kind === "task-abandon")
+        sim.diagnosticTaskAbandon(command.actor);
       if (command.kind === "advance") sim.advanceTo(command.time);
       if (command.kind === "checkpoint")
         return { id: command.id, ok: true, checkpoint: sim.checkpoint() };

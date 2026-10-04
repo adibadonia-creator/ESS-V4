@@ -47,3 +47,9 @@ function deepFreeze<T>(o: T): T {
   return o;
 }
 export const CONTENT_HASH = digest(data);
+
+export const EVIDENCE_PROFILE = Object.freeze(data.evidence);
+
+export const ROUTE_ENGINEERING = Object.freeze(data.engineering);
+
+export const PUBLIC_MAP_PROFILE = Object.freeze(data.spatial);

@@ -20,12 +20,19 @@ test("Pixi WebGL app renders and UI observation/camera controls leave paused cau
   await expect(page.locator("#meta")).toContainText("conservation verified", {
     timeout: 30000,
   });
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator("#map canvas")).toBeVisible();
+  await expect(page.locator("#personal-lens")).toBeVisible();
+  await expect(page.locator("#task-state")).toContainText(
+    "DIAGNOSTIC SELECTED INTENTION",
+  );
   const hash = await page.locator("#hash").textContent();
   await page.locator("#actor").selectOption({ label: "Shell 2" });
   await page.getByText("Measurement counters", { exact: true }).click();
-  await page.locator("canvas").hover();
+  await page.locator("#map canvas").hover();
   await page.mouse.wheel(0, -250);
+  await expect(page.locator("#hash")).toHaveText(hash!);
+  await page.locator("#personal-lens summary").click();
+  await page.locator("#personal-lens summary").click();
   await expect(page.locator("#hash")).toHaveText(hash!);
   const before = await page.locator("#clock").textContent();
   await page.getByRole("button", { name: "+0.01 SD", exact: true }).click();

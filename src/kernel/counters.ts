@@ -1,5 +1,20 @@
 // Measurement only: never serialized into causal state or used by a law.
 export interface Counters {
+  perceptionCandidateChecks: number;
+  routineObservations: number;
+  evidenceUpdates: number;
+  personalMapUpdates: number;
+  memoryEvictions: number;
+  personalRouteRegionExpansions: number;
+  personalRouteSearches: number;
+  personalRouteExpansions: number;
+  runtimeStepStarts: number;
+  runtimeStepCompletions: number;
+  continueTransitions: number;
+  repairRequiredTransitions: number;
+  taskInterruptions: number;
+  personalViewProjections: number;
+  autonomousDeliberations: number;
   events: number;
   staleEvents: number;
   heapPushes: number;
@@ -17,6 +32,21 @@ export interface Counters {
 }
 export function counters(): Counters {
   return {
+    perceptionCandidateChecks: 0,
+    routineObservations: 0,
+    evidenceUpdates: 0,
+    personalMapUpdates: 0,
+    memoryEvictions: 0,
+    personalRouteRegionExpansions: 0,
+    personalRouteSearches: 0,
+    personalRouteExpansions: 0,
+    runtimeStepStarts: 0,
+    runtimeStepCompletions: 0,
+    continueTransitions: 0,
+    repairRequiredTransitions: 0,
+    taskInterruptions: 0,
+    personalViewProjections: 0,
+    autonomousDeliberations: 0,
     events: 0,
     staleEvents: 0,
     heapPushes: 0,

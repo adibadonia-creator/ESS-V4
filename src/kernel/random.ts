@@ -1,3 +1,4 @@
+import { math } from "./numerics";
 import { canonical, hash128 } from "./canonical";
 import type { Key } from "./identity";
 export const RNG_VERSION = "philox4x32-10-semantic-v1";
@@ -42,4 +43,19 @@ export function draw(
   const k = words(canonical([RNG_VERSION, seed]));
   const c = words(canonical([domain, keys, ordinal]));
   return (philox(c, [k[0], k[1]])[0] + 0.5) / 2 ** 32;
+}
+
+// Versioned Marsaglia polar transform. Rejections use local ordinals, never a stream.
+export const NORMAL_SAMPLER = "marsaglia-polar-binary64-v1";
+export function normal(
+  seed: string,
+  domain: string,
+  keys: readonly Key[],
+): number {
+  for (let ordinal = 0; ; ordinal++) {
+    const u = 2 * draw(seed, domain, keys, 2 * ordinal) - 1,
+      v = 2 * draw(seed, domain, keys, 2 * ordinal + 1) - 1,
+      s = u * u + v * v;
+    if (s > 0 && s < 1) return u * math.sqrt((-2 * math.log(s)) / s);
+  }
 }

@@ -1,10 +1,26 @@
 {
   "version": "physical-diagnostic-v1",
   "goods": [
-    { "id": "food", "bulk": 1, "divisible": true },
-    { "id": "wood", "bulk": 0.2, "divisible": true },
-    { "id": "stone", "bulk": 0.4, "divisible": true },
-    { "id": "fibre", "bulk": 0.1, "divisible": true }
+    {
+      "id": "food",
+      "bulk": 1,
+      "divisible": true
+    },
+    {
+      "id": "wood",
+      "bulk": 0.2,
+      "divisible": true
+    },
+    {
+      "id": "stone",
+      "bulk": 0.4,
+      "divisible": true
+    },
+    {
+      "id": "fibre",
+      "bulk": 0.1,
+      "divisible": true
+    }
   ],
   "terrain": [
     {
@@ -80,7 +96,7 @@
     "cliffElevation": 0.72,
     "riverFlow": 25,
     "fordModulo": 11,
-    "floodEpsilon": 0.000001
+    "floodEpsilon": 1e-6
   },
   "diagnostic": {
     "actors": 8,
@@ -94,5 +110,20 @@
     "sourceFibre": 16.8,
     "quantityTolerance": 1e-9,
     "routeExpansionsPerResume": 4096
+  },
+  "evidence": {
+    "routineObservations": 12,
+    "maxTaskSteps": 12,
+    "foundingMethods": ["contact", "exchange"],
+    "stockLogSd": 0.35,
+    "places": 32,
+    "traversalPrior": {
+      "speedFactor": 1,
+      "uncertainty": 1,
+      "context": "declared founding cultural unseen-terrain expectation"
+    }
+  },
+  "engineering": {
+    "routeExpansionsPerComputation": 4096
   }
 }

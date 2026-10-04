@@ -1,6 +1,8 @@
+import { memoryProbe } from "./memoryProbe";
 import { performance } from "node:perf_hooks";
 import os from "node:os";
 import { PhysicalSimulation } from "../world/simulation";
+import { launchEvidenceFixture } from "./evidenceFixture";
 import { launchPhysicalFixture } from "./fixture";
 import { time } from "../kernel/time";
 import { resolveConfig } from "../content/profile";
@@ -11,17 +13,30 @@ type Row = {
   advanceMs: number;
   checkpointMs: number;
   hashMs: number;
+  personalProjectionMs: number;
   snapshotMs: number;
   checkpointBytes: number;
   hash: string;
+  retainedEvidence: number;
+  rememberedPlaces: number[];
+  discretionaryPlaces: number[];
+  pinnedPlaces: number[];
+  personalBytes: number;
+  mapObservations: number;
   counters: Record<string, number>;
 };
+const pack0b = process.argv.includes("--pack0b"),
+  probe32 = process.argv.includes("--probe32");
 const rows: Row[] = [];
 for (let run = 0; run < 5; run++) {
   const start = performance.now(),
-    sim = new PhysicalSimulation("spine"),
+    sim = new PhysicalSimulation(
+      "spine",
+      resolveConfig({}, probe32 ? { actors: 32 } : {}),
+    ),
     generated = performance.now();
-  launchPhysicalFixture(sim);
+  if (pack0b) launchEvidenceFixture(sim);
+  else launchPhysicalFixture(sim);
   const launch = performance.now();
   sim.advanceTo(time(1));
   const advanced = performance.now();
@@ -29,15 +44,39 @@ for (let run = 0; run < 5; run++) {
     saved = performance.now();
   const hash = sim.causalHash(),
     hashed = performance.now();
+  if (pack0b) for (const actor of sim.actorKeys()) sim.personalLens(actor);
+  const personalProjected = performance.now();
   sim.snapshot();
   const projected = performance.now();
+  const epistemic = JSON.parse(cp).body.evidence.people;
   rows.push({
+    retainedEvidence: epistemic.reduce(
+      (n: number, p: any) => n + p.records.length,
+      0,
+    ),
+    rememberedPlaces: epistemic.map(
+      (p: any) => Object.keys(p.memory.places).length,
+    ),
+    discretionaryPlaces: pack0b
+      ? sim
+          .actorKeys()
+          .map((a) => sim.personalView(a).memory.discretionaryPlaces)
+      : [],
+    pinnedPlaces: pack0b
+      ? sim.actorKeys().map((a) => sim.personalView(a).memory.pinnedPlaces)
+      : [],
+    personalBytes: Buffer.byteLength(JSON.stringify({ people: epistemic })),
+    mapObservations: epistemic.reduce(
+      (n: number, p: any) => n + Object.keys(p.mapObservations).length,
+      0,
+    ),
     generateMs: generated - start,
     fixtureMs: launch - generated,
     advanceMs: advanced - launch,
     checkpointMs: saved - advanced,
     hashMs: hashed - saved,
-    snapshotMs: projected - hashed,
+    personalProjectionMs: personalProjected - hashed,
+    snapshotMs: projected - personalProjected,
     checkpointBytes: Buffer.byteLength(cp),
     hash,
     counters: { ...sim.counters },
@@ -91,8 +130,9 @@ function storageProbe() {
 console.log(
   JSON.stringify(
     {
-      fixture:
-        "Pack0A physical diagnostic, canonical raster, 8 shells, 24 finite sites, until 1 SD; no biology/minds",
+      fixture: pack0b
+        ? `Pack0B diagnostic selected-intention fixture, canonical raster, ${probe32 ? 32 : 8} shells, 24 sites, until 1 SD; knowledge/execution only; not the Pack0 performance gate`
+        : "Pack0A physical diagnostic, canonical raster, 8 shells, 24 finite sites, until 1 SD; no biology/minds",
       runtime: process.version,
       machine: os.cpus()[0]?.model,
       platform: os.platform() + " " + os.arch(),
@@ -104,10 +144,14 @@ console.log(
           "advanceMs",
           "checkpointMs",
           "hashMs",
+          "personalProjectionMs",
           "snapshotMs",
         ].map((k) => [k, median(k as keyof (typeof rows)[number])]),
       ),
       rows,
+      ...(process.argv.includes("--memory-probe")
+        ? { memoryProbe: memoryProbe() }
+        : {}),
       ...(process.argv.includes("--storage-probe")
         ? { storageProbe: storageProbe() }
         : {}),
