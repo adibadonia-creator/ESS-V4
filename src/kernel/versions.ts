@@ -4,7 +4,7 @@ import { MATH_PROFILE } from "./numerics";
 import { SOURCE_HASH, SPEC_HASH } from "./buildStamp";
 export const versions = Object.freeze({
   model: "ESS-4.0-pack0b",
-  schema: 3,
+  schema: 4,
   source: SOURCE_HASH,
   spec: SPEC_HASH,
   rng: RNG_VERSION,

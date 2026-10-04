@@ -2,7 +2,7 @@
 
 An implementation of [Revision 4.0](docs/spec/REVISION_4_0.md), the sole normative specification. Requires Node 24+.
 
-Pack 0A supplies the accepted deterministic physical spine. Pack 0B adds dated evidence, physically bounded perception, sparse personal geography/routing and one runtime for explicitly selected diagnostic tasks. Real **Move, Transfer and Attend** execute through physical laws with persistent paid time, budgets, reservations and progress. **Pack 0 and its architectural proof remain incomplete; autonomous choosing is deferred.** See [STATUS](docs/STATUS.md) for scope, verification, reuse, limits and [measurements](docs/pack0b-benchmark.json).
+Pack 0A supplies the accepted deterministic physical spine. Pack 0B adds dated evidence, physically bounded perception, sparse personal geography/routing and bounded 32-place discretionary memory, declared exploratory priors and one runtime for explicitly selected diagnostic tasks. Real **Move, Transfer and Attend** execute through physical laws with persistent paid time, budgets, reservations and progress. **Pack 0 and its architectural proof remain incomplete; autonomous choosing is deferred.** See [STATUS](docs/STATUS.md) for scope, verification, reuse, limits and [measurements](docs/pack0b-benchmark.json).
 
 ```sh
 npm ci
@@ -10,7 +10,7 @@ npm run check
 npm run dev
 npm run headless -- --pack0b --seed spine --until .03 --checkpoint /tmp/pack0b.json
 npm run headless -- --restore /tmp/pack0b.json --until 1
-npm run benchmark -- --pack0b
+npm run benchmark -- --pack0b --memory-probe
 npm run benchmark -- --pack0b --probe32
 ```
 

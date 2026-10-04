@@ -47,6 +47,7 @@ export interface Evidence {
   footprint?: Footprint;
 }
 export interface CellBelief extends SeenCell {
+  provenance: string;
   observedAt: number;
   version: number;
 }
@@ -70,7 +71,45 @@ export interface ExactSelf {
     status: string;
   }[];
 }
+export interface TraversalPrior {
+  speedFactor: number;
+  uncertainty: number;
+  version: number;
+  provenance: string;
+}
+// Scope-owned pins are declared by real consumers; no inferred obligations.
+export interface MemoryPins {
+  subjects: string[];
+  beliefKeys: string[];
+  targets: Point[];
+  reason: "task" | "required-record";
+}
+export interface RegionPrecedent {
+  forgottenPlaces: number;
+  observedEmpty: number;
+  lastAt: number;
+}
+export interface MapObservation {
+  observedAt: number;
+  receivedAt: number;
+  provenance: string;
+  context: string;
+  modality: Evidence["modality"];
+  reliability: number;
+  uncertainty: number;
+  duration: number;
+  references: number;
+}
 export interface PersonalView {
+  traversalPrior: TraversalPrior;
+  mapObservations: Record<string, MapObservation>;
+  memory: {
+    discretionaryPlaces: number;
+    pinnedPlaces: number;
+    limit: number;
+    evictions: number;
+    precedent: { regionKm: number; regions: Record<string, RegionPrecedent> };
+  };
   owner: string;
   time: number;
   profile: MapProfile;

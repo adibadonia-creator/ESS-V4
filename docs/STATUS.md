@@ -1,115 +1,98 @@
 # Pack 0B — evidence boundary and task runtime
 
-Based on merged Pack 0A, `main` at `2933d30868ad5ae202f90d7ecf2df6979b662af4` (PR #1). Implementation branch: `pack0b-evidence-task-runtime`; one draft PR, no merge. [Revision 4.0](spec/REVISION_4_0.md) remains the sole authority and was read completely before implementation. **Pack 0 and §43's architectural proof remain incomplete. No autonomous choosing or Pack 0C is implemented.** The accepted physical substrate and its 48 tests remain; the historical implementation/reuse/performance receipt is preserved in [PACK0A](PACK0A.md).
+The existing `pack0b-evidence-task-runtime` branch and [draft PR #2](https://github.com/adibadonia-creator/ESS-V4/pull/2) extend merged Pack 0A, `main` at `2933d30868ad5ae202f90d7ecf2df6979b662af4`. The targeted pre-merge correction starts from `1f992d9e1a9cdcdb8e2bcd86c0260171c5c72d14`. No new branch/PR, merge, autonomous deliberation or Pack 0C is implemented. **Pack 0 and §43's architectural proof remain incomplete.** [Revision 4.0](spec/REVISION_4_0.md) remains the sole authority; it was read completely before implementation. The accepted physical substrate and its 48 tests remain; [PACK0A](PACK0A.md) preserves its historical implementation/reuse/performance receipt.
 
-## Evidence and information boundary
+## Information boundary
 
-`src/evidence` is the sole personal-knowledge writer. One dated record schema supplies owner, personal subject, property/value, observation/receipt times, modality, original provenance, context, reliability, uncertainty, volatility, optional expiry, pinned status and version. Terrain, sites, people, routes, exact self facts and founding methods use that same lifecycle. Duplicate delivery of the same provenance/value is inert. Delivered evidence alone changes personal versions; reads never refresh memory, sample or query remote truth.
+`src/evidence` is the personal-knowledge writer. One dated schema supplies owner/personal subject/property/value, observation/receipt times, modality, original provenance, context, reliability, uncertainty, volatility, expiry, pinned status and version. Physically filtered observations alone change beliefs. Personal reads never refresh timestamps, sample, evict or query hidden truth.
 
 ```
-Authoritative world → physically filtered local perception packet → evidence writer
-Evidence + permitted exact self + public map profile → detached PersonalView
-PersonalView → personal route frontier / selected task runtime → selected physical prefix
-World law validates that prefix → observable result / evidence → Continue or repair required
+Authoritative local perception → generic dated observation → current personal beliefs / sparse map
+Beliefs + permitted exact self + declared public prior → PersonalView
+PersonalView → personal route frontier / already-selected task → selected physical prefix
+Physical law → observable result / evidence → Continue or repair required
 Analyst snapshot → presentation only
 ```
 
-This describes write/read capabilities, not a truth router hidden behind a facade. Evidence/runtime/future mind cannot import world, runners, presentation or measurement. Future mind cannot import the evidence writer. Pure-core platform/global, randomness/math, content and read-side AST checks remain enforced, and core compilation has no DOM types. Truth-side routing remains available only to the separate Pack-0A diagnostic path. Personal actors reject those legacy diagnostic movement/goods/input commands.
+Evidence/runtime/future mind cannot import world, runners, presentation or measurement; future mind cannot import the evidence writer. Core platform/global, numerical/randomness, content and read-side boundaries remain mechanical, and pure-core compilation has no DOM types. Personal actors reject legacy truth-side diagnostic movement/goods/input commands. Physical perception remains continuous, occluded and local: 0.6-km sight, spatial buckets, qualified footprints, keyed detection/noise, at most 12 routine observations/person/SD and directed/consequential bypass. Swept raster/site sight/contact entries are causal boundaries, independent of renderer frames. Unknown differs from observed zero; occluded hidden site-entry events neither deliver evidence nor consume attention.
 
-Physically bounded perception uses continuous position, 0.6-km ordinary sight, terrain occlusion, qualified raster footprints and local spatial buckets. Routine attention accepts at most 12 observations/person/calendar SD; local surveys count as one qualified observation, with their per-cell properties delivered as evidence. Keyed detection and remote stock uncertainty use Philox and the numerical adapter; observed zero is categorical zero. Directed/mandatory operation, route and contact observations bypass the cap. Public raster sight-entry boundaries and actual site sight/contact circle entries are scheduled along movement, independently of renderer frames. Occluded site-entry events neither deliver evidence nor consume routine attention. No all-world search is used to gather a person's current percepts.
+`PersonalView` exposes personal handles, remembered observed properties, separate sparse map/coverage/region/route state, declared methods/prior, memory counts/precedent and permitted exact own identity/location/leg/carried goods/reservations. No remote registry/stock, other private state or scheduler/queue is exposed. Exact self stock updates follow real own transfers. The browser labels Analyst truth separately from the Personal Lens, including 32-place usage and pinned-place counts. Inspection is inert.
 
-Personal subjects are assigned on perception; authoritative references remain internal execution capabilities. `PersonalView` returns remembered sparse cells/coverage, derived personal connected regions and witnessed crossings, dated routes, known place/person properties, methods, evidence and exact permitted own identity/location/leg/carried goods/reservations. It contains no hidden stock/terrain, other private state, scheduler or queue. Successful own transfers also deliver exact self stock updates; inspection is inert.
+## Bounded personal memory and compact map provenance
 
-## Personal routing
+One discretionary place account uses **`P.mem.places = 32`** (§11.6, §47.4). A place occupies one slot regardless of property count. Existing self records are intrinsic pins; scope-owned typed `MemoryPins` protect current task subjects, targets (including newly perceived targets), method and belief dependencies. Real consumers declare/release scopes; no future social ties, obligations, dependants, offices or disputes are fabricated. Blocked/suspended tasks retain required pins; step continuation updates them and completion/abandonment releases the scope. The later 40-tie policy has no tie consumer in this slice.
 
-`src/runtime/routing.ts` owns a separate sparse, persisted search over personal geography. Established routes first use coarse adjacency between personally witnessed connected regions, then eight-neighbour cell refinement within the selected corridor. Diagonals require both corner cells to be personally passable. Exploratory routes use the explicitly selected public prior for unseen cells; they read no authoritative geometry, components, portals or truth-route status.
+Salience is deterministic: live relevance is pinned; among discretionary places, evict least recent observation/use, then least used, then the personal observation-order handle. There is no invented salience coefficient. Pinned places are exceptions to the 32 discretionary slots and are reported separately. No pinned record is deleted to meet the discretionary cap. Forgetting removes the place's current properties, versions/dedup entries and execution-capability link from future actionable views. It never queries truth or changes goods, entities, another person's knowledge, obligations or prior kernel history. A consequential forgetting record is appended, and compact regional forgotten/observed-empty count and last-time precedent survives (§11.6). Full occupancy/Bayesian resource inference and social tie memory remain deferred.
 
-Frontiers contain discovered keyed nodes and heaps, personal sparse knowledge and optional regional corridor. There are no per-person full-raster route arrays. The diagnostic authorisation bounds work at 64 expansions/EU; each host resume is additionally bounded by its engineering slice. Exhaustion retains an unresolved frontier and reports `route not established`, without proving unreachability. All computation occurs at the same simulated instant. Selected neighbouring physical prefixes execute through the accepted movement law. A newly observable remaining-path blocker delivers evidence, settles/stops the paid prefix and reports `route blocked here`, without revealing unseen alternatives. The regional corridor is a deterministic approximation, not a global least-cost claim.
+Personal evidence records now hold **current observations by belief key**, replacing earlier versions rather than duplicating an unlimited routine event log. The delivery dedup table is likewise one entry per current key. Accepted deliveries retain their dates/provenance and advance personal versions. Permanent physical/task/transaction history remains in the existing kernel log; memory eviction does not truncate it.
 
-## One runtime for selected intentions
+A delivered qualified survey changes the **separate personal map**. Each sparse seen cell holds observed geometry, date, best detection, version and an original-observation reference. Cells share compact survey metadata, with reference counts; superseded unreferenced map provenance is released. There is no permanent verbose Evidence object per raster cell. Synthetic `latest(cell, geometry)` reads reconstruct the same schema from compact state, and task dependency lookups read the cell version directly. Coverage and current observed geometry are not charged to the 32 places or evicted with places. Map storage grows with genuinely seen cells and currently referenced provenance, bounded by world geometry, not repeated routine observation history.
 
-`src/runtime` accepts explicitly diagnostic, already-selected intentions. Its one task persists intention/task identity, canonical semantic identity, objective, known method, explicit bindings, at most 12 ordered steps, cursor/status, personal belief dependencies, reservations, authorisation/spending, located progress, route frontier and interruption state. It has no objective generator, option comparison, operation planner or binder.
+## Declared exploratory priors and route computation
 
-Real end-to-end families:
+Move contains **target and exploratory mode only**. It accepts no `priorSpeed`, `effortEu` or selectable expansion allowance. The evidence side installs the scenario/content declaration as `prior:unseen-terrain/speed-factor`; `PersonalView.traversalPrior` returns its expected speed factor, uncertainty, provenance and version. The router snapshots that knowledge. The initial declared factor remains 1, preserving the old fixture's expectation without deriving it from realised terrain. A wrong-prior declaration is supported, and later experience can deliver a new personal prior through the same evidence schema/API. No occupancy/information-value planner is added.
 
-- **Move:** personal route → selected adjacent prefix → paid continuous physical movement.
-- **Transfer:** paid handling interval → local physical ledger transfer, limited to the actor's own custody/endowment, with backed reservations and conservation.
-- **Attend:** paid scoped local survey → qualified dated observation.
+Established routing remains a sparse personal regional search/refinement over seen passable cells; exploratory routing uses the declared prior for unseen cells. Diagonals require known/prior-expected corner passability. Truth geometry/components/portals and the accepted diagnostic truth router never supply the personal path.
 
-Work, Recover and Engage are typed normative families and fail explicitly with `not-yet-implemented law`; no fabricated law succeeds. Invalid route bindings are rejected before budgets/reservations/history are committed.
+The correction replaces per-intention computational currency with the **4,096-expansion class-E computation bound specified by the correction work order**, preserving the existing 4,096 engineering baseline. Host work slices are separate. Exhaustion retains an unresolved frontier and reports `route not established`, without claiming unreachable. `continuePersonalComputation` can open a further bounded computation on that exact saved frontier; neither it nor host yielding charges simulated time or grants a material/time envelope. The mind's future scientifically meaningful effort/attention policy is not implemented or reinterpreted here. Tests compare one versus 65,536-expansion host slices at both success and exhaustion. Regional guidance is approximate, not a global least-cost guarantee.
 
-Lifecycle: selection → ready/routing → running → paid prefix/located progress → step completion → **Continue** into the next bound step, or done. An observed physical failure, changed relevant personal version or exhausted budget produces blocked/repair-required. Interruption settles once, cancels scoped future work and suspends; resumption retains the unpaid suffix/frontier. Abandonment releases unused goods. Repairable blocked tasks retain potentially useful reservations until abandonment or declared expiry; unsupported-law failure and completion release unused reservations. No replacement target/objective is chosen.
+World law validates only the selected neighbouring physical prefix. A newly visible selected-path blocker delivers evidence, pays/stops the prefix and reports `route blocked here`. Hidden changes neither update personal versions nor notify/repair a task remotely.
 
-Semantic authorisation is derived from actor/objective/method/bindings/ordered steps, rather than diagnostic labels or new IDs. Its persistent spent budget and completed cursor survive retry, and changed authorisation for the same semantic task is rejected. Goods commitments use existing physical backing. A single retained task per actor and one active scheduled interval provide exclusive time allocation; no future time or expected harvest is borrowed. Prefixes settle actual elapsed Move/Attend/Transfer time, split totals across calendar SDs and reject overlap or totals above one SD. Staggered representative closure pays the current prefix without resetting the task. Time exhaustion is checked before launching another prefix, including exhaustion exactly at a completed Move-prefix boundary. No fatigue/enjoyment physiology is inferred.
+## Runtime, paid time and repair compatibility
 
-The browser/default and `--pack0b` CLI fixture use limited founding knowledge, **Transfer → exploratory Move → Attend**: 0.5 food from the local own cache to carried goods, a public relative eight-cell destination, then a paid survey. The chosen destination never comes from a truth search. Flat diagnostic fixtures additionally prove Move → Attend, cross-day attention, local hidden surprise, version staleness, interruption and custody refusal. These fixtures prove knowing/executing, not choosing; some canonical exploratory tasks correctly block on observed terrain.
+One persisted task holds intention/task/semantic identity, objective/method/bindings, at most 12 ordered steps, cursor/status, personal dependencies, backed reservations, authorised/spent budgets, located progress, route state and interruption. Real **Move, Transfer and Attend** execute through physical movement, own-custody local goods law and paid scoped observation. Work/Recover/Engage fail explicitly as not-yet-implemented laws. No family-specific planner or autonomous choice is present.
 
-## Checkpoints and verification
+Selection → ready/routing → running → paid prefix/located progress → step completion → Continue or done. Observable failure, stale relevant personal versions or exhausted budget → repair-required. Interrupt pays once, cancels scoped work and suspends; normal resume retains the unpaid suffix/frontier. Unused reservations release on completion, abandonment or unsupported-law failure; repairable blocked tasks hold still-useful backing until abandonment/declared expiry. A single retained task/actor and one active interval prevent overlapping/future-borrowed time; staggered closure pays without resetting the task. Exact-prefix and within-prefix budget exhaustion both stop before overrun. No fatigue/enjoyment physiology is inferred.
 
-Checkpoint schema **3** includes evidence/provenance versions and internal links, sparse personal map/coverage/routes, task frontiers/cursors/status/progress, semantic budgets, physical reservations, paid activity prefixes and pending perception/operation events. Derived read indexes are reconstructed. Earlier schema/source/profile saves are explicitly rejected; no epistemic history is fabricated. Restore validates version reconciliation, sparse geometry, task/reservation references, non-overlapping paid prefixes and semantic spent totals. Personal-lens ordering is canonical after restore.
+`installBoundRepair` is an **explicit supplied-suffix contract**, not a binder. It requires the same objective and original semantic key, a blocked/suspended task, and substitution authority declared at original selection. Current support permits explicitly authorised, personally known Move targets/bindings with unchanged operation families/exposure; non-Move terms/method/rights remain fixed. Unknown/unapproved targets, stale supplied dependencies or a new purpose are rejected. The suffix installation retains the original authorised/spent ledger, completed cursor, goods and located progress. A binding revision distinguishes later paid prefixes, so installing a new suffix never refunds old work or counts it as newly completed work. Retry preserves the latest repaired suffix. Changing the bound route through a new task ID cannot obtain a new same-objective budget; further selection authority belongs to the future mind. The runtime still chooses no replacement target, source, method or objective.
 
-Verification on 2026-10-04, Linux x64, Node 24.19.0, TypeScript 5.9.3:
+The visible/CLI fixture remains limited-knowledge **Transfer → exploratory Move → Attend**: reserve/transfer 0.5 own food, a public relative eight-cell destination and a paid survey. No truth search supplies the destination. Diagnostic failures in the canonical raster remain legitimate; no ecology/science is tuned.
 
-- `npm run check`: dependency/content/numerical boundaries, typecheck, **77 Vitest tests** (48 retained + 29 Pack-0B), pure core compilation and production build pass.
-- Paired hidden blockage, remote stock/location, irrelevant terrain and occluded-site fixtures keep evidence/geography/personal routing/bound task output identical until actual perception. Hidden mutations do not change personal versions; a relevant observed change can require repair, unrelated evidence does not. Personal execution performs **zero truth-route searches**.
-- Radius/occlusion, unknown versus observed zero, swept site entry without renderer frames, routine cap, directed bypass, deduplicated version delivery, pure reads, custody/backing/conservation and no renewal under renamed IDs/labels pass.
-- Exact checkpoint continuation passes during unfinished local/coarse routing, active Move, between steps, suspended/blocked state and active goods reservation. Corrupt evidence versions, duplicated paid prefixes and reset spent budgets are rejected.
-- One versus 65,536-expansion host slices, repeated runs, alternate stepping, observer reads and save/restore produce equal causal/history output. Continue counters advance; autonomous-deliberation count is **zero**.
-- **2 production Playwright tests pass**: real module worker equals Node, covering both accepted physical and personal-task scenarios, active movement/reservations, interruption/resumption, checkpoint restore, alternate partitions, observer reads, numerical/random vectors and frame delays. Pixi/WebGL UI and paused Personal Lens open/close pass without page exceptions; the automated screenshot was inspected by Codex. No human review receipt is claimed. Local testing uses the existing optional bundled Chromium 153; CI installs normal Playwright Chromium.
-- CLI checkpoint at **0.03 SD** includes active Move and blocked tasks. Restore to **1 SD** exactly matches the complete uninterrupted exported summary, with conservation true. Final hashes are recorded alongside the measurements below.
-- GitHub Actions runs `npm ci`, `npm run check` and the production Playwright gate on push/PR. Its final head-specific receipt belongs on the draft PR; a pending remote check is not represented as passed in this file.
+## Persistence and validation
 
-Reproduce:
+Checkpoint schema **4** includes compact current beliefs/versions/dedup, place salience/pins/precedent, capability links, sparse map/coverage/shared provenance, declared personal prior, bounded route frontiers/computation windows, repaired binding revision, budgets/reservations, paid prefixes and pending perception/operation events. Derived read indexes reconstruct after restore. Schema-3/source-mismatched saves are explicitly rejected under the pre-release policy; no past memory is fabricated. Restore validates current-key/version reconciliation, provenance reference counts, place bounds, task/reservation references and non-overlapping cumulative paid totals.
 
-```sh
-npm ci
-npm run check
-npx playwright install --with-deps chromium
-npm run test:browser
-npm run headless -- --pack0b --seed spine --until .03 --checkpoint /tmp/pack0b.json
-npm run headless -- --restore /tmp/pack0b.json --until 1
-npm run headless -- --pack0b --seed spine --until 1
-npm run benchmark -- --pack0b
-npm run benchmark -- --pack0b --probe32
-```
+2026-10-04, Linux x64, Node 24.19.0, TypeScript 5.9.3:
 
-## Measured execution costs
+- Boundaries, typecheck, **87 Vitest tests** (77 retained + 10 targeted regressions), pure-core compilation and production build pass.
+- New cases: 32 discretionary places, salience eviction, typed pins/current task targets/exact self/used method retention, lost capability/actionable belief, preserved map/physical goods/entities/kernel history/another person's knowledge, compact versioned map provenance and exact restore, undeclarable Move prior/CPU currency, wrong prior, coupled hidden-terrain route equality, 4,096-exhaustion/resumption/slice invariance, same-objective authorised repair with preserved time/goods/progress and rejection of unknown/new-purpose suffixes.
+- All accepted leakage, sight/occlusion/swept entry, routine cap/directed bypass, unknown/zero, pure reads, Continue, cross-day activity, budget/lease/backing/conservation tests remain green. Personal execution has zero truth searches and zero autonomous deliberations.
+- Exact continuation remains green during unfinished local/coarse routing, active Move, between steps, suspended/blocked state and active reservation; alternate stepping, inspections and repeated runs preserve causal/history output. The repair regression also restores before suffix installation and reaches identical final state.
+- **2 production Playwright tests pass**: actual module Worker/Node parity across physical and personal-task scenarios, active save, interruption/resume, reservations, frame-delayed replay, alternate partitions, observer reads and numerical/random vectors. Pixi/WebGL and paused lens open/close pass. Automated screenshot inspected by Codex; no human review receipt claimed. Local gate uses existing optional bundled Chromium 153; CI installs normal Playwright Chromium.
+- CLI active-Move checkpoint at **0.03 SD** → restore → **1 SD** equals the entire uninterrupted summary. Causal hash `f2d472d465b408a405950efe0afd520c`, history `df7d8d672ed177ae7ffbbc4ad292fab0`, conservation true.
+- GitHub Actions runs the full checks and production browser gate on existing PR #2. The final-head CI receipt is recorded in that PR's description; pending checks are never represented as passed here.
 
-[Raw five-run measurements](pack0b-benchmark.json), seed `spine`, canonical 256×192 raster, 24 finite sites, selected tasks until 1 SD, AMD EPYC 9V74. Each population's five repetitions have identical hashes, checkpoint sizes and counters. These are machine-specific engineering observations, **not §40.5's full-population performance gate or §43's proof**. No comparison against the old route-to-site fixture is claimed: the workload, perception/history and hash-cache state differ.
+Reproduce: `npm ci && npm run check`; `npx playwright install --with-deps chromium && npm run test:browser`; the CLI `--pack0b --until .03 --checkpoint /tmp/pack0b.json`, restore to 1 SD, and direct run to 1 SD. Benchmarks: `npm run benchmark -- --pack0b --memory-probe` and `npm run benchmark -- --pack0b --probe32`.
 
-| Median operation, ms | 8 people | 32-person probe |
-| --- | ---: | ---: |
-| World/raster/regions creation | 862.84 | 874.17 |
-| Limited knowledge + task selection | 17.59 | 65.63 |
-| Causal advancement to 1 SD | 38.06 | 155.08 |
-| JSON checkpoint | 196.57 | 338.21 |
-| First causal hash (includes terrain digest) | 126.45 | 197.02 |
-| All personal lenses, without causal hashing | 10.46 | 44.12 |
-| Detached analyst + personal snapshot, warm terrain digest | 34.88 | 135.00 |
+## Before / after scaling and memory
 
-| Counter / persistence | 8 people | 32-person probe |
-| --- | ---: | ---: |
-| Perception candidates | 589 | 2,941 |
-| Accepted routine observations | 96 | 373 |
-| Evidence updates | 1,207 | 5,271 |
-| Personal searches / expansions | 8 / 149 | 32 / 494 |
-| Personal regional expansions (exploratory benchmark) | 0 | 0 |
-| Truth-route searches | 0 | 0 |
-| Step starts / completions | 20 / 16 | 82 / 68 |
-| Continue / repair-required transitions | 12 / 4 | 50 / 14 |
-| Autonomous deliberations | 0 | 0 |
-| Processed events | 540 | 2,206 |
-| Personal-view projections | 40 | 160 |
-| Checkpoint bytes | 5,608,888 | 8,825,974 |
+[Raw before/after receipt](pack0b-benchmark.json): five deterministic repetitions per population, same seed `spine`, canonical raster, 24 sites and diagnostic task until 1 SD, AMD EPYC 9V74/Linux x64. Before timings are the published baseline at `1f992d9…`; missing before retained-place/state counts were obtained from a read-only archive of that commit, without another branch. After each population's five runs have one unique causal hash and counter set. Measurements are machine-specific, not the Pack-0 performance gate. Map cells/route expansions/physical events remain unchanged; reduced evidence counts remove verbose map-cell objects, rather than skipped perception.
 
-Regional guidance is separately exercised by established-routing tests; these exploratory fixtures do not use it. Four/eight and fourteen/thirty-two tasks stop at locally observed blockages; this is a diagnostic result, not a success-rate or behavioural calibration target. The 8-person causal hash is `ba81852956bb9fed6d1a82b5334e8623`; the 32-person hash is `2ce46c6772a415029d04689e1dd00f6b` for the source identity in the raw receipt. Counters/timing are non-causal.
+| Metric | 8 before | 8 after | 32 before | 32 after |
+| --- | ---: | ---: | ---: | ---: |
+| Advancement median, ms | 38.06 | 44.18 | 155.08 | 162.99 |
+| Checkpoint median, ms | 196.57 | 187.65 | 338.21 | 223.97 |
+| Checkpoint bytes | 5,608,888 | 5,064,290 | 8,825,974 | 6,442,538 |
+| Evidence updates | 1,207 | 501 | 5,271 | 2,028 |
+| Retained Evidence objects | 1,207 | 104 | 5,271 | 426 |
+| Personal-state bytes | 787,906 | 231,828 | 3,469,145 | 1,031,501 |
+| Total remembered places | 9 | 9 | 38 | 38 |
+| Places/person, range | 1–2 | 1–2 | 1–2 | 1–2 |
+| Seen cells / map updates | 714 | 714 | 3,275 | 3,275 |
+| Personal-route expansions | 149 | 149 | 494 | 494 |
+| Personal-view projection median, ms | 10.46 | 4.50 | 44.12 | 17.18 |
+| Processed events | 540 | 540 | 2,206 | 2,206 |
 
-## Reuse, limits and deliberate deferrals
+After: every person retains one intrinsic pinned own cache; discretionary places are 0–1/person here. The limit is exercised with **80 real physical sites** in the regression, since the canonical small fixture does not itself encounter 32 places. Current map provenance has 56 / 233 shared records. Continue/repair counts stay 12/4 and 50/14; routine acceptance stays 96 and 373. Projection measurement covers all personal lenses without causal hashing; before/after counters include the extra measured inspection calls and remain non-causal. Full JSON terrain still dominates complete checkpoints.
 
-Pack-0B perception/provenance and known-map/resumable personal routing are **REIMPLEMENT FROM CONCEPT**, with fresh records/services over the accepted Pack-0A law; no old evidence facade or dedicated exploration subsystem was copied. Old decision/exploration controllers and monolithic world/planner classes remain **RETIRE**. The retained numerical/kernel/physical reuse is documented in PACK0A. No Level-III constitutional change, new operation family or scientific calibration was introduced; no ADR is needed.
+**Twelve-SD memory probe:** eight actors run one paid 12-step Attend task, with continued routine observations. After its first SD, all subsequent rows retain **108 Evidence objects, 754 cells and 59 referenced map observations**. Delivered-update count increases **615 → 1,874** while personal-state size stays around **258 KB** (258,322 → 257,263 bytes); legitimate kernel history grows 152 → 248 records. It is preserved, not confused with discretionary beliefs. A separate declared-visible-packet writer churn fixture receives 144 distinct place observations over 12 SD: places reach **32** at SD 3 and stay there; retained evidence/dedup keys remain **128**, with **112 evictions** by SD 12. The real-world regression independently verifies physical non-deletion and scope pinning; the writer fixture is not presented as a natural population run.
 
-Engineering costs remain material: detached lens/snapshot serialization and complete JSON saves copy accumulated evidence, history and terrain. Full-raster terrain dominates initial storage; epistemic records grow with delivered observations. Long-run evidence compression/archive and memory eviction/pinning policy are deferred; records carry the schema's pinned/expiry fields but this short slice retains history instead of inventing a forgetting policy. Regional summaries are derived from sparse seen cells on projection, not cached. Host route draining is synchronous in the current CLI/worker, with explicit bounded resume available; no asynchronous host scheduler or optimal-path guarantee is claimed. Corruption hashes are replay identifiers, not authentication.
+Advancement did **not** improve: 44 / 163 ms remain above §40.5's provisional 15-ms tens-person median. A separate V8 0.5-ms sampling probe over three 32-person advancements, excluding construction/checkpoints and inspector/GC/unattributed stacks, measures approximately **62%** in evidence delivery/memory/personal read projection, **15%** in local visibility/perception packet construction, **7%** in event/history hashing and **1%** in personal route search. Across these stacks, canonical encoding/hashing is about **18%** and cloning about **5%** of sampled leaf work (these overlap inclusive groups). The receipt records the methodology and totals. Current hashing/delivery allocations and repeated detached personal projections are performance work, not grounds to weaken perception, memory or informational semantics.
 
-Deliberately deferred: autonomous drives/objectives/deliberation, bounded binding/repair, utility/risk/information-value comparisons, held decision error/incumbency, full method mastery/learning/body physiology/hazards, tools/capital valuation, ecological renewal/animals, social reports/messengers/agreements/claims/relationships, reproduction/households/institutions/combat/markets and the remaining Pack-0 generativity proof. Report/inference modalities are representable but no social evidence is fabricated. The two founding diagnostic methods are declared knowledge, not a learned population repertoire.
+## Reuse, limits and next slice
 
-No unresolved leakage, conservation, paid-time or replay falsifier was observed in this gate. Pack 0C must retain the narrow PersonalView/execution ports and consume the explicit repair-required boundary; it must not use analyst/world registries or renew semantic budgets. Larger/longer workloads need memory/archive and projection performance work before claiming the architectural-proof performance target. Pack 0B is an execution boundary receipt, not Pack-0 completion.
+Perception/provenance and personal geography/routing remain **REIMPLEMENT FROM CONCEPT** over the accepted Pack-0A physical services. No old controller, evidence facade or dedicated exploration subsystem is imported. The immutable spec and scientific coefficients are unchanged. The memory/prior/repair corrections implement existing contracts; no Level-III redesign or ADR is needed.
+
+Deferred: social ties/reports and their later pinning/expiry, full posterior/information-value inference, autonomous drives/objective selection/binding/repair/comparison, held error/incumbency, full body/hazards/mastery/learning, tools/capital valuation, ecological renewal, agreements/claims, reproduction/institutions/conflict and the remaining Pack-0 proof. `installBoundRepair` only consumes an explicitly authorised known suffix. Public prior learning can be delivered later without changing Move's API.
+
+No unresolved memory-bound, leakage, conservation, paid-time or replay falsifier was observed in this gate. The measured CPU gap remains a performance limitation before claiming the architectural-proof target; full terrain JSON, projection allocation/caching and synchronous host draining also remain. Later real pinned obligations must not be evicted for technical capacity; typed scope pins provide the extension point. Pack 0C must retain this personal boundary, distinguish new selection authority from same-purpose repair, and supply only legitimate authorised substitutions. Pack 0C was not started.

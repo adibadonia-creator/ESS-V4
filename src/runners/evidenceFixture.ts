@@ -54,8 +54,6 @@ export function launchEvidenceFixture(sim: PhysicalSimulation): void {
             y: (y + 0.5) * v.profile.cellKm,
           },
           exploratory: true,
-          priorSpeed: 1,
-          effortEu: 600,
         },
         { family: "Attend", scope: "local-survey", duration: time(0.1) },
       ],

@@ -5,8 +5,6 @@ export type Operation =
       family: "Move";
       target: Point;
       exploratory: boolean;
-      priorSpeed: number;
-      effortEu: number;
     }
   | { family: "Attend"; duration: number; scope: "local-survey" }
   | {
@@ -33,6 +31,8 @@ export interface SelectedIntention {
   bindings: Record<string, string>;
   steps: Operation[];
   dependsOn: { key: string; version: number }[];
+  // Only explicitly preauthorised, personally known substitutions may be installed.
+  repairScope?: { moveTargets: Point[]; bindings: Record<string, string[]> };
   authorised: Budget;
   reserve: {
     subject: string;
@@ -49,6 +49,7 @@ export interface ActiveOperation {
   end: number | null;
 }
 export interface Task extends SelectedIntention {
+  bindingRevision: number;
   cursor: number;
   status:
     | "ready"
@@ -79,6 +80,7 @@ export interface ActivityState {
   totals: Record<number, Record<string, number>>;
   prefixes: {
     semanticKey: string;
+    revision: number;
     cursor: number;
     category: string;
     start: number;
@@ -95,6 +97,8 @@ export interface RuntimeState {
 }
 // Runtime can read beliefs and exact own state, and execute real operations. No truth queries.
 export interface RuntimePort {
+  pin(task: Task): void;
+  unpin(task: Task): void;
   now(): number;
   personal(actor: string): PersonalView;
   exactSelf(actor: string): ExactSelf;
@@ -129,4 +133,13 @@ export interface RuntimePort {
     at: number,
   ): void;
   record(kind: string, actor: string, detail: unknown): void;
+}
+
+// An already-authorised suffix supplied by a future binder; this runtime chooses nothing.
+export interface BoundRepair {
+  semanticKey: string;
+  objective: string;
+  bindings: Record<string, string>;
+  steps: Operation[];
+  dependsOn: { key: string; version: number }[];
 }

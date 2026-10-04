@@ -239,8 +239,7 @@ describe("perception and personal routing", () => {
       start,
       goal,
       false,
-      1,
-      40000,
+      v.traversalPrior,
       counts,
     );
     while (resumePersonalSearch(known, 1, counts) === "unresolved") {}
@@ -251,8 +250,7 @@ describe("perception and personal routing", () => {
       start,
       goal,
       true,
-      1,
-      40000,
+      v.traversalPrior,
       counts,
     );
     expect(resumePersonalSearch(exploratory, 1, counts)).toBe("unresolved");
@@ -261,17 +259,23 @@ describe("perception and personal routing", () => {
     while (resumePersonalSearch(exploratory, 1, counts) === "unresolved") {}
     while (resumePersonalSearch(restored, 9999, counts) === "unresolved") {}
     expect(restored).toEqual(exploratory);
+    const wall = Array.from({ length: 192 }, (_, y) => ({
+      ...v.geography[0]!,
+      cell: 128 + y * 256,
+      passable: false,
+      speed: 0,
+    }));
     const deferred = beginPersonalSearch(
-      v.profile,
-      v.geography,
-      start,
-      goal,
+      { ...v.profile, width: 256, height: 192 },
+      wall,
+      3 + 8 * 256,
+      200 + 8 * 256,
       true,
-      1,
-      1,
+      v.traversalPrior,
       counts,
     );
-    expect(resumePersonalSearch(deferred, 99, counts)).toBe("deferred");
+    expect(resumePersonalSearch(deferred, 65536, counts)).toBe("deferred");
+    expect(deferred.expansions).toBe(4096);
     expect(deferred.status).toBe("unresolved");
   });
   it("selected route uses zero truth searches; hidden barrier is discovered locally and stops paid movement", () => {
@@ -468,7 +472,7 @@ describe("generic task lifecycle, time, reservations and persistence", () => {
     expect(execution(a).budget.spent.time).toBe(t.authorised.time);
     expect(a.personalView(t.actor).self.location.x).toBeLessThan(2.55);
     const cp = JSON.parse(a.checkpoint());
-    cp.body.versions.schema = 2;
+    cp.body.versions.schema = 3;
     expect(() =>
       PhysicalSimulation.restore(
         canonical({ checksum: digest(cp.body), body: cp.body }),

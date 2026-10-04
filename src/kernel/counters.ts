@@ -3,6 +3,8 @@ export interface Counters {
   perceptionCandidateChecks: number;
   routineObservations: number;
   evidenceUpdates: number;
+  personalMapUpdates: number;
+  memoryEvictions: number;
   personalRouteRegionExpansions: number;
   personalRouteSearches: number;
   personalRouteExpansions: number;
@@ -33,6 +35,8 @@ export function counters(): Counters {
     perceptionCandidateChecks: 0,
     routineObservations: 0,
     evidenceUpdates: 0,
+    personalMapUpdates: 0,
+    memoryEvictions: 0,
     personalRouteRegionExpansions: 0,
     personalRouteSearches: 0,
     personalRouteExpansions: 0,

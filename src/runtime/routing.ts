@@ -1,12 +1,13 @@
 import { Heap } from "../kernel/heap";
 import { math } from "../kernel/numerics";
 import type { Counters } from "../kernel/counters";
-import type { MapProfile, CellBelief } from "../evidence/types";
+import { ROUTE_ENGINEERING } from "../content/profile";
+import type { MapProfile, CellBelief, TraversalPrior } from "../evidence/types";
 export interface PersonalSearch {
   start: number;
   goal: number;
   exploratory: boolean;
-  priorSpeed: number;
+  prior: TraversalPrior;
   profile: MapProfile;
   known: Record<number, CellBelief>;
   nodes: Record<number, { g: number; parent: number; closed: boolean }>;
@@ -23,7 +24,8 @@ export interface PersonalSearch {
   path: number[];
   status: "unresolved" | "found" | "unreachable";
   expansions: number;
-  effortLimit: number;
+  computationStart: number;
+  computationEnd: number;
 }
 export function beginPersonalSearch(
   profile: MapProfile,
@@ -31,8 +33,7 @@ export function beginPersonalSearch(
   start: number,
   goal: number,
   exploratory: boolean,
-  priorSpeed: number,
-  effortLimit: number,
+  prior: TraversalPrior,
   counters: Counters,
   summaries: { id: number; cells: number[]; neighbors: number[] }[] = [],
 ): PersonalSearch {
@@ -60,16 +61,25 @@ export function beginPersonalSearch(
     start,
     goal,
     exploratory,
-    priorSpeed,
+    prior: { ...prior },
     nodes: { [start]: { g: 0, parent: -1, closed: false } },
     open: [{ cell: start, g: 0, f: 0 }],
     path: [],
     status: "unresolved",
     expansions: 0,
-    effortLimit,
+    computationStart: 0,
+    computationEnd: ROUTE_ENGINEERING.routeExpansionsPerComputation,
   };
 }
-// Engineering slice is separate from the authorisation's causal effort account.
+// A new bounded computation can continue a saved frontier; host slices never renew it.
+export function continuePersonalComputation(s: PersonalSearch): void {
+  if (s.status !== "unresolved" || s.expansions < s.computationEnd)
+    throw Error("Computation is not exhausted");
+  s.computationStart = s.expansions;
+  s.computationEnd =
+    s.expansions + ROUTE_ENGINEERING.routeExpansionsPerComputation;
+}
+// Host slice and total class-E computation bound are separate; neither charges time.
 export function resumePersonalSearch(
   s: PersonalSearch,
   slice: number,
@@ -87,7 +97,7 @@ export function resumePersonalSearch(
         ? 1 / s.known[k]!.speed
         : Infinity
       : s.exploratory
-        ? 1 / s.priorSpeed
+        ? 1 / s.prior.speedFactor
         : Infinity;
   const heuristic = (k: number) => {
     const dx = Math.abs((k % w) - (s.goal % w)),
@@ -103,7 +113,7 @@ export function resumePersonalSearch(
       (a, b) => a.f - b.f || a.cell - b.cell,
       s.coarse.open,
     );
-    while (coarse.peek() && n < slice && s.expansions < s.effortLimit) {
+    while (coarse.peek() && n < slice && s.expansions < s.computationEnd) {
       const entry = coarse.pop()!,
         node = s.coarse.nodes[entry.cell]!;
       if (node.closed || node.g !== entry.g) continue;
@@ -136,10 +146,10 @@ export function resumePersonalSearch(
       return "unreachable";
     }
     if (!s.coarse.done)
-      return s.expansions >= s.effortLimit ? "deferred" : "unresolved";
+      return s.expansions >= s.computationEnd ? "deferred" : "unresolved";
   }
   const corridor = s.corridor ? new Set(s.corridor) : null;
-  while (heap.peek() && n < slice && s.expansions < s.effortLimit) {
+  while (heap.peek() && n < slice && s.expansions < s.computationEnd) {
     const entry = heap.pop()!,
       node = s.nodes[entry.cell]!;
     if (node.closed || node.g !== entry.g) continue;
@@ -200,5 +210,5 @@ export function resumePersonalSearch(
     s.status = "unreachable";
     return "unreachable";
   }
-  return s.expansions >= s.effortLimit ? "deferred" : "unresolved";
+  return s.expansions >= s.computationEnd ? "deferred" : "unresolved";
 }

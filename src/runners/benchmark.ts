@@ -1,3 +1,4 @@
+import { memoryProbe } from "./memoryProbe";
 import { performance } from "node:perf_hooks";
 import os from "node:os";
 import { PhysicalSimulation } from "../world/simulation";
@@ -16,6 +17,12 @@ type Row = {
   snapshotMs: number;
   checkpointBytes: number;
   hash: string;
+  retainedEvidence: number;
+  rememberedPlaces: number[];
+  discretionaryPlaces: number[];
+  pinnedPlaces: number[];
+  personalBytes: number;
+  mapObservations: number;
   counters: Record<string, number>;
 };
 const pack0b = process.argv.includes("--pack0b"),
@@ -41,7 +48,28 @@ for (let run = 0; run < 5; run++) {
   const personalProjected = performance.now();
   sim.snapshot();
   const projected = performance.now();
+  const epistemic = JSON.parse(cp).body.evidence.people;
   rows.push({
+    retainedEvidence: epistemic.reduce(
+      (n: number, p: any) => n + p.records.length,
+      0,
+    ),
+    rememberedPlaces: epistemic.map(
+      (p: any) => Object.keys(p.memory.places).length,
+    ),
+    discretionaryPlaces: pack0b
+      ? sim
+          .actorKeys()
+          .map((a) => sim.personalView(a).memory.discretionaryPlaces)
+      : [],
+    pinnedPlaces: pack0b
+      ? sim.actorKeys().map((a) => sim.personalView(a).memory.pinnedPlaces)
+      : [],
+    personalBytes: Buffer.byteLength(JSON.stringify({ people: epistemic })),
+    mapObservations: epistemic.reduce(
+      (n: number, p: any) => n + Object.keys(p.mapObservations).length,
+      0,
+    ),
     generateMs: generated - start,
     fixtureMs: launch - generated,
     advanceMs: advanced - launch,
@@ -121,6 +149,9 @@ console.log(
         ].map((k) => [k, median(k as keyof (typeof rows)[number])]),
       ),
       rows,
+      ...(process.argv.includes("--memory-probe")
+        ? { memoryProbe: memoryProbe() }
+        : {}),
       ...(process.argv.includes("--storage-probe")
         ? { storageProbe: storageProbe() }
         : {}),

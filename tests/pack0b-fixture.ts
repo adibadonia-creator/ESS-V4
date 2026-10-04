@@ -4,12 +4,12 @@ import { digest, canonical } from "../src/kernel/canonical";
 import { QUANTA, time } from "../src/kernel/time";
 import { beliefKey } from "../src/evidence/service";
 import type { SelectedIntention, Operation } from "../src/runtime/types";
-export function flatWorld(seed = "evidence", actors = 1) {
+export function flatWorld(seed = "evidence", actors = 1, siteCount = 3) {
   const base = new PhysicalSimulation(
     seed,
     resolveConfig(
       { width: 32, height: 18, regionCells: 8 },
-      { actors, sites: 3, routeExpansionsPerResume: 2 },
+      { actors, sites: siteCount, routeExpansionsPerResume: 2 },
     ),
   );
   const cp = JSON.parse(base.checkpoint()),
@@ -74,8 +74,6 @@ export function move(
     family: "Move",
     target: { x, y },
     exploratory,
-    priorSpeed: 1,
-    effortEu: 600,
   };
 }
 export const attend = (duration = time(0.02)): Operation => ({

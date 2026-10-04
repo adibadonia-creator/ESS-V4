@@ -11,6 +11,7 @@ import type {
   RuntimeState,
   SelectedIntention,
   Task,
+  BoundRepair,
 } from "./types";
 export class TaskRuntime {
   readonly state: RuntimeState;
@@ -65,9 +66,8 @@ export class TaskRuntime {
           step.target.y < 0 ||
           step.target.x >= p.width * p.cellKm ||
           step.target.y >= p.height * p.cellKm ||
-          !(step.priorSpeed > 0 && step.priorSpeed <= 1) ||
-          !Number.isSafeInteger(step.effortEu) ||
-          step.effortEu < 1
+          "priorSpeed" in step ||
+          "effortEu" in step
         )
           throw Error("Invalid personal route binding");
       } else {
@@ -94,6 +94,7 @@ export class TaskRuntime {
       input.steps,
       input.authorised,
       input.reserve,
+      input.repairScope ?? null,
     ]);
     input.semanticKey = digest([
       input.actor,
@@ -102,6 +103,13 @@ export class TaskRuntime {
       input.bindings,
       input.steps,
     ]);
+    const samePurpose = [...this.state.tasks]
+      .reverse()
+      .find((t) => t.actor === input.actor && t.objective === input.objective);
+    if (samePurpose && samePurpose.semanticKey !== input.semanticKey)
+      throw Error(
+        "Same-objective changes require retained semantic repair; a new task id grants no authority",
+      );
     const key = input.actor + ":" + input.semanticKey,
       previous = this.state.budgets[key];
     if (previous && previous.descriptor !== descriptor)
@@ -143,6 +151,10 @@ export class TaskRuntime {
       );
     const t: Task = {
       ...input,
+      steps: clone(prior?.steps ?? input.steps),
+      bindings: clone(prior?.bindings ?? input.bindings),
+      dependsOn: clone(prior?.dependsOn ?? input.dependsOn),
+      bindingRevision: prior?.bindingRevision ?? 0,
       cursor: prior?.cursor ?? 0,
       status: "ready",
       reservations: [],
@@ -172,6 +184,7 @@ export class TaskRuntime {
       throw e;
     }
     this.state.tasks.push(t);
+    this.port.pin(t);
     this.port.record("diagnostic-intention-selected", t.actor, {
       semanticKey: t.semanticKey,
       objective: t.objective,
@@ -227,8 +240,7 @@ export class TaskRuntime {
         k(view.self.location),
         k(step.target),
         step.exploratory,
-        step.priorSpeed,
-        step.effortEu * EVIDENCE_PROFILE.routeExpansionsPerEu,
+        view.traversalPrior,
         this.counts,
         view.regions,
       );
@@ -240,7 +252,10 @@ export class TaskRuntime {
       step.duration -
       this.activity(t.actor)
         .prefixes.filter(
-          (p) => p.semanticKey === t.semanticKey && p.cursor === t.cursor,
+          (p) =>
+            p.semanticKey === t.semanticKey &&
+            p.cursor === t.cursor &&
+            p.revision === t.bindingRevision,
         )
         .reduce((sum, p) => sum + p.end - p.start, 0);
     if (duration > this.remaining(t)) {
@@ -274,7 +289,7 @@ export class TaskRuntime {
     if (!t) return false;
     const result = resumePersonalSearch(t.route!, slice, this.counts);
     if (result === "deferred") {
-      this.block(t, "route not established: authorised effort exhausted");
+      this.block(t, "route not established: engineering computation exhausted");
     } else if (result === "unreachable") {
       this.block(t, "no route in personal geography");
     } else if (result === "found") {
@@ -421,6 +436,7 @@ export class TaskRuntime {
     });
     if (t.cursor < t.steps.length) this.counts.continueTransitions++;
     t.status = "ready";
+    this.port.pin(t);
     this.start(t);
   }
   private activity(actor: string): ActivityState {
@@ -461,6 +477,7 @@ export class TaskRuntime {
       x = end;
     }
     a.prefixes.push({
+      revision: t.bindingRevision,
       semanticKey: t.semanticKey,
       cursor: t.cursor,
       category,
@@ -509,7 +526,10 @@ export class TaskRuntime {
       const step = t.steps[t.cursor]!;
       const paid = this.activity(actor)
         .prefixes.filter(
-          (p) => p.semanticKey === t.semanticKey && p.cursor === t.cursor,
+          (p) =>
+            p.semanticKey === t.semanticKey &&
+            p.cursor === t.cursor &&
+            p.revision === t.bindingRevision,
         )
         .reduce((sum, p) => sum + p.end - p.start, 0);
       if (step.family !== "Move") {
@@ -543,6 +563,7 @@ export class TaskRuntime {
     });
   }
   private release(t: Task): void {
+    this.port.unpin(t);
     for (const r of t.reservations) this.port.release(t.actor, r.key);
   }
   abandon(actor: string): void {
@@ -551,6 +572,73 @@ export class TaskRuntime {
     this.interrupt(actor, "abandoned");
     t.status = "abandoned";
     this.release(t);
+  }
+  installBoundRepair(actor: string, repair: BoundRepair): Task {
+    const t = this.task(actor);
+    if (
+      !t ||
+      !["blocked", "suspended"].includes(t.status) ||
+      repair.semanticKey !== t.semanticKey ||
+      repair.objective !== t.objective
+    )
+      throw Error("Repair must retain the selected semantic purpose");
+    const scope = t.repairScope,
+      view = this.port.personal(actor),
+      old = t.steps.slice(t.cursor);
+    if (
+      !scope ||
+      repair.steps.length !== old.length ||
+      repair.steps.length === 0
+    )
+      throw Error("Repair is outside the selected envelope");
+    for (const [key, value] of Object.entries(repair.bindings))
+      if (value !== t.bindings[key] && !scope.bindings[key]?.includes(value))
+        throw Error("Binding substitution is not authorised");
+    if (Object.keys(t.bindings).some((k) => !(k in repair.bindings)))
+      throw Error("Repair drops a required binding");
+    for (let i = 0; i < old.length; i++) {
+      const next = repair.steps[i]!,
+        previous = old[i]!;
+      if (next.family === "Move" && previous.family === "Move") {
+        const k =
+          Math.floor(next.target.x / view.profile.cellKm) +
+          view.profile.width * Math.floor(next.target.y / view.profile.cellKm);
+        if (
+          !scope.moveTargets.some(
+            (p) => p.x === next.target.x && p.y === next.target.y,
+          ) ||
+          !view.geography.some((c) => c.cell === k && c.passable) ||
+          "priorSpeed" in next ||
+          "effortEu" in next
+        )
+          throw Error("Repair target is not an authorised known place");
+        if (next.exploratory !== previous.exploratory)
+          throw Error("Repair changes authorised exposure");
+      } else if (canonical(next) !== canonical(previous))
+        throw Error("Repair changes fixed operation terms");
+    }
+    if (
+      repair.dependsOn.some(
+        (d) => this.port.version(actor, d.key) !== d.version,
+      )
+    )
+      throw Error("Repair depends on stale personal knowledge");
+    t.steps = [...t.steps.slice(0, t.cursor), ...clone(repair.steps)];
+    t.bindings = clone(repair.bindings);
+    t.dependsOn = clone(repair.dependsOn);
+    t.bindingRevision++;
+    t.route = null;
+    t.routeCursor = 0;
+    t.failure = null;
+    t.interruption = null;
+    t.status = "ready";
+    this.port.pin(t);
+    this.port.record("task-bound-suffix-installed", actor, {
+      semanticKey: t.semanticKey,
+      revision: t.bindingRevision,
+    });
+    this.start(t);
+    return clone(t);
   }
   projection(actor: string): unknown {
     const t = this.task(actor),

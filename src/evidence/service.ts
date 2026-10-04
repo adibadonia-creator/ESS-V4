@@ -1,6 +1,6 @@
 import { canonical, digest } from "../kernel/canonical";
 import { draw, normal } from "../kernel/random";
-import { EVIDENCE_PROFILE } from "../content/profile";
+import { EVIDENCE_PROFILE, PUBLIC_MAP_PROFILE } from "../content/profile";
 import { math } from "../kernel/numerics";
 import { QUANTA } from "../kernel/time";
 import type { Counters } from "../kernel/counters";
@@ -13,6 +13,9 @@ import type {
   RouteBelief,
   Value,
   CellBelief,
+  MemoryPins,
+  MapObservation,
+  RegionPrecedent,
 } from "./types";
 export interface PersonEvidence {
   owner: string;
@@ -24,7 +27,17 @@ export interface PersonEvidence {
   coverage: Record<number, number>;
   routes: RouteBelief[];
   routine: { day: number; count: number };
-  delivered: Record<string, boolean>;
+  delivered: Record<string, string>;
+  mapObservations: Record<string, MapObservation>;
+  memory: {
+    places: Record<
+      string,
+      { observedAt: number; usedAt: number; uses: number }
+    >;
+    pins: Record<string, MemoryPins>;
+    evictions: number;
+    precedent: { regionKm: number; regions: Record<string, RegionPrecedent> };
+  };
 }
 export interface EvidenceState {
   people: PersonEvidence[];
@@ -40,6 +53,13 @@ export class EvidenceService {
     private seed: string,
     private counts: Counters,
     state: EvidenceState = { people: [] },
+    private consequential: (
+      owner: string,
+      kind: string,
+      detail: unknown,
+    ) => void = () => {},
+    private regionKm = PUBLIC_MAP_PROFILE.regionCells *
+      PUBLIC_MAP_PROFILE.cellKm,
   ) {
     this.state = state;
     for (const p of state.people) {
@@ -63,6 +83,13 @@ export class EvidenceService {
       routes: [],
       routine: { day: -1, count: 0 },
       delivered: {},
+      mapObservations: {},
+      memory: {
+        places: {},
+        pins: {},
+        evictions: 0,
+        precedent: { regionKm: this.regionKm, regions: {} },
+      },
     };
     this.state.people.push(p);
     this.people.set(owner, p);
@@ -96,30 +123,196 @@ export class EvidenceService {
     return this.handle(owner, reference);
   }
   version(owner: string, key: string): number {
+    const [subject, property] = JSON.parse(key) as string[];
+    if (subject?.startsWith("cell:") && property === "geometry")
+      return this.person(owner).cells[+subject.slice(5)]?.version ?? 0;
     return this.person(owner).versions[key] ?? 0;
   }
   latest(owner: string, subject: string, property: string): Evidence | null {
     const key = beliefKey(subject, property);
+    if (subject.startsWith("cell:") && property === "geometry") {
+      const p = this.person(owner),
+        c = p.cells[+subject.slice(5)];
+      if (!c) return null;
+      const o = p.mapObservations[c.provenance]!;
+      return {
+        owner,
+        subject,
+        property,
+        value: { terrain: c.terrain, passable: +c.passable, speed: c.speed },
+        observedAt: c.observedAt,
+        receivedAt: o.receivedAt,
+        modality: o.modality,
+        provenance: c.provenance,
+        context: o.context,
+        reliability: o.reliability,
+        uncertainty: o.uncertainty,
+        volatilityClass: "fixed",
+        expiry: null,
+        pinned: false,
+        version: c.version,
+      };
+    }
     const r = this.latestIndex.get(owner)?.get(key);
     return r ? clone(r) : null;
   }
   deliver(record: Omit<Evidence, "version">): boolean {
     const p = this.person(record.owner),
-      identity = digest([
-        record.provenance,
-        record.subject,
-        record.property,
-        record.value,
-      ]);
-    if (p.delivered[identity]) return false;
-    p.delivered[identity] = true;
-    const key = beliefKey(record.subject, record.property),
-      version = (p.versions[key] ?? 0) + 1;
+      key = beliefKey(record.subject, record.property);
+    const identity = digest([
+      record.provenance,
+      record.value,
+      record.footprint ?? null,
+    ]);
+    const old = this.latestIndex.get(record.owner)!.get(key);
+    if (
+      p.delivered[key] === identity ||
+      (old && record.receivedAt < old.receivedAt)
+    )
+      return false;
+    p.delivered[key] = identity;
+    const version = (p.versions[key] ?? 0) + 1;
     p.versions[key] = version;
-    p.records.push(clone({ ...record, version }));
-    this.latestIndex.get(record.owner)!.set(key, p.records.at(-1)!);
+    const next = clone({
+      ...record,
+      pinned: record.pinned || old?.pinned === true,
+      version,
+    });
+    const index = p.records.findIndex(
+      (e) => e.subject === record.subject && e.property === record.property,
+    );
+    if (index < 0) p.records.push(next);
+    else p.records[index] = next;
+    this.latestIndex.get(record.owner)!.set(key, next);
+    const place = p.memory.places[record.subject];
+    if (place) place.observedAt = Math.max(place.observedAt, record.observedAt);
+    if (
+      record.property === "kind" &&
+      (record.value === "site" || record.value === "cache")
+    )
+      p.memory.places[record.subject] ??= {
+        observedAt: record.observedAt,
+        usedAt: 0,
+        uses: 0,
+      };
     this.counts.evidenceUpdates++;
     return true;
+  }
+  // A single discretionary account. Pins are exceptions, not extra discretionary slots.
+  private isPinned(p: PersonEvidence, subject: string): boolean {
+    if (p.records.some((e) => e.subject === subject && e.pinned)) return true;
+    const location = this.latestIndex
+      .get(p.owner)!
+      .get(beliefKey(subject, "location"))?.value as
+      { x: number; y: number } | undefined;
+    return Object.values(p.memory.pins).some(
+      (pin) =>
+        pin.subjects.includes(subject) ||
+        pin.beliefKeys.some(
+          (k) => (JSON.parse(k) as string[])[0] === subject,
+        ) ||
+        (location &&
+          pin.targets.some((t) => t.x === location.x && t.y === location.y)),
+    );
+  }
+  pin(owner: string, scope: string, pin: MemoryPins, at: number): void {
+    const p = this.person(owner);
+    p.memory.pins[scope] = clone(pin);
+    for (const subject of Object.keys(p.memory.places))
+      if (this.isPinned(p, subject)) {
+        const m = p.memory.places[subject]!;
+        m.usedAt = at;
+        m.uses++;
+      }
+    this.enforceMemory(owner);
+  }
+  unpin(owner: string, scope: string): void {
+    delete this.person(owner).memory.pins[scope];
+    this.enforceMemory(owner);
+  }
+  enforceMemory(owner: string): void {
+    const p = this.person(owner);
+    // Relevance is protected by scopes; then recency and observed use rank salience.
+    const discretionary = Object.keys(p.memory.places)
+      .filter((k) => !this.isPinned(p, k))
+      .sort((a, b) => {
+        const x = p.memory.places[a]!,
+          y = p.memory.places[b]!;
+        return (
+          Math.max(x.observedAt, x.usedAt) - Math.max(y.observedAt, y.usedAt) ||
+          x.uses - y.uses ||
+          Number(a.split(":")[1]) - Number(b.split(":")[1])
+        );
+      });
+    for (const subject of discretionary.slice(
+      0,
+      Math.max(0, discretionary.length - EVIDENCE_PROFILE.places),
+    )) {
+      const location = this.latestIndex
+        .get(owner)!
+        .get(beliefKey(subject, "location"))?.value as
+        { x: number; y: number } | undefined;
+      const empty = p.records.some(
+          (e) =>
+            e.subject === subject &&
+            e.property.startsWith("stock:") &&
+            e.value === 0,
+        ),
+        at = p.memory.places[subject]!.observedAt;
+      if (location) {
+        const r = p.memory.precedent,
+          region =
+            Math.floor(location.x / r.regionKm) +
+            "," +
+            Math.floor(location.y / r.regionKm),
+          summary = (r.regions[region] ??= {
+            forgottenPlaces: 0,
+            observedEmpty: 0,
+            lastAt: 0,
+          });
+        summary.forgottenPlaces++;
+        summary.observedEmpty += +empty;
+        summary.lastAt = Math.max(summary.lastAt, at);
+      }
+      this.consequential(owner, "personal-place-forgotten", {
+        subject,
+        observedAt: at,
+        outcome: empty ? "observed-empty" : "remembered-place",
+      });
+      for (const e of p.records.filter((e) => e.subject === subject)) {
+        const k = beliefKey(subject, e.property);
+        delete p.versions[k];
+        delete p.delivered[k];
+        this.latestIndex.get(owner)!.delete(k);
+      }
+      p.records = p.records.filter((e) => e.subject !== subject);
+      delete p.memory.places[subject];
+      delete p.links[subject];
+      p.memory.evictions++;
+      this.counts.memoryEvictions++;
+    }
+  }
+  foundTraversalPrior(
+    owner: string,
+    prior: { speedFactor: number; uncertainty: number; context: string },
+    at: number,
+  ): void {
+    if (
+      !(prior.speedFactor > 0 && prior.speedFactor <= 1) ||
+      !Number.isFinite(prior.uncertainty) ||
+      prior.uncertainty < 0
+    )
+      throw Error("Invalid declared traversal prior");
+    this.fact(
+      owner,
+      "prior:unseen-terrain",
+      "speed-factor",
+      prior.speedFactor,
+      at,
+      prior.context,
+      "record",
+      prior.uncertainty,
+    );
   }
   fact(
     owner: string,
@@ -194,40 +387,66 @@ export class EvidenceService {
       );
     });
     if (cells.length && accept()) {
-      this.fact(
+      const delivered = this.deliver({
         owner,
-        "local-survey",
-        "terrain",
-        cells.length,
-        at,
+        subject: "local-survey",
+        property: "terrain",
+        value: digest(cells),
+        observedAt: at,
+        receivedAt: at,
+        modality: "direct",
+        provenance: digest([owner, context, at, "terrain", digest(cells)]),
         context,
-        "direct",
-        0,
-        "fixed",
-        packet.footprint,
-      );
-      for (const c of cells) {
-        const old = p.cells[c.cell];
-        const changed =
-          !old ||
-          old.terrain !== c.terrain ||
-          old.passable !== c.passable ||
-          old.speed !== c.speed;
-        if (changed)
-          this.fact(
-            owner,
-            `cell:${c.cell}`,
-            "geometry",
-            { terrain: c.terrain, passable: +c.passable, speed: c.speed },
-            at,
-            context,
-          );
-        p.cells[c.cell] = {
-          ...c,
-          observedAt: changed ? at : old!.observedAt,
-          version: this.version(owner, beliefKey(`cell:${c.cell}`, "geometry")),
-        };
-        p.coverage[c.cell] = Math.max(p.coverage[c.cell] ?? 0, c.detection);
+        reliability: 1,
+        uncertainty: 0,
+        volatilityClass: "fixed",
+        expiry: null,
+        pinned: false,
+        footprint: packet.footprint,
+      });
+      if (delivered) {
+        const event = this.latestIndex
+          .get(owner)!
+          .get(beliefKey("local-survey", "terrain"))!;
+        for (const c of cells) {
+          const old = p.cells[c.cell],
+            changed =
+              !old ||
+              old.terrain !== c.terrain ||
+              old.passable !== c.passable ||
+              old.speed !== c.speed;
+          if (changed) {
+            if (old) {
+              const o = p.mapObservations[old.provenance]!;
+              o.references--;
+              if (o.references === 0) delete p.mapObservations[old.provenance];
+            }
+            const o = (p.mapObservations[event.provenance] ??= {
+              observedAt: at,
+              receivedAt: at,
+              provenance: event.provenance,
+              context,
+              modality: "direct",
+              reliability: 1,
+              uncertainty: 0,
+              duration: packet.footprint.duration,
+              references: 0,
+            });
+            o.references++;
+            p.cells[c.cell] = {
+              ...c,
+              observedAt: at,
+              version: (old?.version ?? 0) + 1,
+              provenance: event.provenance,
+            };
+            this.counts.personalMapUpdates++;
+          } else
+            p.cells[c.cell] = {
+              ...old!,
+              detection: Math.max(old!.detection, c.detection),
+            };
+          p.coverage[c.cell] = Math.max(p.coverage[c.cell] ?? 0, c.detection);
+        }
       }
     }
     // Packet order is geometric and independent of hidden allocation/keys.
@@ -286,6 +505,7 @@ export class EvidenceService {
         "fast",
         packet.footprint,
       );
+    this.enforceMemory(owner);
   }
   route(
     owner: string,
@@ -319,8 +539,11 @@ export class EvidenceService {
   ): PersonalView {
     this.counts.personalViewProjections++;
     const p = this.person(owner),
-      evidence = clone(p.records),
-      current = [...this.latestIndex.get(owner)!.values()],
+      evidence = clone(p.records).map((e) => ({
+        ...e,
+        pinned: e.pinned || this.isPinned(p, e.subject),
+      })),
+      current = evidence,
       geography = clone(Object.values(p.cells).sort((a, b) => a.cell - b.cell));
     // Connected components within public spatial chunks, and witnessed crossings.
     const passable = new Set(
@@ -374,7 +597,26 @@ export class EvidenceService {
           regions.get(id)!.neighbors.push(other);
       }
 
+    const prior = this.latest(owner, "prior:unseen-terrain", "speed-factor");
+    if (!prior) throw Error("No declared personal traversal prior");
+    const pinnedPlaces = Object.keys(p.memory.places).filter((k) =>
+      this.isPinned(p, k),
+    ).length;
     return clone({
+      traversalPrior: {
+        speedFactor: prior.value as number,
+        uncertainty: prior.uncertainty,
+        version: prior.version,
+        provenance: prior.provenance,
+      },
+      mapObservations: p.mapObservations,
+      memory: {
+        discretionaryPlaces: Object.keys(p.memory.places).length - pinnedPlaces,
+        pinnedPlaces,
+        limit: EVIDENCE_PROFILE.places,
+        evictions: p.memory.evictions,
+        precedent: p.memory.precedent,
+      },
       owner,
       time: at,
       profile,
@@ -387,11 +629,7 @@ export class EvidenceService {
       routes: p.routes,
       evidence,
       methods: current.filter((e) => e.subject.startsWith("method:")),
-      places: current.filter(
-        (e) =>
-          e.subject.startsWith("seen:") &&
-          this.latest(owner, e.subject, "kind")?.value !== "person",
-      ),
+      places: current.filter((e) => !!p.memory.places[e.subject]),
       people: current.filter(
         (e) =>
           e.subject.startsWith("seen:") &&

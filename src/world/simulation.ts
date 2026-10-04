@@ -176,12 +176,44 @@ export class PhysicalSimulation {
     for (const c of this.ledger.state.containers)
       if (c.location.kind === "carrier")
         this.carriedByActor.set(c.location.actor, c.key);
-    this.evidence = new EvidenceService(seed, this.counters, saved?.evidence);
+    this.evidence = new EvidenceService(
+      seed,
+      this.counters,
+      saved?.evidence,
+      (owner, kind, detail) => this.kernel.record(kind, owner, detail),
+      config.spatial.regionCells * config.spatial.cellKm,
+    );
     this.epistemicActors = new Set(saved?.epistemicActors ?? []);
     this.runtime = new TaskRuntime(
       {
         now: () => this.kernel.state.now,
         personal: (actor) => this.personalView(actor),
+        pin: (task) => {
+          const subjects = [
+            ...Object.values(task.bindings),
+            ...task.steps
+              .slice(task.cursor)
+              .flatMap((s) => (s.family === "Transfer" ? [s.from, s.to] : [])),
+            ...task.reservations.map((r) => r.subject),
+          ];
+          this.evidence.pin(
+            task.actor,
+            task.taskId,
+            {
+              subjects,
+              beliefKeys: [
+                ...task.dependsOn.map((d) => d.key),
+                beliefKey(`method:${task.method}`, "known"),
+              ],
+              targets: task.steps
+                .slice(task.cursor)
+                .flatMap((s) => (s.family === "Move" ? [s.target] : [])),
+              reason: "task",
+            },
+            this.kernel.state.now,
+          );
+        },
+        unpin: (task) => this.evidence.unpin(task.actor, task.taskId),
         exactSelf: (actor) => this.exactSelf(actor),
         blockedCells: (actor, cells) =>
           this.evidence.blockedCells(actor, cells),
@@ -429,6 +461,11 @@ export class PhysicalSimulation {
       "founding carried goods",
       "self",
     );
+    this.evidence.foundTraversalPrior(
+      actor,
+      this.config.evidence.traversalPrior,
+      this.kernel.state.now,
+    );
     this.evidence.foundMethods(
       actor,
       this.config.evidence.foundingMethods,
@@ -540,6 +577,12 @@ export class PhysicalSimulation {
     if (!this.epistemicActors.has(input.actor))
       throw Error("Enable personal fixture first");
     return this.runtime.select(input);
+  }
+  diagnosticInstallRepair(
+    actor: Key,
+    repair: import("../runtime/types").BoundRepair,
+  ): Task {
+    return this.runtime.installBoundRepair(actor, repair);
   }
   diagnosticTaskInterrupt(actor: Key): void {
     this.runtime.interrupt(actor);
@@ -1482,7 +1525,10 @@ function validateSaved(s: Save): void {
       !p.cells ||
       !p.coverage ||
       !p.links ||
-      !p.delivered
+      !p.delivered ||
+      !p.memory ||
+      !p.memory.precedent ||
+      !p.mapObservations
     )
       throw Error("Invalid evidence owner/state");
     const latest = new Map<string, number>();
@@ -1495,7 +1541,8 @@ function validateSaved(s: Save): void {
         e.observedAt > e.receivedAt ||
         e.receivedAt > s.time ||
         !Number.isSafeInteger(e.version) ||
-        e.version !== (latest.get(key) ?? 0) + 1 ||
+        e.version !== p.versions[key] ||
+        latest.has(key) ||
         !Number.isFinite(e.reliability) ||
         e.reliability < 0 ||
         e.reliability > 1 ||
@@ -1508,6 +1555,67 @@ function validateSaved(s: Save): void {
     if (canonical(Object.fromEntries(latest)) !== canonical(p.versions))
       throw Error("Evidence versions do not reconcile");
     if (
+      !(p.memory.precedent.regionKm > 0) ||
+      Object.values(p.memory.precedent.regions).some(
+        (r) =>
+          !Number.isSafeInteger(r.forgottenPlaces) ||
+          r.forgottenPlaces < 0 ||
+          r.observedEmpty < 0 ||
+          r.observedEmpty > r.forgottenPlaces ||
+          r.lastAt > s.time,
+      )
+    )
+      throw Error("Invalid regional precedent");
+    const refs: Record<string, number> = {};
+    for (const c of Object.values(p.cells))
+      refs[c.provenance] = (refs[c.provenance] ?? 0) + 1;
+    for (const [key, o] of Object.entries(p.mapObservations)) {
+      checkTime(o.observedAt);
+      checkTime(o.receivedAt);
+      if (
+        o.provenance !== key ||
+        o.references !== refs[key] ||
+        o.receivedAt > s.time ||
+        o.observedAt > o.receivedAt
+      )
+        throw Error("Invalid compact map provenance");
+    }
+    if (Object.keys(refs).some((k) => !p.mapObservations[k]))
+      throw Error("Missing map observation");
+    const pinned = (subject: string) =>
+      p.records.some((e) => e.subject === subject && e.pinned) ||
+      Object.values(p.memory.pins).some(
+        (pin) =>
+          pin.subjects.includes(subject) ||
+          pin.beliefKeys.some(
+            (k) => (JSON.parse(k) as string[])[0] === subject,
+          ) ||
+          pin.targets.some((t) =>
+            p.records.some(
+              (e) =>
+                e.subject === subject &&
+                e.property === "location" &&
+                (e.value as Point).x === t.x &&
+                (e.value as Point).y === t.y,
+            ),
+          ),
+      );
+    if (
+      Object.keys(p.memory.places).filter((k) => !pinned(k)).length >
+        s.config.evidence.places ||
+      Object.keys(p.delivered).length !== p.records.length ||
+      Object.keys(p.memory.places).some(
+        (k) =>
+          !p.records.some(
+            (e) =>
+              e.subject === k &&
+              e.property === "kind" &&
+              (e.value === "site" || e.value === "cache"),
+          ),
+      )
+    )
+      throw Error("Invalid bounded personal memory");
+    if (
       p.routine.count < 0 ||
       p.routine.count > s.config.evidence.routineObservations
     )
@@ -1515,7 +1623,9 @@ function validateSaved(s: Save): void {
     for (const [k, c] of Object.entries(p.cells))
       if (
         +k !== c.cell ||
-        c.version !== p.versions[beliefKey("cell:" + k, "geometry")] ||
+        !Number.isSafeInteger(c.version) ||
+        c.version < 1 ||
+        !p.mapObservations[c.provenance] ||
         !Number.isFinite(c.speed) ||
         !Number.isFinite(c.detection)
       )
@@ -1527,6 +1637,8 @@ function validateSaved(s: Save): void {
     if (
       !owners.has(t.actor) ||
       taskIds.has(t.taskId) ||
+      !Number.isSafeInteger(t.bindingRevision) ||
+      t.bindingRevision < 0 ||
       !budget ||
       t.source !== "diagnostic-selected-intention" ||
       t.steps.length > s.config.evidence.maxTaskSteps ||
@@ -1550,7 +1662,9 @@ function validateSaved(s: Save): void {
         !Array.isArray(r.path) ||
         !Number.isSafeInteger(r.expansions) ||
         r.expansions < 0 ||
-        r.expansions > r.effortLimit
+        r.expansions > r.computationEnd ||
+        r.computationEnd - r.computationStart !==
+          s.config.engineering.routeExpansionsPerComputation
       )
         throw Error("Invalid personal frontier");
       for (const [k, n] of Object.entries(r.nodes))
@@ -1580,7 +1694,13 @@ function validateSaved(s: Save): void {
     for (const p of a.prefixes) {
       checkTime(p.start);
       checkTime(p.end);
-      if (p.start < end || p.end < p.start || p.end > s.time)
+      if (
+        !Number.isSafeInteger(p.revision) ||
+        p.revision < 0 ||
+        p.start < end ||
+        p.end < p.start ||
+        p.end > s.time
+      )
         throw Error("Overlapping paid prefixes");
       end = p.end;
       const key = a.actor + ":" + p.semanticKey;

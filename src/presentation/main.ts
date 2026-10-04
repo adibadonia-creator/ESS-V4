@@ -436,6 +436,11 @@ await send({ kind: "create-evidence", seed: "spine" });
 
 interface LensDTO {
   personal: {
+    memory: {
+      discretionaryPlaces: number;
+      pinnedPlaces: number;
+      limit: number;
+    };
     owner: string;
     time: number;
     profile: { width: number; height: number; cellKm: number };
@@ -539,12 +544,13 @@ function inspectPersonal() {
   );
   ctx.fill();
   element("lens-summary").textContent =
-    `${p.geography.length} seen cells · ${p.profile.width * p.profile.height - p.geography.length} unseen. Local window: 2.4 × 1.8 km. Dark ground is unknown. Places and routes are dated personal memory.`;
+    `${p.geography.length} seen cells · ${p.profile.width * p.profile.height - p.geography.length} unseen. Places: ${p.memory.discretionaryPlaces}/${p.memory.limit} discretionary + ${p.memory.pinnedPlaces} pinned. Local window: 2.4 × 1.8 km. Dark ground is unknown. Places and routes are dated personal memory.`;
   element("task-state").textContent = t
     ? `DIAGNOSTIC SELECTED INTENTION: ${t.objective} · method ${t.method}\n${t.status} · step ${t.cursor + 1}/${t.steps.length}: ${t.steps[t.cursor]?.family ?? "complete"}\nLocated progress: ${t.progress.length} records\nTime authorised/spent: ${((b?.authorised.time ?? 0) / 2 ** 20).toFixed(5)} / ${((b?.spent.time ?? 0) / 2 ** 20).toFixed(5)} SD\nGoods authorised/spent: ${JSON.stringify(b?.authorised.goods)} / ${JSON.stringify(b?.spent.goods)}\n${t.failure ?? ""}`
     : "No diagnostic task selected";
   element("evidence-records").replaceChildren(
-    ...p.evidence
+    ...[...p.evidence]
+      .sort((a, b) => a.receivedAt - b.receivedAt)
       .slice(-10)
       .reverse()
       .map((e) => {
