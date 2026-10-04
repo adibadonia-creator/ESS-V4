@@ -1,5 +1,6 @@
+import { chargeRoute, routeAllowance, type EffortKind } from "../kernel/effort";
 import { canonical, digest } from "../kernel/canonical";
-import { EVIDENCE_PROFILE } from "../content/profile";
+import { EVIDENCE_PROFILE, EFFORT_PROFILE } from "../content/profile";
 import { checkTime, QUANTA } from "../kernel/time";
 import type { Counters } from "../kernel/counters";
 import { clone } from "../evidence/service";
@@ -15,17 +16,40 @@ import type {
 } from "./types";
 export class TaskRuntime {
   readonly state: RuntimeState;
+  private current = new Map<string, Task>();
+  private byId = new Map<string, Task>();
+  private activities = new Map<string, ActivityState>();
+  private routing = new Map<string, Task>();
   constructor(
     private port: RuntimePort,
     private counts: Counters,
-    state: RuntimeState = { tasks: [], budgets: {}, activity: [] },
+    state: RuntimeState = {
+      tasks: [],
+      terminal: [],
+      retry: {},
+      purpose: {},
+      issuedTaskIds: {},
+      latestTerminal: {},
+      paidArchive: [],
+      activityArchive: [],
+      effort: {},
+      currentEffort: {},
+      budgets: {},
+      activity: [],
+    },
   ) {
     this.state = state;
+    for (const t of state.tasks) {
+      this.current.set(t.actor, t);
+      this.byId.set(t.taskId, t);
+      if (t.status === "routing" && !t.route?.deferred)
+        this.routing.set(t.actor, t);
+    }
+    for (const a of state.activity) this.activities.set(a.actor, a);
   }
   task(actor: string): Task | null {
-    return (
-      [...this.state.tasks].reverse().find((t) => t.actor === actor) ?? null
-    );
+    this.counts.currentTaskLookups++;
+    return this.current.get(actor) ?? null;
   }
   private budget(t: Task) {
     return this.state.budgets[t.actor + ":" + t.semanticKey]!;
@@ -76,16 +100,12 @@ export class TaskRuntime {
       }
     }
     for (const r of input.reserve) checkTime(r.expires);
-    if (
-      !view.methods.some(
-        (e) => e.subject === `method:${input.method}` && e.value === true,
-      )
-    )
+    if (view.belief(`method:${input.method}`, "known")?.value !== true)
       throw Error("Method is not personally known");
     const old = this.task(input.actor);
     if (old && !["done", "failed", "abandoned"].includes(old.status))
       throw Error("Retain or abandon existing task before selecting another");
-    if (this.state.tasks.some((t) => t.taskId === input.taskId))
+    if (this.state.issuedTaskIds[input.taskId])
       throw Error("Duplicate task identity");
     const descriptor = canonical([
       input.objective,
@@ -103,10 +123,9 @@ export class TaskRuntime {
       input.bindings,
       input.steps,
     ]);
-    const samePurpose = [...this.state.tasks]
-      .reverse()
-      .find((t) => t.actor === input.actor && t.objective === input.objective);
-    if (samePurpose && samePurpose.semanticKey !== input.semanticKey)
+    const purposeKey = canonical([input.actor, input.objective]);
+    const samePurpose = this.state.purpose[purposeKey];
+    if (samePurpose && samePurpose !== input.semanticKey)
       throw Error(
         "Same-objective changes require retained semantic repair; a new task id grants no authority",
       );
@@ -117,11 +136,7 @@ export class TaskRuntime {
     // Validate all required reservations before issuing any; local own endowment only.
     const demand = new Map<string, number>();
     for (const r of input.reserve) {
-      const local = [...view.evidence]
-        .reverse()
-        .find(
-          (e) => e.subject === r.subject && e.property === "own-local-stocks",
-        );
+      const local = view.belief(r.subject, "own-local-stocks");
       const stocks = (
         r.subject === view.self.carried.subject
           ? view.self.carried.stocks
@@ -144,17 +159,16 @@ export class TaskRuntime {
       spent: { time: 0, goods: {} },
       descriptor,
     };
-    const prior = [...this.state.tasks]
-      .reverse()
-      .find(
-        (t) => t.actor === input.actor && t.semanticKey === input.semanticKey,
-      );
+    const archiveIndex = this.state.retry[key];
+    const prior =
+      archiveIndex === undefined ? null : this.state.terminal[archiveIndex]!;
     const t: Task = {
       ...input,
       steps: clone(prior?.steps ?? input.steps),
       bindings: clone(prior?.bindings ?? input.bindings),
       dependsOn: clone(prior?.dependsOn ?? input.dependsOn),
       bindingRevision: prior?.bindingRevision ?? 0,
+      paidForStep: prior?.paidForStep ?? 0,
       cursor: prior?.cursor ?? 0,
       status: "ready",
       reservations: [],
@@ -183,7 +197,15 @@ export class TaskRuntime {
       if (!previous) delete this.state.budgets[key];
       throw e;
     }
+    if (t.route?.geographyId)
+      this.port.pinGeographyVersion(t.route.geographyId, t.taskId);
     this.state.tasks.push(t);
+    this.current.set(t.actor, t);
+    this.byId.set(t.taskId, t);
+    this.state.issuedTaskIds[t.taskId] = true;
+    this.state.purpose[purposeKey] = t.semanticKey;
+    if (!this.state.currentEffort[t.actor])
+      this.authorizeEffort(t.actor, "review");
     this.port.pin(t);
     this.port.record("diagnostic-intention-selected", t.actor, {
       semanticKey: t.semanticKey,
@@ -212,6 +234,7 @@ export class TaskRuntime {
     if (t.cursor >= t.steps.length) {
       t.status = "done";
       this.release(t);
+      this.archive(t);
       this.port.record("task-complete", t.actor, {
         semanticKey: t.semanticKey,
       });
@@ -222,6 +245,7 @@ export class TaskRuntime {
       t.status = "failed";
       t.failure = `not-yet-implemented law: ${step.family}`;
       this.release(t);
+      this.archive(t);
       return;
     }
     if (this.remaining(t) <= 0) {
@@ -236,28 +260,22 @@ export class TaskRuntime {
         Math.floor(pt.x / p.cellKm) + p.width * Math.floor(pt.y / p.cellKm);
       t.route = beginPersonalSearch(
         p,
-        view.geography,
+        [],
         k(view.self.location),
         k(step.target),
         step.exploratory,
-        view.traversalPrior,
+        view.traversalPrior(),
         this.counts,
-        view.regions,
+        [],
+        this.port.pinGeography(t.actor, t.taskId),
       );
+      t.route!.effortAccount = this.state.currentEffort[t.actor]!;
       t.routeCursor = 1;
       t.status = "routing";
+      this.routing.set(t.actor, t);
       return;
     }
-    const duration =
-      step.duration -
-      this.activity(t.actor)
-        .prefixes.filter(
-          (p) =>
-            p.semanticKey === t.semanticKey &&
-            p.cursor === t.cursor &&
-            p.revision === t.bindingRevision,
-        )
-        .reduce((sum, p) => sum + p.end - p.start, 0);
+    const duration = step.duration - t.paidForStep;
     if (duration > this.remaining(t)) {
       this.block(t, "next step exceeds authorised time");
       return;
@@ -285,14 +303,34 @@ export class TaskRuntime {
     this.port.schedule(t, now + duration, "operation");
   }
   resumeRouting(slice: number): boolean {
-    const t = this.state.tasks.find((x) => x.status === "routing");
+    const t = this.routing.values().next().value as Task | undefined;
     if (!t) return false;
-    const result = resumePersonalSearch(t.route!, slice, this.counts);
+    this.counts.activeTaskRowsVisited++;
+    const search = t.route!,
+      account = this.state.effort[search.effortAccount!]!;
+    const before = search.expansions;
+    const result = resumePersonalSearch(
+      search,
+      slice,
+      this.counts,
+      routeAllowance(account),
+      search.geographyId ? this.port.geography(search.geographyId) : undefined,
+    );
+    chargeRoute(account, search.expansions - before);
     if (result === "deferred") {
-      this.block(t, "route not established: engineering computation exhausted");
+      // Computational deferral is causal, but neither evidence nor physical failure.
+      search.deferred = true;
+      this.routing.delete(t.actor);
+      this.port.record("route-computationally-deferred", t.actor, {
+        semanticKey: t.semanticKey,
+        account: account.key,
+        expansions: search.expansions,
+      });
     } else if (result === "unreachable") {
+      this.routing.delete(t.actor);
       this.block(t, "no route in personal geography");
     } else if (result === "found") {
+      this.routing.delete(t.actor);
       t.status = "running";
       t.active = {
         family: "Move",
@@ -302,8 +340,50 @@ export class TaskRuntime {
       };
       this.movePrefix(t);
     }
-    return this.state.tasks.some((x) => x.status === "routing");
+    return this.routing.size > 0;
   }
+  // Diagnostic stand-in for an already admitted review/repair, not a mind.
+  // Its semantic identity is actor/kind/causal boundary, never a supplied task label.
+  authorizeEffort(actor: string, kind: EffortKind, alreadySpent = 0): string {
+    const now = this.port.now(),
+      key = canonical([actor, kind, now]);
+    if (
+      !Number.isSafeInteger(alreadySpent) ||
+      alreadySpent < 0 ||
+      alreadySpent > EFFORT_PROFILE[kind]
+    )
+      throw Error("Invalid diagnostic shared effort spend");
+    if (this.state.effort[key]) {
+      if (this.state.effort[key]!.spent < alreadySpent)
+        throw Error("Cannot rewrite an existing cognitive account");
+      return key;
+    }
+    this.state.effort[key] = {
+      key,
+      actor,
+      kind,
+      openedAt: now,
+      allowance: EFFORT_PROFILE[kind],
+      spent: alreadySpent,
+      routeExpansions: 0,
+      prepaidExpansions: 0,
+      expansionsPerEu: EFFORT_PROFILE.routeExpansionsPerEu,
+    };
+    this.state.currentEffort[actor] = key;
+    const t = this.task(actor);
+    if (t?.status === "routing" && t.route?.deferred) {
+      t.route.effortAccount = key;
+      t.route.deferred = false;
+      this.routing.set(actor, t);
+    }
+    this.port.record("diagnostic-effort-authorised", actor, {
+      key,
+      kind,
+      alreadySpent,
+    });
+    return key;
+  }
+
   private movePrefix(t: Task): void {
     if (!this.valid(t)) {
       this.block(t, "personal evidence dependency changed");
@@ -392,7 +472,7 @@ export class TaskRuntime {
     this.movePrefix(t);
   }
   operation(taskId: string, kind: "operation" | "budget"): void {
-    const t = this.state.tasks.find((x) => x.taskId === taskId);
+    const t = this.byId.get(taskId);
     if (!t || t.status !== "running" || !t.active) return;
     this.pay(t);
     if (kind === "budget") {
@@ -428,7 +508,9 @@ export class TaskRuntime {
     this.pay(t);
     t.active = null;
     t.cursor++;
+    t.paidForStep = 0;
     t.route = null;
+    this.port.unpinGeography(t.taskId);
     this.counts.runtimeStepCompletions++;
     this.port.record("task-step-complete", t.actor, {
       semanticKey: t.semanticKey,
@@ -440,10 +522,11 @@ export class TaskRuntime {
     this.start(t);
   }
   private activity(actor: string): ActivityState {
-    let a = this.state.activity.find((a) => a.actor === actor);
+    let a = this.activities.get(actor);
     if (!a) {
-      a = { actor, closedThrough: 0, totals: {}, prefixes: [] };
+      a = { actor, closedThrough: 0, lastPaidEnd: 0, totals: {}, prefixes: [] };
       this.state.activity.push(a);
+      this.activities.set(actor, a);
     }
     return a;
   }
@@ -454,9 +537,8 @@ export class TaskRuntime {
       start = op.paidThrough;
     if (now === start) return;
     if (now < start) throw Error("Paid cursor regression");
-    const a = this.activity(t.actor),
-      last = a.prefixes.at(-1);
-    if (last && last.end > start) throw Error("Overlapping personal activity");
+    const a = this.activity(t.actor);
+    if (a.lastPaidEnd > start) throw Error("Overlapping personal activity");
     const b = this.budget(t);
     if (b.spent.time + now - start > b.authorised.time)
       throw Error("Unauthorised time overrun");
@@ -476,7 +558,8 @@ export class TaskRuntime {
         throw Error("Activity exceeds one SD");
       x = end;
     }
-    a.prefixes.push({
+    this.state.paidArchive.push({
+      actor: t.actor,
       revision: t.bindingRevision,
       semanticKey: t.semanticKey,
       cursor: t.cursor,
@@ -484,13 +567,22 @@ export class TaskRuntime {
       start,
       end: now,
     });
+    a.lastPaidEnd = now;
+    t.paidForStep += now - start;
     b.spent.time += now - start;
     op.paidThrough = now;
   }
   closure(actor: string): void {
     const t = this.task(actor);
     if (t?.status === "running") this.pay(t);
-    this.activity(actor).closedThrough = this.port.now();
+    const activity = this.activity(actor);
+    activity.closedThrough = this.port.now();
+    const day = Math.floor(this.port.now() / QUANTA);
+    for (const [key, totals] of Object.entries(activity.totals))
+      if (+key < day) {
+        this.state.activityArchive.push({ actor, day: +key, totals });
+        delete activity.totals[+key];
+      }
   }
   interrupt(actor: string, reason = "diagnostic interruption"): void {
     const t = this.task(actor);
@@ -498,6 +590,7 @@ export class TaskRuntime {
     this.pay(t);
     if (t.active?.family === "Move") this.port.stopMove(actor);
     this.port.cancel(t);
+    this.routing.delete(t.actor);
     t.active = null;
     t.status = "suspended";
     t.interruption = { at: this.port.now(), reason };
@@ -520,18 +613,13 @@ export class TaskRuntime {
         end: null,
       };
       this.movePrefix(t);
-    } else if (t.route?.status === "unresolved") t.status = "routing";
-    else {
+    } else if (t.route?.status === "unresolved") {
+      t.status = "routing";
+      if (!t.route.deferred) this.routing.set(t.actor, t);
+    } else {
       // Retain the unpaid suffix of an interrupted timed operation.
       const step = t.steps[t.cursor]!;
-      const paid = this.activity(actor)
-        .prefixes.filter(
-          (p) =>
-            p.semanticKey === t.semanticKey &&
-            p.cursor === t.cursor &&
-            p.revision === t.bindingRevision,
-        )
-        .reduce((sum, p) => sum + p.end - p.start, 0);
+      const paid = t.paidForStep;
       if (step.family !== "Move") {
         t.status = "running";
         const remaining = step.duration - paid;
@@ -553,6 +641,7 @@ export class TaskRuntime {
     this.pay(t);
     if (t.active?.family === "Move") this.port.stopMove(t.actor);
     this.port.cancel(t);
+    this.routing.delete(t.actor);
     t.active = null;
     t.status = "blocked";
     t.failure = reason;
@@ -561,6 +650,23 @@ export class TaskRuntime {
       semanticKey: t.semanticKey,
       observed: reason,
     });
+  }
+  private archive(t: Task): void {
+    const index = this.state.terminal.length;
+    this.state.terminal.push(t);
+    this.state.retry[t.actor + ":" + t.semanticKey] = index;
+    if (!t.route) this.port.unpinGeography(`retry:${t.actor}:${t.semanticKey}`);
+    this.state.latestTerminal[t.actor] = index;
+    this.current.delete(t.actor);
+    this.byId.delete(t.taskId);
+    this.routing.delete(t.actor);
+    this.state.tasks.splice(this.state.tasks.indexOf(t), 1);
+    if (t.route?.geographyId)
+      this.port.pinGeographyVersion(
+        t.route.geographyId,
+        `retry:${t.actor}:${t.semanticKey}`,
+      );
+    this.port.unpinGeography(t.taskId);
   }
   private release(t: Task): void {
     this.port.unpin(t);
@@ -572,6 +678,7 @@ export class TaskRuntime {
     this.interrupt(actor, "abandoned");
     t.status = "abandoned";
     this.release(t);
+    this.archive(t);
   }
   installBoundRepair(actor: string, repair: BoundRepair): Task {
     const t = this.task(actor);
@@ -607,7 +714,7 @@ export class TaskRuntime {
           !scope.moveTargets.some(
             (p) => p.x === next.target.x && p.y === next.target.y,
           ) ||
-          !view.geography.some((c) => c.cell === k && c.passable) ||
+          !view.cell(k)?.passable ||
           "priorSpeed" in next ||
           "effortEu" in next
         )
@@ -627,6 +734,8 @@ export class TaskRuntime {
     t.bindings = clone(repair.bindings);
     t.dependsOn = clone(repair.dependsOn);
     t.bindingRevision++;
+    if (old[0]?.family === "Move") t.paidForStep = 0;
+    this.port.unpinGeography(t.taskId);
     t.route = null;
     t.routeCursor = 0;
     t.failure = null;
@@ -640,12 +749,29 @@ export class TaskRuntime {
     this.start(t);
     return clone(t);
   }
+  currentExecution(actor: string) {
+    const t = this.task(actor);
+    const task = t ? clone(t) : null,
+      budget = t ? clone(this.budget(t)) : null;
+    if (t?.active && task && budget) {
+      const elapsed = this.port.now() - t.active.paidThrough;
+      budget.spent.time += elapsed;
+      task.paidForStep += elapsed;
+    }
+    return {
+      task,
+      budget,
+      activity: clone(this.activities.get(actor) ?? null),
+    };
+  }
   projection(actor: string): unknown {
-    const t = this.task(actor),
+    // Explicit observer path may retrieve the last terminal archive by exact index.
+    const current = this.task(actor),
+      index = this.state.latestTerminal[actor];
+    const t =
+        current ?? (index === undefined ? null : this.state.terminal[index]!),
       budget = t ? clone(this.budget(t)) : null,
-      activity = clone(
-        this.state.activity.find((x) => x.actor === actor) ?? null,
-      );
+      activity = clone(this.activities.get(actor) ?? null);
     if (t?.active && budget) {
       const start = t.active.paidThrough,
         end = this.port.now();

@@ -91,6 +91,7 @@ for (const p of files("src").filter((p) => p.endsWith(".ts"))) {
         ts.isPropertyAccessExpression(node.parent) && node.parent.name === node
       ) &&
       !(ts.isPropertySignature(node.parent) && node.parent.name === node) &&
+      !(ts.isPropertyDeclaration(node.parent) && node.parent.name === node) &&
       !(ts.isPropertyAssignment(node.parent) && node.parent.name === node) &&
       [
         "document",

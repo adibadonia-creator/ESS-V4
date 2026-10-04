@@ -1,0 +1,141 @@
+{
+  "fixture": "spine, canonical raster, 32 shells, 24 sites, three advancements 0→1 SD only",
+  "methodology": "V8 CPU sampling at 500us; excludes construction/checkpoint/export; usable denominator is src leaf samples excluding inspector/GC/native/unattributed/numerics wrapper; inclusive groups overlap; sampling estimates, not exact accounting",
+  "versions": {
+    "model": "ESS-4.0-pre0c",
+    "schema": 5,
+    "source": "3b57774e4f3c1bf98393c2d01731c0b93c2a0dabd7efdc70da8cba1cfc57c873",
+    "spec": "d9c1c63060e9a2cbf56a1e4fe4ace994f21c24b74d21c5f24e27610322b59882",
+    "rng": "philox4x32-10-semantic-v1",
+    "sampler": "marsaglia-polar-binary64-v1",
+    "numerical": "binary64-polynomial-survival-v1-finite-guard",
+    "hash": "fnv4-avalanche-128-v1",
+    "runtime": "binary64-js-certified-v1",
+    "generator": "warped-fields-priority-flood-v1"
+  },
+  "runtime": "v24.19.0",
+  "machine": "AMD EPYC 9V74 80-Core Processor",
+  "total": 1247,
+  "excluded": 71,
+  "usable": 1176,
+  "inclusiveSamples": {
+    "kernel": 864,
+    "evidence": 739,
+    "runtime": 354,
+    "goods": 14,
+    "routing": 19,
+    "canonical": 458,
+    "perception": 88
+  },
+  "inclusivePercent": {
+    "kernel": 73.5,
+    "evidence": 62.8,
+    "runtime": 30.1,
+    "goods": 1.2,
+    "routing": 1.6,
+    "canonical": 38.9,
+    "perception": 7.5
+  },
+  "topLeaves": [
+    [
+      "src/kernel/canonical.ts:canonical",
+      219
+    ],
+    [
+      "src/kernel/canonical.ts:(anonymous)",
+      206
+    ],
+    [
+      "src/evidence/service.ts:(anonymous)",
+      67
+    ],
+    [
+      "src/evidence/service.ts:deliver",
+      56
+    ],
+    [
+      "src/evidence/service.ts:observe",
+      53
+    ],
+    [
+      "src/world/perception.ts:visibleTerrain",
+      43
+    ],
+    [
+      "src/world/perception.ts:visible",
+      38
+    ],
+    [
+      "src/world/simulation.ts:perceive",
+      37
+    ],
+    [
+      "src/world/spatial.ts:query",
+      29
+    ],
+    [
+      "src/world/simulation.ts:launchLeg",
+      28
+    ],
+    [
+      "src/evidence/service.ts:indexBelief",
+      25
+    ],
+    [
+      "src/kernel/index.ts:node",
+      24
+    ],
+    [
+      "src/kernel/canonical.ts:digest",
+      23
+    ],
+    [
+      "src/evidence/service.ts:removeBelief",
+      22
+    ],
+    [
+      "src/kernel/identity.ts:allocate",
+      21
+    ],
+    [
+      "src/world/simulation.ts:execute",
+      17
+    ],
+    [
+      "src/world/simulation.ts:(anonymous)",
+      17
+    ],
+    [
+      "src/evidence/service.ts:clone",
+      17
+    ],
+    [
+      "src/kernel/index.ts:put",
+      17
+    ],
+    [
+      "src/kernel/index.ts:immutable",
+      16
+    ],
+    [
+      "src/runtime/routing.ts:resumePersonalSearch",
+      14
+    ],
+    [
+      "src/evidence/geography.ts:changedGeography",
+      13
+    ],
+    [
+      "src/kernel/kernel.ts:record",
+      12
+    ],
+    [
+      "src/kernel/canonical.ts:hash32",
+      10
+    ],
+    [
+      "src/world/simulation.ts:startPersonalPrefix",
+      7
+    ]
+  ]
+}

@@ -50,6 +50,7 @@ export const CONTENT_HASH = digest(data);
 
 export const EVIDENCE_PROFILE = Object.freeze(data.evidence);
 
-export const ROUTE_ENGINEERING = Object.freeze(data.engineering);
-
 export const PUBLIC_MAP_PROFILE = Object.freeze(data.spatial);
+
+// Causal P/N baseline values from Revision 4.0 §47, not host bounds.
+export const EFFORT_PROFILE = Object.freeze(data.cognitiveEffort);

@@ -1,3 +1,25 @@
+import { METHOD_INDEX } from "../content/methods";
+import {
+  entries,
+  get,
+  put,
+  drop,
+  immutable,
+  canonicalTree,
+  type Tree,
+} from "../kernel/index";
+import {
+  changedGeography,
+  geometryCell,
+  personalTopology,
+  type GeographyVersion,
+} from "./geography";
+import {
+  PersonalReview,
+  postingKey,
+  readKey,
+  type PersonalIndexes,
+} from "./read";
 import { canonical, digest } from "../kernel/canonical";
 import { draw, normal } from "../kernel/random";
 import { EVIDENCE_PROFILE, PUBLIC_MAP_PROFILE } from "../content/profile";
@@ -19,6 +41,7 @@ import type {
 } from "./types";
 export interface PersonEvidence {
   owner: string;
+  geographyRevision: number;
   records: Evidence[];
   versions: Record<string, number>;
   links: Record<string, string>;
@@ -41,6 +64,8 @@ export interface PersonEvidence {
 }
 export interface EvidenceState {
   people: PersonEvidence[];
+  geographyPins: Record<string, string>;
+  pinnedGeography: GeographyVersion[];
 }
 export function beliefKey(subject: string, property: string): string {
   return canonical([subject, property]);
@@ -48,11 +73,27 @@ export function beliefKey(subject: string, property: string): string {
 export class EvidenceService {
   readonly state: EvidenceState;
   private latestIndex = new Map<string, Map<string, Evidence>>();
+  private membership = new Map<string, Map<string, string[]>>();
+  private subjectRecords = new Map<
+    string,
+    Map<string, Map<string, Evidence>>
+  >();
+  private readIndexes = new Map<string, PersonalIndexes>();
+  private reverseLinks = new Map<string, Map<string, string>>();
+  private currentGeography = new Map<string, GeographyVersion>();
+  private geographyVersions = new Map<string, GeographyVersion>();
+  private geographyPinCounts = new Map<string, number>();
+  private pinnedSlots = new Map<string, number>();
+  private routeIndexes = new Map<string, Map<string, number>>();
   private people = new Map<string, PersonEvidence>();
   constructor(
     private seed: string,
     private counts: Counters,
-    state: EvidenceState = { people: [] },
+    state: EvidenceState = {
+      people: [],
+      geographyPins: {},
+      pinnedGeography: [],
+    },
     private consequential: (
       owner: string,
       kind: string,
@@ -62,8 +103,52 @@ export class EvidenceService {
       PUBLIC_MAP_PROFILE.cellKm,
   ) {
     this.state = state;
+    for (let i = 0; i < state.pinnedGeography.length; i++) {
+      const v = state.pinnedGeography[i]!;
+      this.geographyVersions.set(v.id, immutable(v));
+      this.pinnedSlots.set(v.id, i);
+    }
+    for (const id of Object.values(state.geographyPins))
+      this.geographyPinCounts.set(
+        id,
+        (this.geographyPinCounts.get(id) ?? 0) + 1,
+      );
     for (const p of state.people) {
       this.people.set(p.owner, p);
+      this.reverseLinks.set(
+        p.owner,
+        new Map(Object.entries(p.links).map(([a, b]) => [b, a])),
+      );
+      this.readIndexes.set(p.owner, {
+        beliefs: null,
+        postings: null,
+        routes: null,
+      });
+      this.membership.set(p.owner, new Map());
+      this.subjectRecords.set(p.owner, new Map());
+      for (const e of p.records) this.indexBelief(p, immutable(e));
+      const indexes = this.readIndexes.get(p.owner)!;
+      for (const route of p.routes)
+        indexes.routes = put(indexes.routes, route.subject, immutable(route));
+      this.routeIndexes.set(
+        p.owner,
+        new Map(p.routes.map((r, i) => [r.subject, i])),
+      );
+      let root: Tree<CellBelief> = null;
+      for (const c of Object.values(p.cells))
+        root = put(root, String(c.cell).padStart(8, "0"), immutable(c));
+      let observations: Tree<MapObservation> = null;
+      for (const o of Object.values(p.mapObservations))
+        observations = put(observations, o.provenance, immutable({ ...o }));
+      const v = immutable({
+        owner: p.owner,
+        revision: p.geographyRevision,
+        id: `${p.owner}:${p.geographyRevision}`,
+        cells: root,
+        observations,
+      });
+      this.currentGeography.set(p.owner, v);
+      this.geographyVersions.set(v.id, this.geographyVersions.get(v.id) ?? v);
       this.latestIndex.set(
         p.owner,
         new Map(p.records.map((e) => [beliefKey(e.subject, e.property), e])),
@@ -74,6 +159,7 @@ export class EvidenceService {
     if (this.people.has(owner)) return;
     const p: PersonEvidence = {
       owner,
+      geographyRevision: 0,
       records: [],
       versions: {},
       links: {},
@@ -93,7 +179,37 @@ export class EvidenceService {
     };
     this.state.people.push(p);
     this.people.set(owner, p);
+    this.reverseLinks.set(owner, new Map());
+    this.readIndexes.set(owner, {
+      beliefs: null,
+      postings: null,
+      routes: null,
+    });
+    this.membership.set(owner, new Map());
+    this.subjectRecords.set(owner, new Map());
+    this.routeIndexes.set(owner, new Map());
+    const v: GeographyVersion = Object.freeze({
+      owner,
+      revision: 0,
+      id: `${owner}:0`,
+      cells: null,
+      observations: null,
+    });
+    this.currentGeography.set(owner, v);
+    this.geographyVersions.set(v.id, v);
     this.latestIndex.set(owner, new Map());
+  }
+  persisted(): EvidenceState {
+    return {
+      ...this.state,
+      pinnedGeography: this.state.pinnedGeography
+        .map((v) => ({
+          ...v,
+          cells: canonicalTree(v.cells),
+          observations: canonicalTree(v.observations),
+        }))
+        .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
+    };
   }
   private person(owner: string): PersonEvidence {
     const p = this.people.get(owner);
@@ -106,18 +222,15 @@ export class EvidenceService {
   }
   private handle(owner: string, reference: string): string {
     const p = this.person(owner);
-    const known = Object.keys(p.links).find((k) => p.links[k] === reference);
+    const known = this.reverseLinks.get(owner)!.get(reference);
     if (known) return known;
     const h = `seen:${p.nextHandle++}`;
     p.links[h] = reference;
+    this.reverseLinks.get(owner)!.set(reference, h);
     return h;
   }
   subjectFor(owner: string, reference: string): string | null {
-    return (
-      Object.keys(this.person(owner).links).find(
-        (k) => this.person(owner).links[k] === reference,
-      ) ?? null
-    );
+    return this.reverseLinks.get(owner)?.get(reference) ?? null;
   }
   selfHandle(owner: string, reference: string): string {
     return this.handle(owner, reference);
@@ -184,6 +297,7 @@ export class EvidenceService {
     if (index < 0) p.records.push(next);
     else p.records[index] = next;
     this.latestIndex.get(record.owner)!.set(key, next);
+    this.indexBelief(p, immutable(next));
     const place = p.memory.places[record.subject];
     if (place) place.observedAt = Math.max(place.observedAt, record.observedAt);
     if (
@@ -280,6 +394,7 @@ export class EvidenceService {
         outcome: empty ? "observed-empty" : "remembered-place",
       });
       for (const e of p.records.filter((e) => e.subject === subject)) {
+        this.removeBelief(p, e);
         const k = beliefKey(subject, e.property);
         delete p.versions[k];
         delete p.delivered[k];
@@ -287,6 +402,7 @@ export class EvidenceService {
       }
       p.records = p.records.filter((e) => e.subject !== subject);
       delete p.memory.places[subject];
+      this.reverseLinks.get(owner)!.delete(p.links[subject]!);
       delete p.links[subject];
       p.memory.evictions++;
       this.counts.memoryEvictions++;
@@ -447,6 +563,17 @@ export class EvidenceService {
             };
           p.coverage[c.cell] = Math.max(p.coverage[c.cell] ?? 0, c.detection);
         }
+        const previous = this.currentGeography.get(owner)!;
+        const v = changedGeography(
+          previous,
+          cells.map((c) => p.cells[c.cell]!),
+          p.mapObservations,
+        );
+        p.geographyRevision = v.revision;
+        this.currentGeography.set(owner, v);
+        this.geographyVersions.set(v.id, v);
+        if (!this.geographyPinCounts.has(previous.id))
+          this.geographyVersions.delete(previous.id);
       }
     }
     // Packet order is geometric and independent of hidden allocation/keys.
@@ -514,6 +641,15 @@ export class EvidenceService {
     status: RouteBelief["status"],
     at: number,
   ): void {
+    const journey = subject;
+    subject = `route:${digest(cells)}`;
+    this.consequential(owner, "personal-journey-observed", {
+      journey,
+      route: subject,
+      cells,
+      status,
+      observedAt: at,
+    });
     this.fact(owner, subject, "route-status", status, at, "executed route");
     const p = this.person(owner),
       r = {
@@ -523,10 +659,133 @@ export class EvidenceService {
         observedAt: at,
         version: this.version(owner, beliefKey(subject, "route-status")),
       };
-    const index = p.routes.findIndex((x) => x.subject === subject);
-    if (index < 0) p.routes.push(r);
-    else p.routes[index] = r;
+    const index = this.routeIndexes.get(owner)!.get(subject) ?? -1;
+    if (index < 0) {
+      this.routeIndexes.get(owner)!.set(subject, p.routes.length);
+      p.routes.push(r);
+    } else p.routes[index] = r;
+    const indexes = this.readIndexes.get(owner)!;
+    indexes.routes = put(indexes.routes, subject, immutable(r));
   }
+  private region(p: PersonEvidence, subject: string): string | undefined {
+    const location = get(
+      this.readIndexes.get(p.owner)!.beliefs,
+      readKey(subject, "location"),
+    )?.value as { x: number; y: number } | undefined;
+    return location
+      ? `${Math.floor(location.x / this.regionKm)},${Math.floor(location.y / this.regionKm)}`
+      : undefined;
+  }
+  private indexBelief(p: PersonEvidence, e: Evidence): void {
+    const ix = this.readIndexes.get(p.owner)!;
+    const key = beliefKey(e.subject, e.property),
+      old = get(ix.beliefs, readKey(e.subject, e.property));
+    if (old) this.removeBelief(p, old);
+    ix.beliefs = put(ix.beliefs, readKey(e.subject, e.property), e);
+    ix.beliefs = put(ix.beliefs, readKey(e.subject, e.property, e.context), e);
+    const tags: string[] = [];
+    const add = (property: string, region?: string) => {
+      const tag = postingKey(property, region);
+      tags.push(tag);
+      ix.postings = put(ix.postings, tag, put(get(ix.postings, tag), key, e));
+    };
+    add(e.property);
+    const region = this.region(p, e.subject);
+    if (region) add(e.property, region);
+    if (
+      e.subject.startsWith("method:") &&
+      e.property === "known" &&
+      e.value === true
+    ) {
+      // Declared effect vocabulary for the two existing diagnostic methods.
+      const method = METHOD_INDEX.get(e.subject.slice(7));
+      for (const effect of method?.effects ?? ["known"])
+        add(`method-effect:${effect}`);
+      for (const input of method?.inputs ?? []) add(`method-input:${input}`);
+    }
+    this.membership.get(p.owner)!.set(key, tags);
+    const records =
+      this.subjectRecords.get(p.owner)!.get(e.subject) ??
+      new Map<string, Evidence>();
+    records.set(key, e);
+    this.subjectRecords.get(p.owner)!.set(e.subject, records);
+    if (e.property === "location")
+      for (const other of [...records.values()])
+        if (other.property !== "location") this.indexBelief(p, other);
+  }
+  private removeBelief(p: PersonEvidence, e: Evidence): void {
+    const ix = this.readIndexes.get(p.owner)!;
+    ix.beliefs = drop(ix.beliefs, readKey(e.subject, e.property));
+    ix.beliefs = drop(ix.beliefs, readKey(e.subject, e.property, e.context));
+    const key = beliefKey(e.subject, e.property);
+    for (const tag of this.membership.get(p.owner)!.get(key) ?? []) {
+      const root = drop(get(ix.postings, tag), key);
+      ix.postings = root ? put(ix.postings, tag, root) : drop(ix.postings, tag);
+    }
+    this.membership.get(p.owner)!.delete(key);
+    const records = this.subjectRecords.get(p.owner)!.get(e.subject);
+    records?.delete(key);
+    if (!records?.size) this.subjectRecords.get(p.owner)!.delete(e.subject);
+  }
+  review(
+    owner: string,
+    at: number,
+    profile: MapProfile,
+    ownState: ExactSelf,
+  ): PersonalReview {
+    return new PersonalReview(
+      owner,
+      at,
+      profile,
+      clone(ownState),
+      { ...this.readIndexes.get(owner)! },
+      this.currentGeography.get(owner)!,
+      this.counts,
+    );
+  }
+  pinGeography(owner: string, scope: string): GeographyVersion {
+    const v = this.currentGeography.get(owner)!;
+    this.pinGeographyVersion(v.id, scope);
+    return v;
+  }
+  pinGeographyVersion(id: string, scope: string): void {
+    const v = this.geography(id);
+    if (this.state.geographyPins[scope] === id) return;
+    this.unpinGeography(scope);
+    this.state.geographyPins[scope] = id;
+    this.geographyPinCounts.set(id, (this.geographyPinCounts.get(id) ?? 0) + 1);
+    this.geographyVersions.set(id, v);
+    if (!this.pinnedSlots.has(id)) {
+      this.pinnedSlots.set(id, this.state.pinnedGeography.length);
+      this.state.pinnedGeography.push(v);
+    }
+  }
+  geography(id: string): GeographyVersion {
+    const v = this.geographyVersions.get(id);
+    if (!v) throw Error("Missing pinned personal geography");
+    return v;
+  }
+  unpinGeography(scope: string): void {
+    const id = this.state.geographyPins[scope];
+    if (!id) return;
+    delete this.state.geographyPins[scope];
+    const count = this.geographyPinCounts.get(id)! - 1;
+    if (count) this.geographyPinCounts.set(id, count);
+    else {
+      this.geographyPinCounts.delete(id);
+      const slot = this.pinnedSlots.get(id)!;
+      const last = this.state.pinnedGeography.pop()!;
+      if (last.id !== id) {
+        this.state.pinnedGeography[slot] = last;
+        this.pinnedSlots.set(last.id, slot);
+      }
+      this.pinnedSlots.delete(id);
+      const v = this.geographyVersions.get(id);
+      if (v && this.currentGeography.get(v.owner)?.id !== id)
+        this.geographyVersions.delete(id);
+    }
+  }
+
   blockedCells(owner: string, cells: number[]): boolean {
     const p = this.person(owner);
     return cells.some((k) => p.cells[k]?.passable === false);
@@ -545,57 +804,11 @@ export class EvidenceService {
       })),
       current = evidence,
       geography = clone(Object.values(p.cells).sort((a, b) => a.cell - b.cell));
-    // Connected components within public spatial chunks, and witnessed crossings.
-    const passable = new Set(
-      geography.filter((c) => c.passable).map((c) => c.cell),
+    const topology = personalTopology(
+      this.currentGeography.get(owner)!,
+      profile,
+      this.counts,
     );
-    const cellRegion = new Map<number, number>(),
-      regions = new Map<
-        number,
-        { id: number; cells: number[]; neighbors: number[] }
-      >();
-    const cols = Math.ceil(profile.width / profile.regionCells);
-    const chunk = (k: number) =>
-      Math.floor((k % profile.width) / profile.regionCells) +
-      cols * Math.floor(Math.floor(k / profile.width) / profile.regionCells);
-    const neighbors = (k: number) =>
-      [k - 1, k + 1, k - profile.width, k + profile.width].filter(
-        (n) =>
-          n >= 0 &&
-          n < profile.width * profile.height &&
-          Math.abs((k % profile.width) - (n % profile.width)) <= 1,
-      );
-    for (const c of geography) {
-      if (!c.passable || cellRegion.has(c.cell)) continue;
-      const id = c.cell,
-        queue = [id],
-        cells: number[] = [];
-      cellRegion.set(id, id);
-      for (let i = 0; i < queue.length; i++) {
-        const k = queue[i]!;
-        cells.push(k);
-        for (const n of neighbors(k))
-          if (passable.has(n) && chunk(n) === chunk(id) && !cellRegion.has(n)) {
-            cellRegion.set(n, id);
-            queue.push(n);
-          }
-      }
-      regions.set(id, {
-        id,
-        cells: cells.sort((a, b) => a - b),
-        neighbors: [],
-      });
-    }
-    for (const [k, id] of cellRegion)
-      for (const n of neighbors(k)) {
-        const other = cellRegion.get(n);
-        if (
-          other !== undefined &&
-          other !== id &&
-          !regions.get(id)!.neighbors.includes(other)
-        )
-          regions.get(id)!.neighbors.push(other);
-      }
 
     const prior = this.latest(owner, "prior:unseen-terrain", "speed-factor");
     if (!prior) throw Error("No declared personal traversal prior");
@@ -622,10 +835,7 @@ export class EvidenceService {
       profile,
       self: ownState,
       geography,
-      regions: [...regions.values()].map((r) => ({
-        ...r,
-        neighbors: r.neighbors.sort((a, b) => a - b),
-      })),
+      regions: Object.values(topology.regions),
       routes: p.routes,
       evidence,
       methods: current.filter((e) => e.subject.startsWith("method:")),

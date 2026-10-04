@@ -11,6 +11,7 @@
     "check:boundaries": "node scripts/boundaries.mjs",
     "headless": "node --import tsx src/runners/headless.ts",
     "benchmark": "node --import tsx src/runners/benchmark.ts",
+    "probe:state": "node scripts/stamp.mjs && node --import tsx scripts/state-growth.ts",
     "verify:browser": "node scripts/stamp.mjs && node --import tsx scripts/browser-check.ts",
     "check": "npm run check:boundaries && npm run typecheck && npm test && npm run build",
     "pretest": "node scripts/stamp.mjs",

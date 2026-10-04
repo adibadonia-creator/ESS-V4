@@ -1,5 +1,6 @@
 import {
   CONTENT_HASH,
+  EFFORT_PROFILE,
   resolveConfig,
   type PhysicalConfig,
   type SpatialProfile,
@@ -14,6 +15,7 @@ import {
   type Event,
   type KernelState,
 } from "../kernel/kernel";
+import { entries, validateTree } from "../kernel/index";
 import { QUANTA, checkTime, future, sd, type Time } from "../kernel/time";
 import { versions } from "../kernel/versions";
 import { math } from "../kernel/numerics";
@@ -187,7 +189,13 @@ export class PhysicalSimulation {
     this.runtime = new TaskRuntime(
       {
         now: () => this.kernel.state.now,
-        personal: (actor) => this.personalView(actor),
+        personal: (actor) => this.personalReview(actor),
+        pinGeography: (actor, scope) =>
+          this.evidence.pinGeography(actor, scope),
+        geography: (id) => this.evidence.geography(id),
+        pinGeographyVersion: (id, scope) =>
+          this.evidence.pinGeographyVersion(id, scope),
+        unpinGeography: (scope) => this.evidence.unpinGeography(scope),
         pin: (task) => {
           const subjects = [
             ...Object.values(task.bindings),
@@ -540,8 +548,27 @@ export class PhysicalSimulation {
       this.exactSelf(actor),
     );
   }
+  personalReview(actor: Key) {
+    if (!this.epistemicActors.has(actor))
+      throw Error("No personal evidence fixture");
+    return this.evidence.review(
+      actor,
+      this.kernel.state.now,
+      this.config.spatial,
+      this.exactSelf(actor),
+    );
+  }
+  diagnosticRouteEffort(
+    actor: Key,
+    kind: import("../kernel/effort").EffortKind = "review",
+    alreadySpent = 0,
+  ): string {
+    if (!this.epistemicActors.has(actor))
+      throw Error("No personal evidence fixture");
+    return this.runtime.authorizeEffort(actor, kind, alreadySpent);
+  }
   private exactSelf(actor: Key): ExactSelf {
-    const carried = this.ledger.get(this.carriedByActor.get(actor)!);
+    const carried = this.ledger.carriedContainer(actor);
     const subject = this.evidence.subjectFor(actor, carried.key)!,
       leg = this.actor(actor).motion?.leg;
     return {
@@ -556,16 +583,17 @@ export class PhysicalSimulation {
           }
         : null,
       carried: { subject, stocks: { ...carried.stocks } },
-      reservations: this.ledger.state.reservations
-        .filter((r) => r.actor === actor)
-        .map((r) => ({
-          key: r.key,
-          good: r.good,
-          remaining: r.remaining,
-          expires: r.expires,
-          status: r.status,
-        })),
+      reservations: this.ledger.activeReservations(actor).map((r) => ({
+        key: r.key,
+        good: r.good,
+        remaining: r.remaining,
+        expires: r.expires,
+        status: r.status,
+      })),
     };
+  }
+  currentExecution(actor: Key) {
+    return this.runtime.currentExecution(actor);
   }
   personalLens(actor: Key) {
     return {
@@ -1345,7 +1373,7 @@ export class PhysicalSimulation {
       terrain,
       actors: this.actors,
       goods: this.ledger.state,
-      evidence: this.evidence.state,
+      evidence: this.evidence.persisted(),
       runtime: this.runtime.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
@@ -1378,7 +1406,7 @@ export class PhysicalSimulation {
       terrainHash: this.terrainDigestCache.hash,
       actors: this.actors,
       goods: this.ledger.state,
-      evidence: this.evidence.state,
+      evidence: this.evidence.persisted(),
       runtime: this.runtime.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
@@ -1507,6 +1535,10 @@ function validateSaved(s: Save): void {
     !Array.isArray(s.evidence.people) ||
     !s.runtime ||
     !Array.isArray(s.runtime.tasks) ||
+    !Array.isArray(s.runtime.terminal) ||
+    !Array.isArray(s.runtime.paidArchive) ||
+    !s.runtime.effort ||
+    !Array.isArray(s.evidence.pinnedGeography) ||
     !Array.isArray(s.runtime.activity) ||
     !Array.isArray(s.epistemicActors)
   )
@@ -1631,12 +1663,103 @@ function validateSaved(s: Save): void {
       )
         throw Error("Invalid personal geography");
   }
-  const taskIds = new Set<string>();
+  const pinnedVersions = new Set<string>();
+  for (const v of s.evidence.pinnedGeography) {
+    validateTree(v.cells, (c) => String(c.cell).padStart(8, "0"));
+    validateTree(v.observations, (o) => o.provenance);
+    if (
+      pinnedVersions.has(v.id) ||
+      v.id !== `${v.owner}:${v.revision}` ||
+      !owners.has(v.owner) ||
+      !Number.isSafeInteger(v.revision) ||
+      v.revision < 0
+    )
+      throw Error("Invalid personal geography version");
+    pinnedVersions.add(v.id);
+    const metadata = new Map(
+      entries(v.observations).map((o) => [o.provenance, o]),
+    );
+    for (const c of entries(v.cells)) {
+      const o = metadata.get(c.provenance);
+      if (
+        !o ||
+        c.observedAt > s.time ||
+        c.version < 1 ||
+        !Number.isSafeInteger(c.cell) ||
+        c.cell < 0 ||
+        c.cell >= s.config.spatial.width * s.config.spatial.height ||
+        !Number.isFinite(c.speed) ||
+        (c.passable && !(c.speed > 0))
+      )
+        throw Error("Invalid pinned geography backing");
+    }
+  }
+  if (
+    Object.values(s.evidence.geographyPins).some(
+      (id) => !pinnedVersions.has(id),
+    )
+  )
+    throw Error("Missing geography pin backing");
+  const currentActors = new Set<string>();
   for (const t of s.runtime.tasks) {
+    if (
+      currentActors.has(t.actor) ||
+      ["done", "failed", "abandoned"].includes(t.status)
+    )
+      throw Error("Terminal/duplicate task in active table");
+    currentActors.add(t.actor);
+  }
+  for (const t of s.runtime.terminal)
+    if (!["done", "failed", "abandoned"].includes(t.status))
+      throw Error("Live task in terminal archive");
+  for (const [key, index] of Object.entries(s.runtime.retry))
+    if (
+      !Number.isSafeInteger(index) ||
+      index < 0 ||
+      !s.runtime.terminal[index] ||
+      key !==
+        s.runtime.terminal[index]!.actor +
+          ":" +
+          s.runtime.terminal[index]!.semanticKey
+    )
+      throw Error("Invalid semantic retry backing");
+  for (const [actor, index] of Object.entries(s.runtime.latestTerminal))
+    if (s.runtime.terminal[index]?.actor !== actor)
+      throw Error("Invalid terminal archive reference");
+  for (const [key, a] of Object.entries(s.runtime.effort)) {
+    checkTime(a.openedAt);
+    if (
+      key !== a.key ||
+      key !== canonical([a.actor, a.kind, a.openedAt]) ||
+      !owners.has(a.actor) ||
+      a.openedAt > s.time ||
+      a.allowance !== EFFORT_PROFILE[a.kind] ||
+      a.expansionsPerEu !== EFFORT_PROFILE.routeExpansionsPerEu ||
+      !Number.isSafeInteger(a.spent) ||
+      a.spent < 0 ||
+      a.spent > a.allowance ||
+      !Number.isSafeInteger(a.routeExpansions) ||
+      a.routeExpansions < 0 ||
+      !Number.isSafeInteger(a.prepaidExpansions) ||
+      a.prepaidExpansions < 0 ||
+      a.prepaidExpansions >= a.expansionsPerEu ||
+      a.routeExpansions + a.prepaidExpansions > a.spent * a.expansionsPerEu
+    )
+      throw Error("Invalid cognitive effort account");
+  }
+  for (const [actor, key] of Object.entries(s.runtime.currentEffort))
+    if (s.runtime.effort[key]?.actor !== actor)
+      throw Error("Missing actor effort backing");
+  const taskIds = new Set<string>();
+  for (const t of [...s.runtime.tasks, ...s.runtime.terminal]) {
     const budget = s.runtime.budgets[t.actor + ":" + t.semanticKey];
     if (
       !owners.has(t.actor) ||
       taskIds.has(t.taskId) ||
+      s.runtime.issuedTaskIds[t.taskId] !== true ||
+      !Number.isSafeInteger(t.paidForStep) ||
+      t.paidForStep < 0 ||
+      t.paidForStep > (budget?.spent.time ?? 0) ||
       !Number.isSafeInteger(t.bindingRevision) ||
       t.bindingRevision < 0 ||
       !budget ||
@@ -1647,6 +1770,8 @@ function validateSaved(s: Save): void {
     )
       throw Error("Invalid runtime task");
     taskIds.add(t.taskId);
+    if (s.runtime.purpose[canonical([t.actor, t.objective])] !== t.semanticKey)
+      throw Error("Invalid original purpose backing");
     if (
       t.active &&
       (t.status !== "running" ||
@@ -1662,11 +1787,30 @@ function validateSaved(s: Save): void {
         !Array.isArray(r.path) ||
         !Number.isSafeInteger(r.expansions) ||
         r.expansions < 0 ||
-        r.expansions > r.computationEnd ||
-        r.computationEnd - r.computationStart !==
-          s.config.engineering.routeExpansionsPerComputation
+        !Number.isSafeInteger(r.regionExpansions) ||
+        r.regionExpansions < 0 ||
+        (r.geographyId !== null &&
+          !s.evidence.pinnedGeography.some(
+            (v) => v.id === r.geographyId && v.owner === t.actor,
+          )) ||
+        !s.runtime.effort[r.effortAccount!]
       )
         throw Error("Invalid personal frontier");
+      for (const open of [r.open, r.coarse.open])
+        for (let i = 0; i < open.length; i++) {
+          const n = open[i]!,
+            parent = open[(i - 1) >>> 1];
+          if (
+            !Number.isFinite(n.f) ||
+            !Number.isFinite(n.g) ||
+            n.g < 0 ||
+            !Number.isSafeInteger(n.cell) ||
+            (i > 0 &&
+              parent &&
+              (parent.f - n.f || parent.cell - n.cell || parent.g - n.g) > 0)
+          )
+            throw Error("Invalid persisted personal heap");
+        }
       for (const [k, n] of Object.entries(r.nodes))
         if (
           !Number.isSafeInteger(+k) ||
@@ -1689,9 +1833,13 @@ function validateSaved(s: Save): void {
   const paid = new Map<string, number>();
   for (const a of s.runtime.activity) {
     if (!owners.has(a.actor)) throw Error("Invalid activity owner");
+    if (a.prefixes.length !== 0) throw Error("Closed prefixes in active state");
     let end = 0;
     const totals: Record<number, Record<string, number>> = {};
-    for (const p of a.prefixes) {
+    for (const p of [
+      ...s.runtime.paidArchive.filter((p) => p.actor === a.actor),
+      ...a.prefixes,
+    ]) {
       checkTime(p.start);
       checkTime(p.end);
       if (
@@ -1715,16 +1863,42 @@ function validateSaved(s: Save): void {
       }
     }
     if (
-      canonical(totals) !== canonical(a.totals) ||
+      canonical(totals) !==
+        canonical({
+          ...Object.fromEntries(
+            s.runtime.activityArchive
+              .filter((r) => r.actor === a.actor)
+              .map((r) => [r.day, r.totals]),
+          ),
+          ...a.totals,
+        }) ||
       Object.values(totals).some(
         (v) => Object.values(v).reduce((a, b) => a + b, 0) > QUANTA,
       )
     )
       throw Error("Activity allocation does not reconcile");
+    if (a.lastPaidEnd !== end)
+      throw Error("Personal paid cursor does not reconcile");
   }
   for (const [key, b] of Object.entries(s.runtime.budgets)) {
     checkTime(b.spent.time);
     checkTime(b.authorised.time);
+    const original = JSON.parse(b.descriptor) as [
+      string,
+      string,
+      unknown,
+      unknown,
+      unknown,
+    ];
+    const actor = key.slice(0, 32);
+    if (
+      canonical(original[4]) !== canonical(b.authorised) ||
+      key !==
+        actor +
+          ":" +
+          digest([actor, original[0], original[1], original[2], original[3]])
+    )
+      throw Error("Original semantic authorisation mismatch");
     if (
       b.spent.time > b.authorised.time ||
       b.spent.time !== (paid.get(key) ?? 0) ||

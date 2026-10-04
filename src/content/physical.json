@@ -123,7 +123,22 @@
       "context": "declared founding cultural unseen-terrain expectation"
     }
   },
-  "engineering": {
-    "routeExpansionsPerComputation": 4096
+  "methods": [
+    {
+      "id": "contact",
+      "effects": ["contact"],
+      "inputs": []
+    },
+    {
+      "id": "exchange",
+      "effects": ["transfer"],
+      "inputs": ["goods"]
+    }
+  ],
+  "cognitiveEffort": {
+    "review": 600,
+    "safety": 80,
+    "repair": 40,
+    "routeExpansionsPerEu": 64
   }
 }

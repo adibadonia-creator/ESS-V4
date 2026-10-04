@@ -24,6 +24,9 @@ type Row = {
   personalBytes: number;
   mapObservations: number;
   counters: Record<string, number>;
+  runtimeState: Record<string, number>;
+  narrowReadMs: number | null;
+  geographyCells: number;
 };
 const pack0b = process.argv.includes("--pack0b"),
   probe32 = process.argv.includes("--probe32");
@@ -44,12 +47,60 @@ for (let run = 0; run < 5; run++) {
     saved = performance.now();
   const hash = sim.causalHash(),
     hashed = performance.now();
+  const hasNarrow = typeof (sim as any).personalReview === "function";
+  if (pack0b && hasNarrow)
+    for (const actor of sim.actorKeys()) {
+      const review = (sim as any).personalReview(actor);
+      review.belief("prior:unseen-terrain", "speed-factor");
+      review.methods("contact", 6);
+    }
+  const narrowRead = performance.now();
   if (pack0b) for (const actor of sim.actorKeys()) sim.personalLens(actor);
   const personalProjected = performance.now();
   sim.snapshot();
   const projected = performance.now();
-  const epistemic = JSON.parse(cp).body.evidence.people;
+  const body = JSON.parse(cp).body,
+    runtime = body.runtime;
+  const epistemic = body.evidence.people;
   rows.push({
+    runtimeState: {
+      currentTasks: runtime.tasks.filter(
+        (t: any) => !["done", "failed", "abandoned"].includes(t.status),
+      ).length,
+      hotTableTasks: runtime.tasks.length,
+      terminalTasks:
+        runtime.terminal?.length ??
+        runtime.tasks.filter((t: any) =>
+          ["done", "failed", "abandoned"].includes(t.status),
+        ).length,
+      activePrefixes: runtime.activity.reduce(
+        (n: number, a: any) => n + a.prefixes.length,
+        0,
+      ),
+      archivedPrefixes: runtime.paidArchive?.length ?? 0,
+      hotBytes: Buffer.byteLength(
+        JSON.stringify({ tasks: runtime.tasks, activity: runtime.activity }),
+      ),
+      backingBytes: Buffer.byteLength(
+        JSON.stringify({
+          budgets: runtime.budgets,
+          retry: runtime.retry ?? {},
+          effort: runtime.effort ?? {},
+        }),
+      ),
+      archiveBytes: Buffer.byteLength(
+        JSON.stringify({
+          terminal: runtime.terminal ?? [],
+          paid: runtime.paidArchive ?? [],
+          activity: runtime.activityArchive ?? [],
+        }),
+      ),
+    },
+    geographyCells: epistemic.reduce(
+      (n: number, p: any) => n + Object.keys(p.cells).length,
+      0,
+    ),
+    narrowReadMs: hasNarrow ? narrowRead - hashed : null,
     retainedEvidence: epistemic.reduce(
       (n: number, p: any) => n + p.records.length,
       0,
@@ -75,7 +126,7 @@ for (let run = 0; run < 5; run++) {
     advanceMs: advanced - launch,
     checkpointMs: saved - advanced,
     hashMs: hashed - saved,
-    personalProjectionMs: personalProjected - hashed,
+    personalProjectionMs: personalProjected - narrowRead,
     snapshotMs: projected - personalProjected,
     checkpointBytes: Buffer.byteLength(cp),
     hash,
