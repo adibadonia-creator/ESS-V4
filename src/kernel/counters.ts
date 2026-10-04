@@ -9,6 +9,7 @@ export interface Counters {
   transactionRejections: number;
   routeSearches: number;
   routeExpansions: number;
+  routeRegionExpansions: number;
   spatialQueries: number;
   projectionEntities: number;
   checkpoints: number;
@@ -25,6 +26,7 @@ export function counters(): Counters {
     transactionRejections: 0,
     routeSearches: 0,
     routeExpansions: 0,
+    routeRegionExpansions: 0,
     spatialQueries: 0,
     projectionEntities: 0,
     checkpoints: 0,

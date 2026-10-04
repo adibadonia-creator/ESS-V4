@@ -5,23 +5,23 @@
   "platform": "linux x64",
   "repetitions": 5,
   "medianMs": {
-    "generateMs": 996.9001600000001,
-    "fixtureMs": 149.778773,
-    "advanceMs": 3.3795869999999013,
-    "checkpointMs": 195.61578999999983,
-    "hashMs": 1.8996290000004592,
-    "snapshotMs": 2.224537000000055
+    "generateMs": 839.365811,
+    "fixtureMs": 103.62371100000018,
+    "advanceMs": 2.4804189999999835,
+    "checkpointMs": 163.54063300000007,
+    "hashMs": 1.7540890000000218,
+    "snapshotMs": 1.722472999999809
   },
   "rows": [
     {
-      "generateMs": 964.409876,
-      "fixtureMs": 149.778773,
-      "advanceMs": 4.170343000000003,
-      "checkpointMs": 280.23979800000006,
-      "hashMs": 3.0638349999999264,
-      "snapshotMs": 3.765675999999985,
-      "checkpointBytes": 4704503,
-      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "generateMs": 839.365811,
+      "fixtureMs": 122.79523499999993,
+      "advanceMs": 4.452614999999923,
+      "checkpointMs": 244.8111100000001,
+      "hashMs": 2.120288999999957,
+      "snapshotMs": 2.6919060000000172,
+      "checkpointBytes": 4704662,
+      "hash": "48a013e5d51cbcbd23628040875da0c0",
       "counters": {
         "events": 231,
         "staleEvents": 0,
@@ -31,22 +31,23 @@
         "transactionCommits": 32,
         "transactionRejections": 0,
         "routeSearches": 8,
-        "routeExpansions": 1627,
+        "routeExpansions": 1608,
+        "routeRegionExpansions": 12,
         "spatialQueries": 229,
         "projectionEntities": 96,
         "checkpoints": 1,
-        "checkpointBytes": 4704503
+        "checkpointBytes": 4704662
       }
     },
     {
-      "generateMs": 1094.440521,
-      "fixtureMs": 222.45184599999993,
-      "advanceMs": 3.3795869999999013,
-      "checkpointMs": 190.7720820000004,
-      "hashMs": 1.639737999999852,
-      "snapshotMs": 3.104264999999941,
-      "checkpointBytes": 4704503,
-      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "generateMs": 855.557757,
+      "fixtureMs": 103.86942899999985,
+      "advanceMs": 2.6444750000000568,
+      "checkpointMs": 163.54063300000007,
+      "hashMs": 1.7540890000000218,
+      "snapshotMs": 1.722472999999809,
+      "checkpointBytes": 4704662,
+      "hash": "48a013e5d51cbcbd23628040875da0c0",
       "counters": {
         "events": 231,
         "staleEvents": 0,
@@ -56,22 +57,23 @@
         "transactionCommits": 32,
         "transactionRejections": 0,
         "routeSearches": 8,
-        "routeExpansions": 1627,
+        "routeExpansions": 1608,
+        "routeRegionExpansions": 12,
         "spatialQueries": 229,
         "projectionEntities": 96,
         "checkpoints": 1,
-        "checkpointBytes": 4704503
+        "checkpointBytes": 4704662
       }
     },
     {
-      "generateMs": 1170.2448489999997,
-      "fixtureMs": 170.6125520000005,
-      "advanceMs": 4.653167999999823,
-      "checkpointMs": 195.61578999999983,
-      "hashMs": 1.9033140000001367,
-      "snapshotMs": 1.9221619999998438,
-      "checkpointBytes": 4704503,
-      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "generateMs": 848.8215379999997,
+      "fixtureMs": 103.62371100000018,
+      "advanceMs": 2.4804189999999835,
+      "checkpointMs": 158.82890799999996,
+      "hashMs": 1.5311759999999595,
+      "snapshotMs": 1.702462000000196,
+      "checkpointBytes": 4704662,
+      "hash": "48a013e5d51cbcbd23628040875da0c0",
       "counters": {
         "events": 231,
         "staleEvents": 0,
@@ -81,22 +83,23 @@
         "transactionCommits": 32,
         "transactionRejections": 0,
         "routeSearches": 8,
-        "routeExpansions": 1627,
+        "routeExpansions": 1608,
+        "routeRegionExpansions": 12,
         "spatialQueries": 229,
         "projectionEntities": 96,
         "checkpoints": 1,
-        "checkpointBytes": 4704503
+        "checkpointBytes": 4704662
       }
     },
     {
-      "generateMs": 996.9001600000001,
-      "fixtureMs": 111.04351899999983,
-      "advanceMs": 1.766779999999926,
-      "checkpointMs": 207.6115690000006,
-      "hashMs": 1.713459999999941,
-      "snapshotMs": 2.224537000000055,
-      "checkpointBytes": 4704503,
-      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "generateMs": 810.3233789999995,
+      "fixtureMs": 100.57976700000017,
+      "advanceMs": 2.0370640000001004,
+      "checkpointMs": 160.35900200000015,
+      "hashMs": 1.5497839999998178,
+      "snapshotMs": 1.7187770000000455,
+      "checkpointBytes": 4704662,
+      "hash": "48a013e5d51cbcbd23628040875da0c0",
       "counters": {
         "events": 231,
         "staleEvents": 0,
@@ -106,22 +109,23 @@
         "transactionCommits": 32,
         "transactionRejections": 0,
         "routeSearches": 8,
-        "routeExpansions": 1627,
+        "routeExpansions": 1608,
+        "routeRegionExpansions": 12,
         "spatialQueries": 229,
         "projectionEntities": 96,
         "checkpoints": 1,
-        "checkpointBytes": 4704503
+        "checkpointBytes": 4704662
       }
     },
     {
-      "generateMs": 865.1630089999999,
-      "fixtureMs": 117.61977200000001,
-      "advanceMs": 1.7977670000000217,
-      "checkpointMs": 181.23307699999987,
-      "hashMs": 1.8996290000004592,
-      "snapshotMs": 1.8128090000000157,
-      "checkpointBytes": 4704503,
-      "hash": "a729512b8cd6e50d2709d0d6cdb93a81",
+      "generateMs": 812.4467420000001,
+      "fixtureMs": 100.91819200000009,
+      "advanceMs": 2.088861999999608,
+      "checkpointMs": 232.7125649999998,
+      "hashMs": 2.654619000000821,
+      "snapshotMs": 2.773718999999801,
+      "checkpointBytes": 4704662,
+      "hash": "48a013e5d51cbcbd23628040875da0c0",
       "counters": {
         "events": 231,
         "staleEvents": 0,
@@ -131,12 +135,75 @@
         "transactionCommits": 32,
         "transactionRejections": 0,
         "routeSearches": 8,
-        "routeExpansions": 1627,
+        "routeExpansions": 1608,
+        "routeRegionExpansions": 12,
         "spatialQueries": 229,
         "projectionEntities": 96,
         "checkpoints": 1,
-        "checkpointBytes": 4704503
+        "checkpointBytes": 4704662
       }
     }
+  ],
+  "storageProbe": {
+    "fixture": "Canonical spine raster, 8 shells/24 sites, first selected route after one expansion at 0 SD",
+    "status": "unresolved",
+    "checkpointBytes": 4658395,
+    "searchBytes": 678,
+    "arraySlots": 0,
+    "discoveredLocal": 6,
+    "discoveredRegional": 0,
+    "routeExpansions": 1,
+    "routeRegionExpansions": 0,
+    "previous": {
+      "fixture": "Canonical spine raster, 8 shells/24 sites, first selected route after one expansion at 0 SD",
+      "status": "unresolved",
+      "checkpointBytes": 5051614,
+      "searchBytes": 393608,
+      "arraySlots": 147456,
+      "discoveredLocal": null,
+      "discoveredRegional": 0,
+      "routeExpansions": 1,
+      "routeRegionExpansions": 0,
+      "commit": "039f75e52daf82ab03f4e24deb749929208c7d68"
+    }
+  },
+  "previous": {
+    "commit": "039f75e52daf82ab03f4e24deb749929208c7d68",
+    "fixture": "Pack0A physical diagnostic, canonical raster, 8 shells, 24 finite sites, until 1 SD; no biology/minds",
+    "runtime": "v24.19.0",
+    "machine": "AMD EPYC 9V74 80-Core Processor",
+    "platform": "linux x64",
+    "repetitions": 5,
+    "medianMs": {
+      "generateMs": 996.9001600000001,
+      "fixtureMs": 149.778773,
+      "advanceMs": 3.3795869999999013,
+      "checkpointMs": 195.61578999999983,
+      "hashMs": 1.8996290000004592,
+      "snapshotMs": 2.224537000000055
+    },
+    "checkpointBytes": 4704503,
+    "counters": {
+      "events": 231,
+      "staleEvents": 0,
+      "heapPushes": 231,
+      "heapPops": 231,
+      "heapCompactions": 0,
+      "transactionCommits": 32,
+      "transactionRejections": 0,
+      "routeSearches": 8,
+      "routeExpansions": 1627,
+      "spatialQueries": 229,
+      "projectionEntities": 96,
+      "checkpoints": 1,
+      "checkpointBytes": 4704503
+    },
+    "hash": "a729512b8cd6e50d2709d0d6cdb93a81"
+  },
+  "measurementNotes": [
+    "The five timed runs use the unchanged canonical fixture and workload. The optional unresolved-search probe is performed afterward and excluded from timings.",
+    "routeExpansions remains cell expansions for comparability; routeRegionExpansions reports additional bounded coarse work.",
+    "The canonical 1-SD checkpoint holds no unresolved searches; its size is primarily the unchanged terrain fields. The separate 0-SD probe exposes per-search persistence.",
+    "The new schema/source reject older saves explicitly; the engineering work-slice size is retained in checkpoint metadata but excluded from causal configuration hashing."
   ]
 }

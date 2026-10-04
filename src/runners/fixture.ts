@@ -16,4 +16,6 @@ export function launchPhysicalFixture(sim: PhysicalSimulation): void {
       })[0]!;
     sim.diagnosticMove(actor.key, target.position);
   }
+  // Complete all bounded host slices before publishing the launched fixture.
+  sim.advanceTo(sim.kernel.state.now);
 }

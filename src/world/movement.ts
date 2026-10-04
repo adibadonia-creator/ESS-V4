@@ -86,7 +86,10 @@ export class Movement {
         m.segmentCursor++;
         continue;
       }
-      if (!this.terrain.passable[s.cell]) {
+      if (
+        !this.terrain.passable[s.cell] ||
+        s.guards?.some((k) => !this.terrain.passable[k])
+      ) {
         m.status = "interrupted";
         m.leg = null;
         return null;

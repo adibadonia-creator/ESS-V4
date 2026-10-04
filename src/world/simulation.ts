@@ -48,7 +48,7 @@ type PhysicalEvent =
   | { kind: "leg"; actor: Key; generation: number }
   | { kind: "lease"; reservation: Key }
   | { kind: "contact"; a: Key; b: Key; ga: number; gb: number; radius: number }
-  | { kind: "route"; actor: Key };
+  | { kind: "diagnostic"; actor: Key };
 interface RouteRequest {
   actor: Key;
   target: Point;
@@ -281,6 +281,9 @@ export class PhysicalSimulation {
       throw new Error("Actor already has physical movement work");
     const motionInputs = inputs ? { ...inputs } : this.inputs(actor);
     baseSpeed(motionInputs, this.config);
+    // Finish earlier requests in command order at the same causal instant.
+    // An engineering slice size must not reorder movement-start records.
+    while (this.resumeRouting()) {}
     const start = cell(this.terrain, this.position(actor)),
       goal = cell(this.terrain, target);
     const r: RouteRequest = {
@@ -306,14 +309,21 @@ export class PhysicalSimulation {
       r.search,
       this.config.diagnostic.routeExpansionsPerResume,
       this.counters,
+      this.regions,
     );
-    if (result.status === "unresolved") {
-      this.kernel.schedule(
-        r.actor,
-        future(this.kernel.state.now, 1 / QUANTA),
-        PHASE.decide,
-        { kind: "route", actor: r.actor },
+    if (result.status === "unresolved") return "unresolved";
+    if (result.status === "invalidated") {
+      r.search = beginSearch(
+        this.terrain,
+        this.regions,
+        cell(this.terrain, this.position(r.actor)),
+        cell(this.terrain, r.target),
+        this.counters,
       );
+      if (r.search.status === "unreachable") {
+        this.routes.delete(r.actor);
+        return "unreachable";
+      }
       return "unresolved";
     }
     this.routes.delete(r.actor);
@@ -335,7 +345,7 @@ export class PhysicalSimulation {
     }
     const key = this.kernel.ids.allocate("motion", r.actor).key,
       now = this.kernel.state.now;
-    this.kernel.invalidate(a.key);
+    this.kernel.invalidate(motionScope(a.key));
     a.motion = {
       key,
       points,
@@ -361,7 +371,7 @@ export class PhysicalSimulation {
       leg = this.movement.nextLeg(a, now);
     m.generation++;
     if (leg) {
-      this.kernel.schedule(a.key, leg.end, PHASE.close, {
+      this.kernel.schedule(motionScope(a.key), leg.end, PHASE.close, {
         kind: "leg",
         actor: a.key,
         generation: m.generation,
@@ -421,8 +431,8 @@ export class PhysicalSimulation {
                 kind: "contact",
                 a: a.key,
                 b: b.key,
-                ga: this.kernel.generation(a.key),
-                gb: this.kernel.generation(b.key),
+                ga: this.kernel.generation(motionScope(a.key)),
+                gb: this.kernel.generation(motionScope(b.key)),
                 radius,
               },
             );
@@ -430,15 +440,26 @@ export class PhysicalSimulation {
       }
     }
   }
+  // One bounded host computation slice. Callers may yield between calls; it
+  // creates no causal event and leaves simulation time and paid time untouched.
+  // An unresolved frontier can be checkpointed here at a committed boundary.
+  resumeRouting(): boolean {
+    const request = this.routes.values().next().value;
+    if (request) this.progressRoute(request);
+    return this.routes.size > 0;
+  }
   advanceTo(target: Time): void {
+    checkTime(target);
+    if (target < this.kernel.state.now) throw new Error("Invalid advance");
+    // Headless/worker host drain: each resume is bounded, even for large routes.
+    // Establish pending truth-side geometry before advancing the causal clock.
+    while (this.resumeRouting()) {}
     this.kernel.advance(target, (e) => this.execute(e));
   }
   private execute(e: Event<PhysicalEvent>): void {
     const p = e.payload;
-    if (p.kind === "route") {
-      const r = this.routes.get(p.actor);
-      if (r) this.progressRoute(r);
-    }
+    if (p.kind === "diagnostic")
+      this.kernel.record("diagnostic-unrelated-event", p.actor, {});
     if (p.kind === "leg") {
       const a = this.actor(p.actor);
       if (a.motion?.status !== "moving" || p.generation !== a.motion.generation)
@@ -456,8 +477,8 @@ export class PhysicalSimulation {
       const a = this.actor(p.a),
         b = this.actor(p.b);
       if (
-        p.ga === this.kernel.generation(a.key) &&
-        p.gb === this.kernel.generation(b.key)
+        p.ga === this.kernel.generation(motionScope(a.key)) &&
+        p.gb === this.kernel.generation(motionScope(b.key))
       )
         this.kernel.record("spatial-radius-crossing", e.subject, {
           a: p.a,
@@ -488,7 +509,7 @@ export class PhysicalSimulation {
         r = this.routes.get(actor);
       if (r) r.inputs.loadCu = this.inputs(actor).loadCu;
       if (a.motion?.status === "moving") {
-        this.kernel.invalidate(actor);
+        this.kernel.invalidate(motionScope(actor));
         a.motion.inputs.loadCu = this.inputs(actor).loadCu;
         this.launchLeg(a);
       }
@@ -511,7 +532,7 @@ export class PhysicalSimulation {
   diagnosticInterrupt(actor: Key): void {
     const a = this.actor(actor);
     this.movement.interrupt(a, this.kernel.state.now);
-    this.kernel.invalidate(actor);
+    this.kernel.invalidate(motionScope(actor));
     this.routes.delete(actor);
     this.kernel.record("diagnostic-interruption", actor, {
       position: a.position,
@@ -523,7 +544,7 @@ export class PhysicalSimulation {
     if (!a.motion || a.motion.status !== "moving")
       throw new Error("No active motion");
     this.movement.settle(a, this.kernel.state.now);
-    this.kernel.invalidate(actor);
+    this.kernel.invalidate(motionScope(actor));
     a.motion.inputs = { ...inputs };
     this.launchLeg(a);
   }
@@ -537,29 +558,26 @@ export class PhysicalSimulation {
       (passable && speed === 0)
     )
       throw new Error("Invalid terrain mutation");
-    // Settle physical prefixes under ending inputs before terrain changes.
-    const affected = this.actors.filter(
-      (a) =>
-        a.motion?.status === "moving" &&
-        a.motion.segments
-          .slice(a.motion.segmentCursor)
-          .some(
-            (s) =>
-              Math.abs(
-                (s.cell % this.terrain.profile.width) -
-                  (k % this.terrain.profile.width),
-              ) <= 1 &&
-              Math.abs(
-                Math.floor(s.cell / this.terrain.profile.width) -
-                  Math.floor(k / this.terrain.profile.width),
-              ) <= 1,
-          ),
-    );
+    // Only occupied cells and supercover corner guards belong to executable
+    // geometry. A nearby unused cell cannot invalidate a held movement leg.
+    const changed =
+      this.terrain.passable[k] !== +passable || this.terrain.speed[k] !== speed;
+    const affected = changed
+      ? this.actors.filter((a) => {
+          const m = a.motion;
+          if (m?.status !== "moving") return false;
+          return !passable
+            ? m.segments
+                .slice(m.segmentCursor)
+                .some((s) => s.cell === k || s.guards?.includes(k))
+            : m.leg?.cell === k;
+        })
+      : [];
     for (const a of affected) this.movement.settle(a, this.kernel.state.now);
     changeCell(this.terrain, k, passable, speed);
     this.regions = buildRegions(this.terrain);
     for (const a of affected) {
-      this.kernel.invalidate(a.key);
+      this.kernel.invalidate(motionScope(a.key));
       if (!passable) {
         this.movement.interrupt(a, this.kernel.state.now);
         this.kernel.record("terrain-motion-interruption", a.key, {
@@ -675,9 +693,9 @@ export class PhysicalSimulation {
     return digest({
       versions,
       contentHash: CONTENT_HASH,
-      configurationHash: digest(this.config),
+      configurationHash: digest(causalConfig(this.config)),
       seed: this.seed,
-      config: this.config,
+      config: causalConfig(this.config),
       time: this.kernel.state.now,
       phase: -1,
       fork: this.fork,
@@ -756,7 +774,7 @@ export class PhysicalSimulation {
     for (const a of result.actors)
       if (a.motion?.status === "moving") {
         result.movement.settle(a, body.time);
-        result.kernel.invalidate(a.key);
+        result.kernel.invalidate(motionScope(a.key));
         result.launchLeg(a);
       }
     result.kernel.record(
@@ -766,6 +784,14 @@ export class PhysicalSimulation {
     );
     return result;
   }
+}
+function motionScope(actor: Key): Key {
+  return digest(["physical-motion", actor]);
+}
+function causalConfig(config: PhysicalConfig) {
+  const { routeExpansionsPerResume: _workSlice, ...diagnostic } =
+    config.diagnostic;
+  return { ...config, diagnostic };
 }
 function freezeProjection<T>(value: T): T {
   if (value && typeof value === "object") {
@@ -812,6 +838,58 @@ function validateSaved(s: Save): void {
   for (const value of Object.values(identities.ordinals))
     if (!Number.isSafeInteger(value) || value < 0)
       throw new Error("Invalid semantic ordinal");
+  const cellCount = s.config.spatial.width * s.config.spatial.height;
+  const validCell = (k: number) =>
+    Number.isSafeInteger(k) && k >= 0 && k < cellCount;
+  for (const request of s.routes) {
+    const search = request.search;
+    if (
+      !s.actors.some((a) => a.key === request.actor) ||
+      !validCell(search.start) ||
+      !validCell(search.goal) ||
+      !["regional", "local"].includes(search.stage) ||
+      search.status !== "unresolved" ||
+      !Number.isSafeInteger(search.version) ||
+      search.version > (s.terrain.version as number) ||
+      !Array.isArray(search.path) ||
+      !search.path.every(validCell) ||
+      (search.corridor !== null &&
+        (!Array.isArray(search.corridor) ||
+          !search.corridor.every(validCell))) ||
+      (search.stage === "regional" && !search.regional)
+    )
+      throw new Error("Invalid saved route");
+    baseSpeed(request.inputs, s.config);
+    for (const frontier of [
+      search,
+      ...(search.regional ? [search.regional] : []),
+    ]) {
+      if (!frontier.nodes || !Array.isArray(frontier.open))
+        throw new Error("Invalid saved frontier");
+      for (const [key, node] of Object.entries(frontier.nodes)) {
+        if (
+          !validCell(Number(key)) ||
+          String(Number(key)) !== key ||
+          !Number.isFinite(node.g) ||
+          node.g < 0 ||
+          typeof node.closed !== "boolean" ||
+          (node.parent !== -1 &&
+            (!validCell(node.parent) || !frontier.nodes[node.parent]))
+        )
+          throw new Error("Invalid saved search node");
+      }
+      for (const node of frontier.open)
+        if (
+          !validCell(node.k) ||
+          !frontier.nodes[node.k] ||
+          !Number.isFinite(node.g) ||
+          !Number.isFinite(node.f) ||
+          node.g < 0 ||
+          node.f < 0
+        )
+          throw new Error("Invalid saved search heap");
+    }
+  }
   const seen = new Set<number>();
   for (const e of [...s.actors, ...s.goods.containers, ...s.kernel.queue]) {
     if (

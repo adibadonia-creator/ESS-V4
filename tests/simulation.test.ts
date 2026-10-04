@@ -3,6 +3,7 @@ import { PhysicalSimulation } from "../src/world/simulation";
 import { resolveConfig } from "../src/content/profile";
 import { launchPhysicalFixture } from "../src/runners/fixture";
 import { time } from "../src/kernel/time";
+import { PHASE } from "../src/kernel/kernel";
 import { canonical, digest } from "../src/kernel/canonical";
 import { summarize } from "../src/measurement/reduce";
 const config = () =>
@@ -207,13 +208,40 @@ describe("complete committed-boundary checkpoints", () => {
         { actors: 2, sites: 8, routeExpansionsPerResume: 1 },
       ),
       sim = new PhysicalSimulation("spine", c);
-    launchPhysicalFixture(sim);
+    const snapshot = sim.snapshot(),
+      actor = snapshot.actors[0]!,
+      target = snapshot.containers
+        .filter((c) => c.kind === "site")
+        .sort(
+          (a, b) =>
+            (b.position.x - actor.position.x) ** 2 +
+            (b.position.y - actor.position.y) ** 2 -
+            ((a.position.x - actor.position.x) ** 2 +
+              (a.position.y - actor.position.y) ** 2),
+        )[0]!.position;
+    expect(sim.diagnosticMove(actor.key, target)).toBe("unresolved");
     const cp = sim.checkpoint();
-    expect(JSON.parse(cp).body.routes.length).toBeGreaterThan(0);
-    const restored = PhysicalSimulation.restore(cp);
+    expect(JSON.parse(cp).body.routes.length).toBe(1);
+    expect(JSON.parse(cp).body.routes[0].search.stage).toBe("regional");
+    let restored = PhysicalSimulation.restore(cp);
+    expect(restored.checkpoint()).toBe(cp);
+    expect(restored.causalHash()).toBe(sim.causalHash());
+    // Explicit host yields/saves never advance causal or paid actor time.
+    for (let i = 0; i < 3; i++) {
+      restored.resumeRouting();
+      expect(restored.kernel.state.now).toBe(0);
+      expect(restored.snapshot().actors[0]!.paidTravelSd).toBe(0);
+    }
+    while (record(restored).routes[0].search.stage === "regional")
+      restored.resumeRouting();
+    const localCp = restored.checkpoint();
+    restored = PhysicalSimulation.restore(localCp);
+    expect(restored.checkpoint()).toBe(localCp);
+    expect(JSON.parse(localCp).body.routes[0].search.stage).toBe("local");
     sim.advanceTo(time(1));
     restored.advanceTo(time(1));
     expect(restored.causalHash()).toBe(sim.causalHash());
+    expect(restored.kernel.state.history).toEqual(sim.kernel.state.history);
   });
   it("rejects tampering, incompatible profiles, future events in the past and invalid identity reuse", () => {
     const sim = create(),
@@ -255,5 +283,212 @@ describe("complete committed-boundary checkpoints", () => {
     expect(PhysicalSimulation.restore(fork.checkpoint()).causalHash()).toBe(
       fork.causalHash(),
     );
+  });
+});
+
+describe("pre-merge causal boundary corrections", () => {
+  it("makes engineering slices of 1 versus 65536 expansions history/hash/start invariant", () => {
+    const runs = [1, 65536].map((budget) => {
+      const sim = new PhysicalSimulation(
+        "spine",
+        resolveConfig(
+          { width: 64, height: 48, regionCells: 8 },
+          { actors: 2, sites: 8, routeExpansionsPerResume: budget },
+        ),
+      );
+      launchPhysicalFixture(sim);
+      expect(sim.kernel.state.now).toBe(0);
+      const launched = record(sim);
+      expect(launched.routes).toHaveLength(0);
+      expect(launched.actors.every((a: any) => a.motion.started === 0)).toBe(
+        true,
+      );
+      expect(
+        launched.kernel.queue.some((e: any) => e.payload.kind === "route"),
+      ).toBe(false);
+      const startHash = sim.causalHash();
+      sim.advanceTo(time(1));
+      return { sim, startHash };
+    });
+    expect(runs[0]!.startHash).toBe(runs[1]!.startHash);
+    expect(runs[0]!.sim.causalHash()).toBe(runs[1]!.sim.causalHash());
+    expect(runs[0]!.sim.kernel.state.history).toEqual(
+      runs[1]!.sim.kernel.state.history,
+    );
+    expect(runs[0]!.sim.kernel.state.historyHash).toBe(
+      runs[1]!.sim.kernel.state.historyHash,
+    );
+    expect(runs[0]!.sim.snapshot().actors).toEqual(
+      runs[1]!.sim.snapshot().actors,
+    );
+    expect(runs[0]!.sim.counters.routeExpansions).toBe(
+      runs[1]!.sim.counters.routeExpansions,
+    );
+  });
+  it("bounds each host slice and starts motion at the request time without a route event", () => {
+    const sim = new PhysicalSimulation(
+      "spine",
+      resolveConfig(
+        { width: 32, height: 24, regionCells: 8 },
+        { actors: 2, sites: 8, routeExpansionsPerResume: 1 },
+      ),
+    );
+    const snap = sim.snapshot(),
+      actor = snap.actors[0]!,
+      target = snap.containers.find((c) => c.kind === "site")!.position;
+    const before = sim.kernel.state.historyHash;
+    expect(sim.diagnosticMove(actor.key, target)).toBe("unresolved");
+    expect(sim.kernel.state.queue).toHaveLength(0);
+    expect(sim.kernel.state.historyHash).toBe(before);
+    let pending = true;
+    while (pending) {
+      const before =
+        sim.counters.routeExpansions + sim.counters.routeRegionExpansions;
+      pending = sim.resumeRouting();
+      expect(
+        sim.counters.routeExpansions +
+          sim.counters.routeRegionExpansions -
+          before,
+      ).toBeLessThanOrEqual(1);
+      expect(sim.kernel.state.now).toBe(0);
+    }
+    expect(record(sim).actors[0].motion.started).toBe(0);
+  });
+  it("cancels stale motion but preserves an unrelated future event concerning the same actor", () => {
+    const sim = create(),
+      actor = sim.snapshot().actors.find((a) => a.leg)!;
+    const stale = sim.kernel.state.queue.find(
+      (e) => e.payload.kind === "leg" && e.payload.actor === actor.key,
+    )!;
+    const unrelated = sim.kernel.schedule(actor.key, time(0.5), PHASE.observe, {
+      kind: "diagnostic",
+      actor: actor.key,
+    });
+    sim.advanceTo(Math.floor((actor.leg!.start + actor.leg!.end) / 2));
+    sim.diagnosticInterrupt(actor.key);
+    expect(sim.kernel.generation(stale.subject)).not.toBe(stale.generation);
+    expect(sim.kernel.generation(unrelated.subject)).toBe(unrelated.generation);
+    sim.advanceTo(time(1));
+    expect(
+      sim.kernel.state.history.some(
+        (h) =>
+          h.kind === "diagnostic-unrelated-event" && h.subject === actor.key,
+      ),
+    ).toBe(true);
+    expect(
+      sim.kernel.state.history.some(
+        (h) => h.kind === "movement-arrival" && h.subject === actor.key,
+      ),
+    ).toBe(false);
+    expect(sim.counters.staleEvents).toBeGreaterThan(0);
+  });
+  it("revalidates a stale unresolved search without turning invalidation into unreachable", () => {
+    const sim = new PhysicalSimulation(
+      "spine",
+      resolveConfig(
+        { width: 32, height: 24, regionCells: 8 },
+        { actors: 2, sites: 8, routeExpansionsPerResume: 1 },
+      ),
+    );
+    const snap = sim.snapshot(),
+      actor = snap.actors[0]!,
+      target = snap.containers.find((c) => c.kind === "site")!.position;
+    expect(sim.diagnosticMove(actor.key, target)).toBe("unresolved");
+    const saved = record(sim);
+    sim.diagnosticTerrain(
+      0,
+      !!saved.terrain.passable[0],
+      saved.terrain.speed[0],
+    );
+    expect(sim.resumeRouting()).toBe(true);
+    expect(record(sim).routes[0].search.status).toBe("unresolved");
+    const restored = PhysicalSimulation.restore(sim.checkpoint());
+    sim.advanceTo(time(1));
+    restored.advanceTo(time(1));
+    expect(sim.causalHash()).toBe(restored.causalHash());
+    expect(sim.snapshot().actors[0]!.motionStatus).toBe("arrived");
+  });
+  it("interrupts when a zero-length diagonal corner guard becomes impassable", () => {
+    const sim = new PhysicalSimulation(
+      "spine",
+      resolveConfig(
+        { width: 8, height: 8, regionCells: 2 },
+        { actors: 1, sites: 1 },
+      ),
+    );
+    for (let k = 0; k < 64; k++) sim.diagnosticTerrain(k, true, 1);
+    const actor = sim.snapshot().actors[0]!,
+      start =
+        Math.floor(actor.position.x / 0.1) +
+        Math.floor(actor.position.y / 0.1) * 8;
+    const dx = start % 8 < 7 ? 1 : -1,
+      dy = start < 56 ? 1 : -1,
+      goal = start + dx + dy * 8;
+    sim.diagnosticMove(actor.key, {
+      x: ((goal % 8) + 0.5) * 0.1,
+      y: (Math.floor(goal / 8) + 0.5) * 0.1,
+    });
+    sim.advanceTo(0);
+    const motion = record(sim).actors[0].motion;
+    const guard = motion.segments.flatMap((s: any) => s.guards ?? [])[0];
+    expect(guard).toBeDefined();
+    expect(motion.segments.some((s: any) => s.cell === guard)).toBe(false);
+    sim.diagnosticTerrain(guard, false, 0);
+    expect(sim.snapshot().actors[0]!.motionStatus).toBe("interrupted");
+    sim.advanceTo(time(1));
+    expect(
+      sim.kernel.state.history.some((h) => h.kind === "movement-arrival"),
+    ).toBe(false);
+  });
+  it("does not interrupt or reanchor for an adjacent unused impassable cell", () => {
+    const sim = create(),
+      actor = sim.snapshot().actors.find((a) => a.leg)!,
+      leg = actor.leg!;
+    sim.advanceTo(Math.floor((leg.start + leg.end) / 2));
+    const saved = record(sim),
+      motion = saved.actors.find((a: any) => a.key === actor.key).motion;
+    const used = new Set<number>(
+      motion.segments
+        .slice(motion.segmentCursor)
+        .flatMap((s: any) => [s.cell, ...(s.guards ?? [])]),
+    );
+    const width = sim.config.spatial.width;
+    let unused = -1;
+    for (const offset of [
+      -width - 1,
+      -width,
+      -width + 1,
+      -1,
+      1,
+      width - 1,
+      width,
+      width + 1,
+    ]) {
+      const k = leg.cell + offset;
+      if (
+        k >= 0 &&
+        k < width * sim.config.spatial.height &&
+        saved.terrain.passable[k] &&
+        !used.has(k)
+      ) {
+        unused = k;
+        break;
+      }
+    }
+    expect(unused).toBeGreaterThanOrEqual(0);
+    const generation = sim.kernel.generation(
+      digest(["physical-motion", actor.key]),
+    );
+    sim.diagnosticTerrain(unused, false, 0);
+    const after = sim.snapshot().actors.find((a) => a.key === actor.key)!;
+    expect(after.motionStatus).toBe("moving");
+    expect(after.leg).toEqual(leg);
+    expect(sim.kernel.generation(digest(["physical-motion", actor.key]))).toBe(
+      generation,
+    );
+    sim.advanceTo(time(1));
+    expect(
+      sim.snapshot().actors.find((a) => a.key === actor.key)!.motionStatus,
+    ).toBe("arrived");
   });
 });

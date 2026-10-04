@@ -5,6 +5,7 @@ import {
   adjacent,
   center,
   edgeAllowed,
+  buildRegions,
   type Regions,
   type Terrain,
   type Point,
@@ -14,14 +15,20 @@ interface Open {
   g: number;
   f: number;
 }
-export interface SearchState {
+// Only discovered nodes exist. Numeric keys are raster/region coordinates,
+// never storage handles; canonical serialization sorts keys deterministically.
+type Nodes = Record<number, { g: number; parent: number; closed: boolean }>;
+interface Frontier {
+  open: Open[];
+  nodes: Nodes;
+}
+export interface SearchState extends Frontier {
   version: number;
   start: number;
   goal: number;
-  open: Open[];
-  g: number[];
-  parent: number[];
-  closed: number[];
+  stage: "regional" | "local";
+  regional: Frontier | null;
+  corridor: number[] | null;
   status: "unresolved" | "found" | "unreachable" | "invalidated";
   path: number[];
 }
@@ -39,12 +46,26 @@ function heuristic(t: Terrain, a: number, b: number): number {
     dy = Math.abs(
       Math.floor(a / t.profile.width) - Math.floor(b / t.profile.width),
     );
-  // Declared terrain factors <=1. This lower bound remains admissible after
-  // faster-road changes by dividing by the raster's actual maximum.
   return (
     (Math.max(dx, dy) + (math.sqrt(2) - 1) * Math.min(dx, dy)) *
     t.profile.cellKm
   );
+}
+const regionCache = new WeakMap<Terrain, Regions>();
+const heaps = new WeakMap<Frontier, Heap<Open>>();
+const corridors = new WeakMap<SearchState, Set<number>>();
+function heapFor(frontier: Frontier): Heap<Open> {
+  let heap = heaps.get(frontier);
+  if (!heap) {
+    heap = new Heap(compare, frontier.open);
+    heaps.set(frontier, heap);
+  }
+  return heap;
+}
+function regionalDistance(r: Regions, a: number, b: number): number {
+  const p = r.centers[a]!,
+    q = r.centers[b]!;
+  return math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2) / r.maxSpeed;
 }
 export function beginSearch(
   t: Terrain,
@@ -52,21 +73,28 @@ export function beginSearch(
   start: number,
   goal: number,
   c: Counters,
+  // Raster mode is a diagnostic comparator, never a personal planning API.
+  guidance: "regional" | "raster" = "regional",
 ): SearchState {
+  if (r.version !== t.version) throw new Error("Stale regional graph");
+  regionCache.set(t, r);
   c.routeSearches++;
-  const n = t.kind.length,
-    state: SearchState = {
-      version: t.version,
-      start,
-      goal,
-      open: [],
-      g: Array(n).fill(-1),
-      parent: Array(n).fill(-1),
-      closed: Array(n).fill(0),
-      status: "unresolved",
-      path: [],
-    };
+  const s: SearchState = {
+    version: t.version,
+    start,
+    goal,
+    open: [],
+    nodes: {},
+    stage: "local",
+    regional: null,
+    corridor: null,
+    status: "unresolved",
+    path: [],
+  };
+  const n = t.kind.length;
   if (
+    !Number.isInteger(start) ||
+    !Number.isInteger(goal) ||
     start < 0 ||
     goal < 0 ||
     start >= n ||
@@ -75,31 +103,43 @@ export function beginSearch(
     !t.passable[goal] ||
     r.component[start] !== r.component[goal]
   ) {
-    state.status = "unreachable";
-    return state;
+    s.status = "unreachable";
+    return s;
   }
-  state.g[start] = 0;
-  state.open.push({
-    k: start,
-    g: 0,
-    f: heuristic(t, start, goal) / maxSpeed(t),
-  });
-  return state;
+  const a = r.region[start]!,
+    b = r.region[goal]!;
+  if (guidance === "regional" && a !== b) {
+    s.stage = "regional";
+    s.regional = {
+      open: [{ k: a, g: 0, f: regionalDistance(r, a, b) }],
+      nodes: { [a]: { g: 0, parent: -1, closed: false } },
+    };
+  } else {
+    if (guidance === "regional") s.corridor = [a];
+    initializeLocal(t, r, s);
+  }
+  return s;
 }
-const maxSpeedCache = new WeakMap<Terrain, { version: number; max: number }>();
-function maxSpeed(t: Terrain): number {
-  const held = maxSpeedCache.get(t);
-  if (held?.version === t.version) return held.max;
-  let max = 0;
-  for (const p of t.speed) max = Math.max(max, p);
-  maxSpeedCache.set(t, { version: t.version, max });
-  return max;
+function initializeLocal(t: Terrain, r: Regions, s: SearchState): void {
+  s.stage = "local";
+  s.nodes[s.start] = { g: 0, parent: -1, closed: false };
+  heapFor(s).push({
+    k: s.start,
+    g: 0,
+    f: heuristic(t, s.start, s.goal) / r.maxSpeed,
+  });
+}
+function pathTo(nodes: Nodes, goal: number): number[] {
+  const path: number[] = [];
+  for (let at = goal; at !== -1; at = nodes[at]!.parent) path.push(at);
+  return path.reverse();
 }
 export function resumeSearch(
   t: Terrain,
   s: SearchState,
   budget: number,
   c: Counters,
+  regions?: Regions,
 ): RouteResult {
   if (!Number.isSafeInteger(budget) || budget < 1)
     throw new Error("Invalid route expansion budget");
@@ -107,50 +147,93 @@ export function resumeSearch(
     s.status = "invalidated";
     return { status: s.status, search: s };
   }
-  const heap = new Heap<Open>(compare, s.open),
-    max = maxSpeed(t);
-  for (
-    let spent = 0;
-    s.status === "unresolved" && heap.peek() && spent < budget;
-  ) {
-    const node = heap.pop()!;
-    if (s.closed[node.k] || node.g !== s.g[node.k]) continue;
-    c.routeExpansions++;
-    spent++;
-    s.closed[node.k] = 1;
-    if (node.k === s.goal) {
-      const path: number[] = [];
-      let at = s.goal;
-      while (at !== -1) {
-        path.push(at);
-        at = s.parent[at]!;
-      }
-      s.path = path.reverse();
-      s.status = "found";
+  let r = regions ?? regionCache.get(t);
+  if (!r || r.version !== t.version) {
+    r = buildRegions(t);
+    regionCache.set(t, r);
+  }
+  // A slice charges both coarse and local expansions, including the transition.
+  // No causal event, ordinal or timestamp is created by this computation.
+  let spent = 0;
+  while (s.status === "unresolved" && spent < budget) {
+    const regional = s.stage === "regional",
+      frontier = regional ? s.regional! : s,
+      heap = heapFor(frontier),
+      node = heap.pop();
+    if (!node) {
+      s.status = "unreachable";
       break;
     }
-    for (const j of adjacent(t, node.k))
-      if (!s.closed[j] && edgeAllowed(t, node.k, j)) {
+    const held = frontier.nodes[node.k]!;
+    if (held.closed || node.g !== held.g) continue;
+    held.closed = true;
+    spent++;
+    if (regional) {
+      c.routeRegionExpansions++;
+      const goal = r.region[s.goal]!;
+      if (node.k === goal) {
+        s.corridor = pathTo(frontier.nodes, goal);
+        // No future search needs the completed coarse frontier.
+        s.regional = null;
+        initializeLocal(t, r, s);
+        continue;
+      }
+      // Edges exist only where buildRegions found a traversable portal. Clusters
+      // are connected internally, so this corridor always admits local refinement.
+      for (const j of [...r.neighbours.get(node.k)!].sort((a, b) => a - b)) {
+        const g = node.g + regionalDistance(r, node.k, j),
+          old = frontier.nodes[j];
+        if (!old?.closed && (!old || g < old.g)) {
+          frontier.nodes[j] = { g, parent: node.k, closed: false };
+          heap.push({ k: j, g, f: g + regionalDistance(r, j, goal) });
+        }
+      }
+    } else {
+      c.routeExpansions++;
+      if (node.k === s.goal) {
+        s.path = pathTo(s.nodes, s.goal);
+        s.status = "found";
+        break;
+      }
+      let allowed = corridors.get(s);
+      if (!allowed && s.corridor) {
+        allowed = new Set(s.corridor);
+        corridors.set(s, allowed);
+      }
+      for (const j of adjacent(t, node.k)) {
+        const old = s.nodes[j];
+        if (
+          old?.closed ||
+          (allowed && !allowed.has(r.region[j]!)) ||
+          !edgeAllowed(t, node.k, j)
+        )
+          continue;
         const diagonal =
           node.k % t.profile.width !== j % t.profile.width &&
           Math.floor(node.k / t.profile.width) !==
             Math.floor(j / t.profile.width);
-        // Cell-boundary integration: half the segment in each cell.
         const cost =
           t.profile.cellKm *
           (diagonal ? math.sqrt(2) : 1) *
           (0.5 / t.speed[node.k]! + 0.5 / t.speed[j]!);
         const g = node.g + cost;
-        if (s.g[j] === -1 || g < s.g[j]!) {
-          s.g[j] = g;
-          s.parent[j] = node.k;
-          heap.push({ k: j, g, f: g + heuristic(t, j, s.goal) / max });
+        if (!old || g < old.g) {
+          s.nodes[j] = { g, parent: node.k, closed: false };
+          heap.push({ k: j, g, f: g + heuristic(t, j, s.goal) / r.maxSpeed });
         }
       }
+    }
   }
-  if (s.status === "unresolved" && !heap.peek()) s.status = "unreachable";
+  const frontier = s.stage === "regional" ? s.regional! : s;
+  if (s.status === "unresolved" && !heapFor(frontier).peek())
+    s.status = "unreachable";
   return s.status === "found"
-    ? { status: "found", search: s, path: [...s.path], cost: s.g[s.goal]! }
+    ? {
+        status: "found",
+        search: s,
+        path: [...s.path],
+        cost: s.nodes[s.goal]!.g,
+      }
     : { status: s.status, search: s };
 }
 export interface CellSegment {
@@ -158,6 +241,8 @@ export interface CellSegment {
   to: Point;
   cell: number;
   length: number;
+  // Passability at a diagonal corner is a real dependency despite zero length.
+  guards?: number[];
 }
 // Exact straight-line raster traversal, with conservative supercover at corners.
 export function segments(t: Terrain, a: Point, b: Point): CellSegment[] | null {
@@ -200,6 +285,8 @@ export function segments(t: Terrain, a: Point, b: Point): CellSegment[] | null {
     if (Math.abs(tx - ty) < 1e-12) {
       if (!t.passable[k + sx] || !t.passable[k + sy * t.profile.width])
         return null;
+      if (out.length)
+        out[out.length - 1]!.guards = [k + sx, k + sy * t.profile.width];
       x += sx;
       y += sy;
       tx += stepX;

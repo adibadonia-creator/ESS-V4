@@ -28,8 +28,10 @@ export class Session {
       if (command.kind === "advance") sim.advanceTo(command.time);
       if (command.kind === "checkpoint")
         return { id: command.id, ok: true, checkpoint: sim.checkpoint() };
-      if (command.kind === "diagnostic-move")
+      if (command.kind === "diagnostic-move") {
         sim.diagnosticMove(command.actor, command.target);
+        sim.advanceTo(sim.kernel.state.now);
+      }
       if (command.kind === "diagnostic-transfer")
         sim.diagnosticGoods({
           kind: "transfer",

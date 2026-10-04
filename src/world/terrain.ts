@@ -187,11 +187,15 @@ export interface Regions {
   sizes: number[];
   portals: { a: number; b: number; from: number; to: number }[];
   neighbours: Map<number, Set<number>>;
+  centers: Point[];
+  // Derived once per terrain version, shared by all searches.
+  maxSpeed: number;
 }
 export function buildRegions(t: Terrain): Regions {
   const component = new Int32Array(t.kind.length).fill(-1),
     region = new Int32Array(t.kind.length).fill(-1),
     sizes: number[] = [],
+    centers: Point[] = [],
     neighbours = new Map<number, Set<number>>();
   let regionId = 0;
   // Global connected components prove reachability; local connected clusters
@@ -230,6 +234,14 @@ export function buildRegions(t: Terrain): Regions {
             q.push(j);
           }
       neighbours.set(id, new Set());
+      let x = 0,
+        y = 0;
+      for (const cell of q) {
+        const p = center(t, cell);
+        x += p.x;
+        y += p.y;
+      }
+      centers.push({ x: x / q.length, y: y / q.length });
     }
   const portals: Regions["portals"] = [];
   for (let k = 0; k < region.length; k++)
@@ -242,7 +254,18 @@ export function buildRegions(t: Terrain): Regions {
           neighbours.get(a)!.add(b);
           neighbours.get(b)!.add(a);
         }
-  return { version: t.version, component, region, sizes, portals, neighbours };
+  let maxSpeed = 0;
+  for (const speed of t.speed) maxSpeed = Math.max(maxSpeed, speed);
+  return {
+    version: t.version,
+    component,
+    region,
+    sizes,
+    portals,
+    neighbours,
+    centers,
+    maxSpeed,
+  };
 }
 export function changeCell(
   t: Terrain,
