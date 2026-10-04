@@ -78,6 +78,9 @@ export class GoodsLedger {
   private containers: Map<Key, Container>;
   private reservations: Map<Key, Reservation>;
   private seen: Set<Key>;
+  private byActor = new Map<Key, Set<Key>>();
+  private goodById: Map<string, PhysicalConfig["goods"][number]>;
+  private carried = new Map<Key, Key>();
   private held = new Map<string, Set<Key>>();
   constructor(
     private config: PhysicalConfig,
@@ -86,6 +89,12 @@ export class GoodsLedger {
     state: GoodsState = { containers: [], reservations: [], transactions: [] },
   ) {
     this.state = state;
+    this.goodById = new Map(config.goods.map((g) => [g.id, g]));
+    if (this.goodById.size !== config.goods.length)
+      throw Error("Duplicate physical good");
+    for (const c of state.containers)
+      if (c.kind === "carried" && c.location.kind === "carrier")
+        this.carried.set(c.location.actor, c.key);
     this.containers = new Map(state.containers.map((x) => [x.key, x]));
     this.reservations = new Map(state.reservations.map((x) => [x.key, x]));
     this.seen = new Set(state.transactions.map((x) => x.key));
@@ -112,6 +121,8 @@ export class GoodsLedger {
     if (Object.keys(c.stocks).length)
       throw new Error("New containers must be empty; use declared sources");
     this.containers.set(c.key, c);
+    if (c.kind === "carried" && c.location.kind === "carrier")
+      this.carried.set(c.location.actor, c.key);
     this.state.containers.push(c);
     if (c.location.kind === "container") {
       const set = this.children.get(c.location.container) ?? new Set<Key>();
@@ -162,11 +173,38 @@ export class GoodsLedger {
     for (const c of this.state.containers) this.location(c.key);
   }
   private good(id: string): PhysicalConfig["goods"][number] {
-    const g = this.config.goods.find((x) => x.id === id);
+    this.counters.contentEntriesVisited++;
+    const g = this.goodById.get(id);
     if (!g) throw new Error("Unknown physical good");
     return g;
   }
+  carriedContainer(actor: Key): Container {
+    const key = this.carried.get(actor);
+    if (!key) throw Error("Missing carried container");
+    return this.get(key);
+  }
+  activeReservations(actor: Key): Reservation[] {
+    const out: Reservation[] = [];
+    for (const key of this.byActor.get(actor) ?? []) {
+      this.counters.reservationRecordsVisited++;
+      out.push(this.reservations.get(key)!);
+    }
+    return out;
+  }
+  private unindexReservation(r: Reservation): void {
+    const tag = r.container + ":" + r.good;
+    const held = this.held.get(tag);
+    held?.delete(r.key);
+    if (!held?.size) this.held.delete(tag);
+    const actor = this.byActor.get(r.actor);
+    actor?.delete(r.key);
+    if (!actor?.size) this.byActor.delete(r.actor);
+  }
   private indexReservation(r: Reservation): void {
+    if (r.status !== "active") return;
+    const actor = this.byActor.get(r.actor) ?? new Set<Key>();
+    actor.add(r.key);
+    this.byActor.set(r.actor, actor);
     const tag = r.container + ":" + r.good,
       set = this.held.get(tag) ?? new Set<Key>();
     set.add(r.key);
@@ -175,6 +213,7 @@ export class GoodsLedger {
   reserved(container: Key, good: string, except?: Key): number {
     let amount = 0;
     for (const key of this.held.get(container + ":" + good) ?? []) {
+      this.counters.reservationRecordsVisited++;
       const r = this.reservations.get(key)!;
       if (key !== except && r.status === "active") amount += r.remaining;
     }
@@ -288,11 +327,16 @@ export class GoodsLedger {
           deltas.set(from.key, -quantity);
           if (request.kind === "transfer") {
             if (
-              (!["diagnostic-physical", "own-custody"].includes(request.basis)) ||
+              !["diagnostic-physical", "own-custody"].includes(request.basis) ||
               request.from === request.to
             )
               throw new Error("Invalid transaction basis");
-            if(request.basis === "own-custody" && (from.custodian !== request.actor || this.get(request.to).custodian !== request.actor)) throw Error("No own custody authority");
+            if (
+              request.basis === "own-custody" &&
+              (from.custodian !== request.actor ||
+                this.get(request.to).custodian !== request.actor)
+            )
+              throw Error("No own custody authority");
             const to = this.get(request.to),
               q = this.location(to.key);
             if (
@@ -354,6 +398,8 @@ export class GoodsLedger {
             if (reservation.remaining === 0) reservation.status = "spent";
           }
         }
+        if (reservation && reservation.status !== "active")
+          this.unindexReservation(reservation);
         const tx = {
           key,
           at,

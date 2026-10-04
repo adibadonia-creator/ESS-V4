@@ -1,7 +1,12 @@
 import { Heap } from "../kernel/heap";
 import { math } from "../kernel/numerics";
 import type { Counters } from "../kernel/counters";
-import { ROUTE_ENGINEERING } from "../content/profile";
+import {
+  geometryCell,
+  personalTopology,
+  type GeographyVersion,
+  type PersonalTopology,
+} from "../evidence/geography";
 import type { MapProfile, CellBelief, TraversalPrior } from "../evidence/types";
 export interface PersonalSearch {
   start: number;
@@ -24,8 +29,10 @@ export interface PersonalSearch {
   path: number[];
   status: "unresolved" | "found" | "unreachable";
   expansions: number;
-  computationStart: number;
-  computationEnd: number;
+  regionExpansions: number;
+  geographyId: string | null;
+  effortAccount: string | null;
+  deferred: boolean;
 }
 export function beginPersonalSearch(
   profile: MapProfile,
@@ -36,23 +43,33 @@ export function beginPersonalSearch(
   prior: TraversalPrior,
   counters: Counters,
   summaries: { id: number; cells: number[]; neighbors: number[] }[] = [],
+  geography?: GeographyVersion,
 ): PersonalSearch {
   counters.personalRouteSearches++;
-  const known = Object.fromEntries(cells.map((c) => [c.cell, c]));
+  const known = geography
+    ? {}
+    : Object.fromEntries(cells.map((c) => [c.cell, c]));
+  if (!geography) counters.personalGeographyCopied += cells.length;
   const regions = Object.fromEntries(summaries.map((r) => [r.id, r])),
     regionByCell = Object.fromEntries(
       summaries.flatMap((r) => r.cells.map((k) => [k, r.id])),
     ),
     a = regionByCell[start],
     b = regionByCell[goal];
-  const regional = !exploratory && a !== undefined && b !== undefined;
+  const topology =
+    geography && !exploratory
+      ? personalTopology(geography, profile, counters)
+      : { regions, regionByCell };
+  const aa = topology.regionByCell[start],
+    bb = topology.regionByCell[goal];
+  const regional = !exploratory && aa !== undefined && bb !== undefined;
   return {
-    regions,
-    regionByCell,
+    regions: geography ? {} : regions,
+    regionByCell: geography ? {} : regionByCell,
     coarse: {
-      open: regional ? [{ cell: a, g: 0, f: 0 }] : [],
-      nodes: regional ? { [a]: { g: 0, parent: -1, closed: false } } : {},
-      goal: b ?? -1,
+      open: regional ? [{ cell: aa!, g: 0, f: 0 }] : [],
+      nodes: regional ? { [aa!]: { g: 0, parent: -1, closed: false } } : {},
+      goal: bb ?? -1,
       done: !regional,
     },
     corridor: null,
@@ -67,38 +84,67 @@ export function beginPersonalSearch(
     path: [],
     status: "unresolved",
     expansions: 0,
-    computationStart: 0,
-    computationEnd: ROUTE_ENGINEERING.routeExpansionsPerComputation,
+    regionExpansions: 0,
+    geographyId: geography?.id ?? null,
+    effortAccount: null,
+    deferred: false,
   };
 }
-// A new bounded computation can continue a saved frontier; host slices never renew it.
-export function continuePersonalComputation(s: PersonalSearch): void {
-  if (s.status !== "unresolved" || s.expansions < s.computationEnd)
-    throw Error("Computation is not exhausted");
-  s.computationStart = s.expansions;
-  s.computationEnd =
-    s.expansions + ROUTE_ENGINEERING.routeExpansionsPerComputation;
+type Open = PersonalSearch["open"][number];
+const heaps = new WeakMap<Open[], Heap<Open>>();
+function heapFor(open: Open[], counts: Counters): Heap<Open> {
+  let heap = heaps.get(open);
+  if (!heap) {
+    // open is the persisted canonical heap order; restore needs no heapification.
+    heap = new Heap<Open>(
+      (a, b) => a.f - b.f || a.cell - b.cell || a.g - b.g,
+      open,
+      false,
+    );
+    heaps.set(open, heap);
+  }
+  return heap;
 }
-// Host slice and total class-E computation bound are separate; neither charges time.
+const corridors = new WeakMap<PersonalSearch, Set<number>>();
+// Low level search yields only. The caller supplies remaining causal logical work.
 export function resumePersonalSearch(
   s: PersonalSearch,
   slice: number,
   counters: Counters,
+  allowance = Number.MAX_SAFE_INTEGER,
+  geography?: GeographyVersion,
 ): PersonalSearch["status"] | "deferred" {
   if (s.status !== "unresolved") return s.status;
-  const heap = new Heap<(typeof s.open)[number]>(
-    (a, b) => a.f - b.f || a.cell - b.cell || a.g - b.g,
-    s.open,
-  );
+  if (
+    !Number.isSafeInteger(slice) ||
+    slice < 1 ||
+    !Number.isSafeInteger(allowance) ||
+    allowance < 0
+  )
+    throw Error("Invalid route work allowance");
+  counters.personalRouteHostResumes++;
+  const heap = heapFor(s.open, counters);
+  if (s.geographyId && geography?.id !== s.geographyId)
+    throw Error("Personal geography premise mismatch");
+  const topology: PersonalTopology =
+    geography && !s.exploratory
+      ? personalTopology(geography, s.profile, counters)
+      : { regions: s.regions, regionByCell: s.regionByCell };
+  const known = (k: number) => {
+    counters.personalRouteCellsConsulted++;
+    return geography ? geometryCell(geography, k) : s.known[k];
+  };
   const { width: w, height: h } = s.profile;
-  const cost = (k: number) =>
-    s.known[k]
-      ? s.known[k]!.passable
-        ? 1 / s.known[k]!.speed
+  const cost = (k: number) => {
+    const c = known(k);
+    return c
+      ? c.passable
+        ? 1 / c.speed
         : Infinity
       : s.exploratory
         ? 1 / s.prior.speedFactor
         : Infinity;
+  };
   const heuristic = (k: number) => {
     const dx = Math.abs((k % w) - (s.goal % w)),
       dy = Math.abs(Math.floor(k / w) - Math.floor(s.goal / w));
@@ -107,19 +153,19 @@ export function resumePersonalSearch(
       s.profile.cellKm
     );
   };
-  let n = 0;
+  let n = 0,
+    host = 0;
   if (!s.coarse.done) {
-    const coarse = new Heap<(typeof s.coarse.open)[number]>(
-      (a, b) => a.f - b.f || a.cell - b.cell,
-      s.coarse.open,
-    );
-    while (coarse.peek() && n < slice && s.expansions < s.computationEnd) {
-      const entry = coarse.pop()!,
+    const coarse = heapFor(s.coarse.open, counters);
+    while (coarse.peek() && host < slice && n < allowance) {
+      const entry = (counters.personalRouteHeapPops++, coarse.pop()!),
         node = s.coarse.nodes[entry.cell]!;
+      host++;
       if (node.closed || node.g !== entry.g) continue;
       node.closed = true;
-      n++;
-      s.expansions++;
+      // N.effort charges cell expansions. Region guiding is indexed overhead,
+      // separately metered; do not invent an additional scientific unit cost.
+      s.regionExpansions++;
       counters.personalRouteRegionExpansions++;
       if (entry.cell === s.coarse.goal) {
         s.corridor = [];
@@ -133,10 +179,12 @@ export function resumePersonalSearch(
         s.coarse.open.length = 0;
         break;
       }
-      for (const k of s.regions[entry.cell]!.neighbors) {
+      for (const k of (counters.personalRegionRecordsConsulted++,
+      topology.regions[entry.cell]!.neighbors)) {
         const g = node.g + 1;
         if (!s.coarse.nodes[k] || g < s.coarse.nodes[k]!.g) {
           s.coarse.nodes[k] = { g, parent: entry.cell, closed: false };
+          counters.personalRouteHeapPushes++;
           coarse.push({ cell: k, g, f: g });
         }
       }
@@ -145,13 +193,17 @@ export function resumePersonalSearch(
       s.status = "unreachable";
       return "unreachable";
     }
-    if (!s.coarse.done)
-      return s.expansions >= s.computationEnd ? "deferred" : "unresolved";
+    if (!s.coarse.done) return n >= allowance ? "deferred" : "unresolved";
   }
-  const corridor = s.corridor ? new Set(s.corridor) : null;
-  while (heap.peek() && n < slice && s.expansions < s.computationEnd) {
-    const entry = heap.pop()!,
+  let corridor = corridors.get(s) ?? null;
+  if (s.corridor && !corridor) {
+    corridor = new Set(s.corridor);
+    corridors.set(s, corridor);
+  }
+  while (heap.peek() && host < slice && n < allowance) {
+    const entry = (counters.personalRouteHeapPops++, heap.pop()!),
       node = s.nodes[entry.cell]!;
+    host++;
     if (node.closed || node.g !== entry.g) continue;
     node.closed = true;
     n++;
@@ -184,7 +236,7 @@ export function resumePersonalSearch(
         yy = y + dy!;
       if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
       const k = xx + w * yy;
-      if (corridor && !corridor.has(s.regionByCell[k]!)) continue;
+      if (corridor && !corridor.has(topology.regionByCell[k]!)) continue;
       const c = cost(k);
       if (!Number.isFinite(c) || !Number.isFinite(cost(entry.cell))) continue;
       if (
@@ -202,6 +254,7 @@ export function resumePersonalSearch(
           2;
       if (!s.nodes[k] || g < s.nodes[k]!.g) {
         s.nodes[k] = { g, parent: entry.cell, closed: false };
+        counters.personalRouteHeapPushes++;
         heap.push({ cell: k, g, f: g + heuristic(k) });
       }
     }
@@ -210,5 +263,5 @@ export function resumePersonalSearch(
     s.status = "unreachable";
     return "unreachable";
   }
-  return s.expansions >= s.computationEnd ? "deferred" : "unresolved";
+  return n >= allowance ? "deferred" : "unresolved";
 }

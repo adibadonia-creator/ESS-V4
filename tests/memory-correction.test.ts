@@ -15,7 +15,6 @@ import { counters } from "../src/kernel/counters";
 import {
   beginPersonalSearch,
   resumePersonalSearch,
-  continuePersonalComputation,
 } from "../src/runtime/routing";
 import type { PerceptionPacket } from "../src/evidence/types";
 const packet = (n: number, offset = 0): PerceptionPacket => ({
@@ -183,7 +182,8 @@ describe("declared priors and engineering computation", () => {
     expect(execution(a).task.route.prior).toEqual(
       a.personalView(t.actor).traversalPrior,
     );
-    expect(execution(a).task.route.computationEnd).toBe(4096);
+    expect(execution(a).task.route.effortAccount).toBeTruthy();
+    expect(execution(a).task.route).not.toHaveProperty("computationEnd");
   });
   it("unseen realised terrain cannot change the exploratory frontier under the same declared prior", () => {
     const a = flatWorld(),
@@ -242,7 +242,7 @@ describe("declared priors and engineering computation", () => {
     expect(two.nodes[31]!.g).toBeGreaterThan(one.nodes[31]!.g);
     expect(two.prior).toEqual(wrong);
   });
-  it("4096-expansion exhaustion is unresolved, slice-invariant and resumable in another bounded computation", () => {
+  it("caller causal allowance exhausts without destroying the frontier, independent of host slices", () => {
     const a = flatWorld(),
       actor = a.actorKeys()[0]!;
     a.enablePersonal(actor);
@@ -264,16 +264,17 @@ describe("declared priors and engineering computation", () => {
         c,
       ),
       t = JSON.parse(JSON.stringify(s));
-    while (resumePersonalSearch(s, 1, c) === "unresolved") {}
-    expect(resumePersonalSearch(t, 65536, c)).toBe("deferred");
+    while (
+      resumePersonalSearch(s, 1, c, 4096 - s.expansions) === "unresolved"
+    ) {}
+    expect(resumePersonalSearch(t, 65536, c, 4096)).toBe("deferred");
     expect(s).toEqual(t);
     expect(s.status).toBe("unresolved");
     expect(s.expansions).toBe(4096);
     const restored = JSON.parse(JSON.stringify(s));
-    continuePersonalComputation(restored);
     expect(resumePersonalSearch(restored, 1, c)).toBe("unresolved");
     expect(restored.expansions).toBe(4097);
-    expect(restored.computationEnd).toBe(8192);
+    expect(restored).not.toHaveProperty("computationEnd");
     expect(Object.keys(restored.nodes).length).toBeGreaterThan(
       Object.keys(s.nodes).length,
     );

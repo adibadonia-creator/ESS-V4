@@ -1,5 +1,22 @@
 // Measurement only: never serialized into causal state or used by a law.
 export interface Counters {
+  currentTaskLookups: number;
+  terminalTaskRowsVisited: number;
+  activeTaskRowsVisited: number;
+  paidPrefixRowsVisited: number;
+  personalReadEntriesVisited: number;
+  personalReadPagesVisited: number;
+  personalGeographyCopied: number;
+  personalRegionRecordsConsulted: number;
+  personalRouteHeapPushes: number;
+  personalRouteHeapPops: number;
+  personalRouteHeapRebuilds: number;
+  personalRouteHostResumes: number;
+  personalRouteCellsConsulted: number;
+  reservationRecordsVisited: number;
+  contentEntriesVisited: number;
+  geographyRegionBuildCells: number;
+
   perceptionCandidateChecks: number;
   routineObservations: number;
   evidenceUpdates: number;
@@ -32,6 +49,23 @@ export interface Counters {
 }
 export function counters(): Counters {
   return {
+    currentTaskLookups: 0,
+    terminalTaskRowsVisited: 0,
+    activeTaskRowsVisited: 0,
+    paidPrefixRowsVisited: 0,
+    personalReadEntriesVisited: 0,
+    personalReadPagesVisited: 0,
+    personalGeographyCopied: 0,
+    personalRegionRecordsConsulted: 0,
+    personalRouteHeapPushes: 0,
+    personalRouteHeapPops: 0,
+    personalRouteHeapRebuilds: 0,
+    personalRouteHostResumes: 0,
+    personalRouteCellsConsulted: 0,
+    reservationRecordsVisited: 0,
+    contentEntriesVisited: 0,
+    geographyRegionBuildCells: 0,
+
     perceptionCandidateChecks: 0,
     routineObservations: 0,
     evidenceUpdates: 0,

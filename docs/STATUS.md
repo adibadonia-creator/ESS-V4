@@ -1,6 +1,35 @@
-# Pack 0B — evidence boundary and task runtime
+# Pre-0C — computational state and interface retrofit
 
-The existing `pack0b-evidence-task-runtime` branch and [draft PR #2](https://github.com/adibadonia-creator/ESS-V4/pull/2) extend merged Pack 0A, `main` at `2933d30868ad5ae202f90d7ecf2df6979b662af4`. The targeted pre-merge correction starts from `1f992d9e1a9cdcdb8e2bcd86c0260171c5c72d14`. No new branch/PR, merge, autonomous deliberation or Pack 0C is implemented. **Pack 0 and §43's architectural proof remain incomplete.** [Revision 4.0](spec/REVISION_4_0.md) remains the sole authority; it was read completely before implementation. The accepted physical substrate and its 48 tests remain; [PACK0A](PACK0A.md) preserves its historical implementation/reuse/performance receipt.
+Branch `pre0c-computational-state-retrofit` builds on accepted merged Pack 0B / PR #2, main `3d1761dbf6b160ec1b04b60cf2410c883b27d115`. One draft PR, unmerged. Revision 4.0 is unchanged and normative; [Computational Scaling and State Discipline](COMPUTATIONAL_SCALING_AND_STATE_DISCIPLINE.md) is mandatory subordinate engineering guidance. **No autonomous cognition or Pack 0C is implemented; the Pack-0 architectural proof remains incomplete.**
+
+[Full retrofit receipt, lifecycle contract and readiness assessment](PRE0C_RETROFIT.md) records the implemented boundary and remaining obligations. Current task/route access uses direct active maps; terminal execution, paid-prefix/calendar audit, and exact indexed original-purpose/retry/spend backing are separate. Immutable evidence-owned review roots supply bounded subject/property/context, known-method, property/resource/region/cursor and canonical-route reads. Bulk PersonalView remains inspection/export. Versioned personal geography shares persistent pages, pins exact search/retry premises, and caches derived personal topology; sparse persisted heaps resume without copying the map or reheapifying. Goods remain authoritative only in the ledger, with direct carried/good/active-reservation indexes. Canonical path knowledge is independent of task purpose; every journey fact remains in history.
+
+The engineering total route cutoff is removed. Host yield is non-causal; diagnostic caller-owned effort uses existing P/N review/safety/repair allowances 600/80/40 EU and 1 EU/64 cell expansions. Exhausted accounts defer a retained frontier without evidence or physical/repair failure; resume, renaming and reload cannot mint fresh effort at the same diagnostic boundary. Later explicit account admission is a diagnostic adapter, not mind/review scheduling. Schema 5 / ESS-4.0-pre0c explicitly rejects old checkpoints and retains paid/retry/effort/pin/provenance backing.
+
+Structural receipts: [growth](pre0c-growth.json), [comparable baseline/after](pre0c-benchmark.json), [CPU profile](pre0c-profile.json).
+
+| Controlled axis | Observed result |
+| --- | --- |
+| 8/32/96/256/512 independent completed tasks | After active tasks/prefixes=0 throughout, zero terminal rows visited; hot bytes 156/157/159/159/189 versus baseline 5,577/22,012/65,949/176,337/353,202. Exact 512 retry records and full audit survive restore |
+| 8→12,008 remembered cells | Same local result and five index visits; zero map page visits/full inspector calls |
+| 8/32/100 journeys over two paths | Two current canonical routes, all journey facts retained |
+| 0/100/1,000 closed leases, fixed active one | Two relevant reservation visits and one goods lookup; same stock/load |
+| +128 irrelevant methods and goods | Same relevant ordinary posting/backing visits; startup compile growth separate |
+| Host slices 1/65,536 | Same 23 cell expansions, frontier/result/task/spend/time/history; 23/1 host resumes, zero heap rebuilds |
+
+Full boundary lint/typecheck, **99 tests**, pure-core compilation and production build pass locally; **two production browser tests pass** with actual Worker/Node active-save/replay parity and Pixi/WebGL observer inertness. Automated screenshot inspected by Codex; no human review or scientific experiment claimed. GitHub CI is recorded separately at final head in the draft PR. Readiness §13's ten criteria and this task's twelve checks pass at the bounded interface gate; first future Bayesian/report/occupancy consumer still owes distinct-original/overlap/contradiction tests, and actual 0C reviews owe full P5 assertions.
+
+Five-run sequential medians (8 / 32 people): advancement **46.24→58.96 / 166.73→194.14 ms**, checkpoint **183.12→235.71 / 222.28→239.73 ms**, full inspector **5.17→7.51 / 17.81→21.17 ms**. Narrow prior/method read is **0.25 / 0.45 ms** on a different declared workload. Current hot task/activity bytes **75,105→21,630 / 322,349→68,244**; complete checkpoints **5,064,290→5,087,655 / 6,442,538→6,538,218 bytes**. Physical events, evidence updates, seen cells, paid transitions and route expansions match the baseline fixtures; new source/schema/account/journey history identities intentionally differ. These timings regress and remain above the provisional performance target. Sampling shows evidence/index delivery and canonical encoding dominate, not personal search; exact methodology and overlapping percentages are in the profile receipt.
+
+**Deferred proof-gate work:** archive-backed durable continuation/resident limits, identity/account growth, streaming history commitments, full publication/hash boundaries, binary/chunked terrain checkpoints, goods transaction/reconciliation allocation, evidence writer/cache costs and physical stale-heap compaction. Full 96/400-person, dense local contention, long-history/generation and native/WASM comparisons remain required under unchanged §40/§43/§44 acceptance. Current separate audit arrays still reside in memory; no constant total-memory or mature performance claim. Scientific coefficients, map/population scale, locality, uncertainty and individual agency were not weakened.
+
+Reproduce: `npm run check`; `npx playwright install --with-deps chromium && npm run test:browser`; `npm run probe:state`; `npm run benchmark -- --pack0b` / `--pack0b --probe32`; `node --import tsx scripts/state-profile.ts`.
+
+---
+
+# Historical Pack 0B — evidence boundary and task runtime
+
+The following is the historical Pack-0B pre-merge receipt. PR #2 is now merged into `main` at `3d1761dbf6b160ec1b04b60cf2410c883b27d115`; its older measurements and implementation statements describe that slice, not the current retrofit. **Pack 0 and §43's architectural proof remain incomplete.** [Revision 4.0](spec/REVISION_4_0.md) remains the sole authority; it was read completely before implementation. The accepted physical substrate and its 48 tests remain; [PACK0A](PACK0A.md) preserves its historical implementation/reuse/performance receipt.
 
 ## Information boundary
 

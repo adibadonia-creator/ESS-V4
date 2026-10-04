@@ -5,9 +5,11 @@ export class Heap<T> {
   constructor(
     private compare: (a: T, b: T) => number,
     items: T[] = [],
+    heapify = true,
   ) {
     this.items = items;
-    for (let i = Math.floor(items.length / 2) - 1; i >= 0; i--) this.down(i);
+    if (heapify)
+      for (let i = Math.floor(items.length / 2) - 1; i >= 0; i--) this.down(i);
   }
   peek(): T | undefined {
     return this.items[0];

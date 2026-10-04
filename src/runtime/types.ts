@@ -1,3 +1,6 @@
+import type { PersonalReview } from "../evidence/read";
+import type { GeographyVersion } from "../evidence/geography";
+import type { EffortAccount } from "../kernel/effort";
 import type { PersonalSearch } from "./routing";
 import type { PersonalView, Point, ExactSelf } from "../evidence/types";
 export type Operation =
@@ -50,6 +53,7 @@ export interface ActiveOperation {
 }
 export interface Task extends SelectedIntention {
   bindingRevision: number;
+  paidForStep: number;
   cursor: number;
   status:
     | "ready"
@@ -77,6 +81,7 @@ export interface Task extends SelectedIntention {
 export interface ActivityState {
   actor: string;
   closedThrough: number;
+  lastPaidEnd: number;
   totals: Record<number, Record<string, number>>;
   prefixes: {
     semanticKey: string;
@@ -89,6 +94,19 @@ export interface ActivityState {
 }
 export interface RuntimeState {
   tasks: Task[];
+  terminal: Task[];
+  retry: Record<string, number>;
+  purpose: Record<string, string>;
+  issuedTaskIds: Record<string, boolean>;
+  latestTerminal: Record<string, number>;
+  paidArchive: (ActivityState["prefixes"][number] & { actor: string })[];
+  activityArchive: {
+    actor: string;
+    day: number;
+    totals: Record<string, number>;
+  }[];
+  effort: Record<string, EffortAccount>;
+  currentEffort: Record<string, string>;
   budgets: Record<
     string,
     { authorised: Budget; spent: Budget; descriptor: string }
@@ -100,7 +118,11 @@ export interface RuntimePort {
   pin(task: Task): void;
   unpin(task: Task): void;
   now(): number;
-  personal(actor: string): PersonalView;
+  personal(actor: string): PersonalReview;
+  pinGeography(actor: string, scope: string): GeographyVersion;
+  geography(id: string): GeographyVersion;
+  pinGeographyVersion(id: string, scope: string): void;
+  unpinGeography(scope: string): void;
   exactSelf(actor: string): ExactSelf;
   blockedCells(actor: string, cells: number[]): boolean;
   version(actor: string, key: string): number;

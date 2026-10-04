@@ -274,7 +274,9 @@ describe("perception and personal routing", () => {
       v.traversalPrior,
       counts,
     );
-    expect(resumePersonalSearch(deferred, 65536, counts)).toBe("deferred");
+    expect(resumePersonalSearch(deferred, 65536, counts, 4096)).toBe(
+      "deferred",
+    );
     expect(deferred.expansions).toBe(4096);
     expect(deferred.status).toBe("unresolved");
   });
@@ -459,7 +461,10 @@ describe("generic task lifecycle, time, reservations and persistence", () => {
     expect(execution(a).budget.spent.goods.food).toBe(0.5);
     expect(a.snapshot().reconciliation.ok).toBe(true);
     a.diagnosticTaskAbandon(actor);
-    expect(a.personalView(actor).self.reservations[0]!.status).toBe("released");
+    expect(a.personalView(actor).self.reservations).toEqual([]);
+    expect(
+      JSON.parse(a.checkpoint()).body.goods.reservations.at(-1).status,
+    ).toBe("released");
     expect(a.personalView(actor).self.carried.stocks.food).toBe(0.5);
     expect(execution(a).budget.spent.time).toBe(time(0.1));
   });
@@ -566,7 +571,7 @@ describe("additional Pack0B adversaries", () => {
         s.evidence.people[0].records[0].version++;
       },
       (s: any) => {
-        s.runtime.activity[0].prefixes.push(s.runtime.activity[0].prefixes[0]);
+        s.runtime.paidArchive.push(s.runtime.paidArchive[0]);
       },
       (s: any) => {
         Object.values(s.runtime.budgets).forEach(
