@@ -611,6 +611,22 @@ describe("additional Pack0B adversaries", () => {
 });
 
 describe("selected binding validation", () => {
+  it("exhausting time exactly at a Move prefix boundary blocks before another prefix is launched", () => {
+    const probe = flatWorld();
+    probe.diagnosticSelect(task(probe, [move()]));
+    while (probe.resumePersonalRouting(65536)) {}
+    const exactBudget = execution(probe).task.active.end;
+    const a = flatWorld(),
+      t = task(a, [move()], "exact-budget", exactBudget);
+    a.diagnosticSelect(t);
+    const b = PhysicalSimulation.restore(a.checkpoint());
+    a.advanceTo(time(0.2));
+    b.advanceTo(time(0.2));
+    expect(execution(a).task.status).toBe("blocked");
+    expect(execution(a).task.failure).toBe("authorised time exhausted");
+    expect(execution(a).budget.spent.time).toBe(exactBudget);
+    expect(a.causalHash()).toBe(b.causalHash());
+  });
   it("invalid Move binding leaves reservations, budgets and causal history unchanged", () => {
     const a = flatWorld(),
       t = task(a, [move()]);

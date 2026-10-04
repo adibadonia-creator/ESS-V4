@@ -320,6 +320,10 @@ export class TaskRuntime {
     });
   }
   private launch(t: Task, target: { x: number; y: number }): void {
+    if (this.remaining(t) <= 0) {
+      this.block(t, "authorised time exhausted");
+      return;
+    }
     const r = this.port.startPrefix(t.actor, target);
     if (!r.ok && t.status === "blocked") return;
     if (!r.ok) {

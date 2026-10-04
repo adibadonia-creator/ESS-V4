@@ -40,7 +40,7 @@ Work, Recover and Engage are typed normative families and fail explicitly with `
 
 Lifecycle: selection → ready/routing → running → paid prefix/located progress → step completion → **Continue** into the next bound step, or done. An observed physical failure, changed relevant personal version or exhausted budget produces blocked/repair-required. Interruption settles once, cancels scoped future work and suspends; resumption retains the unpaid suffix/frontier. Abandonment releases unused goods. Repairable blocked tasks retain potentially useful reservations until abandonment or declared expiry; unsupported-law failure and completion release unused reservations. No replacement target/objective is chosen.
 
-Semantic authorisation is derived from actor/objective/method/bindings/ordered steps, rather than diagnostic labels or new IDs. Its persistent spent budget and completed cursor survive retry, and changed authorisation for the same semantic task is rejected. Goods commitments use existing physical backing. A single retained task per actor and one active scheduled interval provide exclusive time allocation; no future time or expected harvest is borrowed. Prefixes settle actual elapsed Move/Attend/Transfer time, split totals across calendar SDs and reject overlap or totals above one SD. Staggered representative closure pays the current prefix without resetting the task. No fatigue/enjoyment physiology is inferred.
+Semantic authorisation is derived from actor/objective/method/bindings/ordered steps, rather than diagnostic labels or new IDs. Its persistent spent budget and completed cursor survive retry, and changed authorisation for the same semantic task is rejected. Goods commitments use existing physical backing. A single retained task per actor and one active scheduled interval provide exclusive time allocation; no future time or expected harvest is borrowed. Prefixes settle actual elapsed Move/Attend/Transfer time, split totals across calendar SDs and reject overlap or totals above one SD. Staggered representative closure pays the current prefix without resetting the task. Time exhaustion is checked before launching another prefix, including exhaustion exactly at a completed Move-prefix boundary. No fatigue/enjoyment physiology is inferred.
 
 The browser/default and `--pack0b` CLI fixture use limited founding knowledge, **Transfer → exploratory Move → Attend**: 0.5 food from the local own cache to carried goods, a public relative eight-cell destination, then a paid survey. The chosen destination never comes from a truth search. Flat diagnostic fixtures additionally prove Move → Attend, cross-day attention, local hidden surprise, version staleness, interruption and custody refusal. These fixtures prove knowing/executing, not choosing; some canonical exploratory tasks correctly block on observed terrain.
 
@@ -50,7 +50,7 @@ Checkpoint schema **3** includes evidence/provenance versions and internal links
 
 Verification on 2026-10-04, Linux x64, Node 24.19.0, TypeScript 5.9.3:
 
-- `npm run check`: dependency/content/numerical boundaries, typecheck, **76 Vitest tests** (48 retained + 28 Pack-0B), pure core compilation and production build pass.
+- `npm run check`: dependency/content/numerical boundaries, typecheck, **77 Vitest tests** (48 retained + 29 Pack-0B), pure core compilation and production build pass.
 - Paired hidden blockage, remote stock/location, irrelevant terrain and occluded-site fixtures keep evidence/geography/personal routing/bound task output identical until actual perception. Hidden mutations do not change personal versions; a relevant observed change can require repair, unrelated evidence does not. Personal execution performs **zero truth-route searches**.
 - Radius/occlusion, unknown versus observed zero, swept site entry without renderer frames, routine cap, directed bypass, deduplicated version delivery, pure reads, custody/backing/conservation and no renewal under renamed IDs/labels pass.
 - Exact checkpoint continuation passes during unfinished local/coarse routing, active Move, between steps, suspended/blocked state and active goods reservation. Corrupt evidence versions, duplicated paid prefixes and reset spent budgets are rejected.
@@ -79,13 +79,13 @@ npm run benchmark -- --pack0b --probe32
 
 | Median operation, ms | 8 people | 32-person probe |
 | --- | ---: | ---: |
-| World/raster/regions creation | 904.33 | 883.18 |
-| Limited knowledge + task selection | 17.40 | 67.19 |
-| Causal advancement to 1 SD | 40.41 | 147.07 |
-| JSON checkpoint | 219.39 | 318.28 |
-| First causal hash (includes terrain digest) | 134.74 | 202.91 |
-| All personal lenses, without causal hashing | 11.33 | 44.25 |
-| Detached analyst + personal snapshot, warm terrain digest | 36.34 | 137.21 |
+| World/raster/regions creation | 862.84 | 874.17 |
+| Limited knowledge + task selection | 17.59 | 65.63 |
+| Causal advancement to 1 SD | 38.06 | 155.08 |
+| JSON checkpoint | 196.57 | 338.21 |
+| First causal hash (includes terrain digest) | 126.45 | 197.02 |
+| All personal lenses, without causal hashing | 10.46 | 44.12 |
+| Detached analyst + personal snapshot, warm terrain digest | 34.88 | 135.00 |
 
 | Counter / persistence | 8 people | 32-person probe |
 | --- | ---: | ---: |
@@ -102,7 +102,7 @@ npm run benchmark -- --pack0b --probe32
 | Personal-view projections | 40 | 160 |
 | Checkpoint bytes | 5,608,888 | 8,825,974 |
 
-Regional guidance is separately exercised by established-routing tests; these exploratory fixtures do not use it. Four/eight and fourteen/thirty-two tasks stop at locally observed blockages; this is a diagnostic result, not a success-rate or behavioural calibration target. The 8-person causal hash is `6dd4f9779b439c71ec2cddcc01c86197`; the 32-person hash is `b583afda8ae23243d2e0dfbbf6a0eb6a` for the source identity in the raw receipt. Counters/timing are non-causal.
+Regional guidance is separately exercised by established-routing tests; these exploratory fixtures do not use it. Four/eight and fourteen/thirty-two tasks stop at locally observed blockages; this is a diagnostic result, not a success-rate or behavioural calibration target. The 8-person causal hash is `ba81852956bb9fed6d1a82b5334e8623`; the 32-person hash is `2ce46c6772a415029d04689e1dd00f6b` for the source identity in the raw receipt. Counters/timing are non-causal.
 
 ## Reuse, limits and deliberate deferrals
 
