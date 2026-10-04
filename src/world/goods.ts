@@ -26,7 +26,7 @@ export interface Reservation {
   status: "active" | "released" | "spent" | "expired";
 }
 export type Sink = "consumption" | "destruction";
-export type Source = "diagnostic-source" | "initial-endowment";
+export type Source = "diagnostic-source" | "initial-endowment" | "extraction";
 export type GoodsRequest =
   | { kind: "source"; source: Source; to: Key; good: string; quantity: number }
   | {
@@ -172,6 +172,9 @@ export class GoodsLedger {
       }
     for (const c of this.state.containers) this.location(c.key);
   }
+  bulk(id: string): number {
+    return this.good(id).bulk;
+  }
   private good(id: string): PhysicalConfig["goods"][number] {
     this.counters.contentEntriesVisited++;
     const g = this.goodById.get(id);
@@ -182,6 +185,15 @@ export class GoodsLedger {
     const key = this.carried.get(actor);
     if (!key) throw Error("Missing carried container");
     return this.get(key);
+  }
+  resolveAdultCargo(actor: Key, nominalCu: number, at: Time): void {
+    if (at !== 0 || !Number.isFinite(nominalCu) || nominalCu <= 0)
+      throw Error("Invalid founding cargo profile");
+    const container = this.carriedContainer(actor),
+      maximum = 2 * nominalCu;
+    if (this.load(container.key) > maximum)
+      throw Error("Founding cargo cannot shrink below its goods");
+    container.capacityCu = maximum;
   }
   activeReservations(actor: Key): Reservation[] {
     const out: Reservation[] = [];
@@ -274,7 +286,9 @@ export class GoodsLedger {
         throw new Error("Invalid physical quantity");
       if (request.kind === "source") {
         if (
-          !["diagnostic-source", "initial-endowment"].includes(request.source)
+          !["diagnostic-source", "initial-endowment", "extraction"].includes(
+            request.source,
+          )
         )
           throw new Error("Undeclared source");
         this.get(request.to);

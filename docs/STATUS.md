@@ -1,4 +1,22 @@
-# Pre-0C — computational state and interface retrofit
+# Pack 0C1 — body, physical work and recovery
+
+Branch `pack0c1-body-physical-affordances` extends merged PR #3 / main `8337ed130041960331201c495196a9cdafd34357`. This is an internal Stage-I/I.1 execution slice. Revision 4.0 is unchanged. **No autonomous cognition, Pack 0C2 or Stage-III life-course execution exists; the Pack-0 architectural proof remains incomplete.** The implementation is submitted as one draft PR and must remain unmerged.
+
+[Implementation receipt and Computational/state contract](PACK0C1_BODY_PHYSICAL.md) describe the resolved adult capability boundary, single body/resource law owner, exact anchored condition/healing, staggered fatigue/enjoyment closure laws, paid learning, backed Transfer consumption, generic Work and Recover. Four declarative extraction methods share one indexed execution path. Located resource stocks use joint analytic renewal/extraction, symmetric contention and cargo/depletion boundaries. Starting or ending a real operation delivers permitted dated body/performance evidence through the existing writer; hidden capability/mastery remains analyst truth. Current rate sufficient statistics and exact historical original-provenance backing are separate. There are no body food counters or activity clocks paying planned time.
+
+The explicit Body fixture selects its finite endowment → gather → consumption → declared heavy work → rest → leisure → later gather chain at founding, using heterogeneous resolved adults. Body signals do not choose behaviour. Schema 6 / ESS-4.0-pack0c1 rejects incompatible older checkpoints and validates body/resource/task/consumption backing before continuation.
+
+Boundary lint, typecheck, **130 Vitest tests**, pure-core compilation and production build pass locally. **Three production browser tests pass**, including actual Worker/Node body-chain replay, mid-Work restore, altered host partitions, observer inertness and a separately labelled analyst body card. The updated body card screenshot was inspected automatically. CI at the final head is reported in the draft PR.
+
+[Body benchmark/growth](PACK0C1_BODY_BENCHMARK.json), [accepted retrofit structural rerun](PACK0C1_RETROFIT_GROWTH.json) and [accepted workload 8/32 rerun](PACK0C1_RETROFIT_BENCHMARK.json) retain separate workloads. The stationary five-SD body chain completes all seven steps for 8/32 adults with zero autonomous deliberations. Body state retains one record/14 fields through 120 closures and through 128 separate Work episodes; current Work segments retire, while actual paid/terminal/provenance audit grows. Global content extension by 10,000 irrelevant methods costs one selected lookup and teaches nothing. Dense actual shared-site work and resident cold backing costs are declared rather than capped away.
+
+Deferred: autonomous review/drive urgency and choice; canonical founder/scenario generation; mortality/hazards/death/estates; genetics, childhood and reproduction; crafting/equipment/exposure, animals/Engage, social claims/protocol, trials/inquiry/teaching and richer inference. Low condition in an unfed execution fixture does not execute mortality. Existing pre-0C checkpoint/publication/archive-residency costs remain proof-gate obligations. This slice is not a survival, emergence, constant-memory or performance certification.
+
+Reproduce with `npm run check`, `npm run test:browser`, `node --import tsx scripts/body-probe.ts`, `npm run probe:state`, and the existing `npm run benchmark -- --pack0b` / `--pack0b --probe32` workloads.
+
+---
+
+# Historical Pre-0C — computational state and interface retrofit
 
 Branch `pre0c-computational-state-retrofit` builds on accepted merged Pack 0B / PR #2, main `3d1761dbf6b160ec1b04b60cf2410c883b27d115`. One draft PR, unmerged. Revision 4.0 is unchanged and normative; [Computational Scaling and State Discipline](COMPUTATIONAL_SCALING_AND_STATE_DISCIPLINE.md) is mandatory subordinate engineering guidance. **No autonomous cognition or Pack 0C is implemented; the Pack-0 architectural proof remains incomplete.**
 

@@ -1,4 +1,5 @@
 import data from "./physical.json";
+import extraction from "./extraction.json";
 import { digest } from "../kernel/canonical";
 export interface SpatialProfile {
   width: number;
@@ -46,7 +47,7 @@ function deepFreeze<T>(o: T): T {
   }
   return o;
 }
-export const CONTENT_HASH = digest(data);
+export const CONTENT_HASH = digest({ physical: data, extraction });
 
 export const EVIDENCE_PROFILE = Object.freeze(data.evidence);
 

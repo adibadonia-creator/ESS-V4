@@ -28,6 +28,16 @@ export interface ActorView {
     loadCu: number;
   }> | null;
   readonly container: string;
+  readonly body: Readonly<{
+    c: number;
+    w: number;
+    d: number;
+    f: number;
+    intake: number;
+    mastery: Record<string, number>;
+    practice: Record<string, number>;
+    capability: Record<string, number>;
+  }> | null;
 }
 export interface ContainerView {
   readonly key: string;
@@ -41,6 +51,7 @@ export interface ReservationView {
   readonly key: string;
   readonly actor: string;
   readonly container: string;
+
   readonly good: string;
   readonly remaining: number;
   readonly expires: number;
@@ -82,7 +93,7 @@ export interface Snapshot {
 }
 export type Command =
   | { id: number; kind: "create"; seed: string }
-  | { id: number; kind: "create-evidence"; seed: string }
+  | { id: number; kind: "create-evidence" | "create-body"; seed: string }
   | {
       id: number;
       kind: "task-interrupt" | "task-resume" | "task-abandon";

@@ -137,6 +137,9 @@ aside select {
   color: #aab9a7;
 }
 .detail b {
+  max-width: 65%;
+  overflow-wrap: anywhere;
+  text-align: right;
   font-weight: 500;
 }
 .muted,

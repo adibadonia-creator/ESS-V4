@@ -114,7 +114,15 @@
   "evidence": {
     "routineObservations": 12,
     "maxTaskSteps": 12,
-    "foundingMethods": ["contact", "exchange"],
+    "foundingMethods": [
+      "contact",
+      "exchange",
+      "gather",
+      "wood",
+      "stone",
+      "fibre",
+      "recover"
+    ],
     "stockLogSd": 0.35,
     "places": 32,
     "traversalPrior": {
@@ -133,6 +141,31 @@
       "id": "exchange",
       "effects": ["transfer"],
       "inputs": ["goods"]
+    },
+    {
+      "id": "gather",
+      "effects": ["extract:food"],
+      "inputs": ["site:food-patch"]
+    },
+    {
+      "id": "wood",
+      "effects": ["extract:wood"],
+      "inputs": ["site:wood-site"]
+    },
+    {
+      "id": "stone",
+      "effects": ["extract:stone"],
+      "inputs": ["site:stone-deposit"]
+    },
+    {
+      "id": "fibre",
+      "effects": ["extract:fibre"],
+      "inputs": ["site:fibre-site"]
+    },
+    {
+      "id": "recover",
+      "effects": ["recover"],
+      "inputs": []
     }
   ],
   "cognitiveEffort": {

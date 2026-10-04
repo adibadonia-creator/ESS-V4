@@ -1,3 +1,5 @@
+import { math } from "../kernel/numerics";
+import { QUANTA } from "../kernel/time";
 import { get, immutable, type Tree } from "../kernel/index";
 import { geometryCell, type GeographyVersion } from "./geography";
 import type {
@@ -62,6 +64,22 @@ export class PersonalReview {
       readKey(subject, property, context),
       this.visit,
     );
+  }
+  rateEstimate(method: string, context: string) {
+    const e = this.belief("self", `rate:${method}:${context}`);
+    if (!e || typeof e.value !== "object" || e.value === null) return null;
+    const v = e.value as Record<string, number>,
+      decay = math.exp(-(this.time - v.anchorAt!) / QUANTA / 3),
+      weight = v.weight! * decay;
+    return immutable({
+      rate: math.exp(
+        (v.logSum! * decay + v.priorWeight! * math.log(v.priorRate!)) /
+          (weight + v.priorWeight!),
+      ),
+      logVariance: 1 / (weight + v.priorWeight!),
+      samples: v.samples!,
+      observedAt: e.observedAt,
+    });
   }
   version(subject: string, property: string, context?: string): number {
     return this.belief(subject, property, context)?.version ?? 0;
