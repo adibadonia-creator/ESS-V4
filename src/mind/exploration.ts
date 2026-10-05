@@ -1,11 +1,8 @@
-import { canonical } from "../kernel/canonical";
+import { canonical, digest } from "../kernel/canonical";
 import { math } from "../kernel/numerics";
 import { QUANTA, time } from "../kernel/time";
 import { chargeRoute, routeAllowance } from "../kernel/effort";
-import {
-  EXPLORATION as P,
-  COMPATIBLE_OPERATIONS,
-} from "../content/exploration";
+import { EXPLORATION as P, OPERATION_INDEX } from "../content/exploration";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import type { PersonalReview } from "../evidence/read";
 import type { Point, ExplorationOutcome } from "../evidence/types";
@@ -68,6 +65,7 @@ function route(
   meter: ReviewEffort,
   o: BoundOption,
   point: Point,
+  from: Point = review.self.location,
 ) {
   const p = review.profile,
     cell = (x: Point) =>
@@ -77,7 +75,7 @@ function route(
     .find(
       (r) =>
         r.exploratory &&
-        r.start === cell(review.self.location) &&
+        r.start === cell(from) &&
         r.goal === cell(point) &&
         r.geographyId === review.geographyId &&
         r.status === "unresolved",
@@ -87,7 +85,7 @@ function route(
     : beginPersonalSearch(
         p,
         [],
-        cell(review.self.location),
+        cell(from),
         cell(point),
         true,
         review.traversalPrior(),
@@ -248,7 +246,8 @@ export function explorationOptions(
         { kind: "knows", question: descriptor, quantity: 1 },
         "inquire",
       );
-      read(o, review, source.subject, "frontier");
+      // Frontier coverage nominates a question; seeing the goal en route does
+      // not invalidate an already authorised observation/return prefix.
       read(o, review, "method:inquire", "known");
       const p = review.profile,
         cell = (point: Point) =>
@@ -307,9 +306,12 @@ export function explorationOptions(
             experiment,
           });
           o.duration += time(P.surveySd);
+          route(review,state,meter,o,{...review.self.location},point);
+          o.optionalDuration = o.duration;
           o.informationValue = estimate.value;
           o.reason = `personal EVSI ${estimate.value}; absent/poor/useful ${canonical(estimate.probabilities)}`;
-          read(o, review, "occupancy", `food-patch:${ground}`);
+          const posterior=review.belief("occupancy",`food-patch:${ground}`);
+          o.valuationDependencies=posterior ? [{subject:"occupancy",property:`food-patch:${ground}`,version:posterior.version}] : [];
         }
       } else if (o.status === "executable") {
         o.status = "epistemically-unresolved";
@@ -322,7 +324,21 @@ export function explorationOptions(
   if (review.belief("method:try-compatible", "known")?.value === true) {
     // Public compatibility index is fixed at compilation; target source is an
     // eligible personal property posting, never global material × schema search.
-    const key = "material-property:glassy",
+    const opCursor = state.methodCursors["compatible-operation"];
+    let ops = review.places(
+      "compatible-operation",
+      1,
+      opCursor ? { after: opCursor } : null,
+    );
+    if (!ops.entries.length && opCursor)
+      ops = review.places("compatible-operation", 1);
+    const opRecord = ops.entries[0],
+      operation = opRecord
+        ? OPERATION_INDEX.get(String(opRecord.value))
+        : undefined;
+    if (!operation) return options;
+    state.methodCursors["compatible-operation"] = ops.next?.after ?? null;
+    const key = `material-property:${operation.properties[0]}`,
       cursor = state.trialCursor;
     let page = review.places(
       key,
@@ -346,11 +362,10 @@ export function explorationOptions(
       meter.counts.trialCandidates++;
       state.trialCursor = canonical([source.subject, source.property]);
       const properties = String(source.value).split(",");
-      const operation = COMPATIBLE_OPERATIONS.find((op) =>
-        op.properties.every((property) => properties.includes(property)),
-      );
       if (
-        !operation ||
+        !operation.properties.every((property) =>
+          properties.includes(property),
+        ) ||
         Number(review.self.carried.stocks[operation.hammer] ?? 0) < 1
       )
         continue;
@@ -365,11 +380,16 @@ export function explorationOptions(
       )
         continue;
       const descriptor = `T1:${operation.id}:${source.subject}:${kind}`;
-      if (unchanged(review, descriptor, source.version)) continue;
+      const premiseVersion = parseInt(
+        digest([kind, properties, operation.id]).slice(0, 8),
+        16,
+      );
+      if (unchanged(review, descriptor, premiseVersion)) continue;
       const o = base(
         { kind: "tried", context: descriptor, quantity: 1 },
         "try-compatible",
       );
+      read(o, review, opRecord!.subject, "compatible-operation");
       const point = read(o, review, source.subject, "location")?.value as
         Point | undefined;
       const stock = read(
@@ -397,7 +417,7 @@ export function explorationOptions(
           operation: operation.id,
           targetKind: kind,
           descriptor,
-          evidenceVersion: source.version,
+          evidenceVersion: premiseVersion,
           paid: 0,
           completed: false,
           success: false,
@@ -410,6 +430,7 @@ export function explorationOptions(
           experiment,
         });
         o.duration += time(operation.durationSd);
+        o.optionalDuration = o.duration;
         o.goods[operation.input] = 1;
         const prior = read(
           o,

@@ -53,7 +53,7 @@ export interface SelectedIntention {
   method: string;
   bindings: Record<string, string>;
   steps: Operation[];
-  dependsOn: { key: string; version: number }[];
+  dependsOn: { key: string; version: number; valueFingerprint?: string }[];
   // Only explicitly preauthorised, personally known substitutions may be installed.
   repairScope?: { moveTargets: Point[]; bindings: Record<string, string[]> };
   authorised: Budget;

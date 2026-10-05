@@ -3,7 +3,7 @@ import { normal } from "../kernel/random";
 import { canonical, compareKey } from "../kernel/canonical";
 import type { PersonalReview } from "../evidence/read";
 import { ownedLots } from "./signals";
-import { EXPLORATION, COMPATIBLE_OPERATIONS } from "../content/exploration";
+import { EXPLORATION, OPERATION_INDEX } from "../content/exploration";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { QUANTA } from "../kernel/time";
 import type { Compared, Consequences, Dispositions } from "./types";
@@ -137,10 +137,8 @@ export function feasibility(
           return "unauthorised material spending";
       }
       if (step.family === "Work") {
-        if (COMPATIBLE_OPERATIONS.some((o) => o.id === step.law)) {
-          const operation = COMPATIBLE_OPERATIONS.find(
-            (o) => o.id === step.law,
-          )!;
+        if (OPERATION_INDEX.has(step.law)) {
+          const operation = OPERATION_INDEX.get(step.law)!;
           const p = step.site
             ? (review.belief(step.site, "location")?.value as
                 { x: number; y: number } | undefined)
@@ -191,37 +189,10 @@ export function feasibility(
   ) {
     // This ceiling covers the optional experiment prefix. An explicitly bound
     // ordinary continuation remains funded and assessed separately.
-    let duration = 0;
-    for (const [i, step] of o.steps.entries()) {
-      duration +=
-        step.family === "Move"
-          ? (o.routes[i]?.nodes[o.routes[i]!.goal]?.g ?? 0) /
-            (80 *
-              math.sqrt(
-                Math.max(
-                  0.05,
-                  Number(
-                    (
-                      review.belief("self", "body-experience")?.value as Record<
-                        string,
-                        number
-                      >
-                    ).condition,
-                  ),
-                ),
-              ))
-          : step.duration / QUANTA;
-      if (
-        (step.family === "Work" || step.family === "Attend") &&
-        step.experiment
-      )
-        break;
-    }
-    if (
-      duration > EXPLORATION.optionalTimeSd ||
-      duration > EXPLORATION.optionalFoodSd
-    )
-      return "optional inquiry/trial prefix ceiling exceeded";
+    const duration=(o.optionalDuration ?? o.duration)/QUANTA;
+    if (duration > EXPLORATION.optionalTimeSd) return "optional inquiry/trial prefix ceiling exceeded";
+    const experimentFoodCost=duration * review.quietRequirement();
+    if (experimentFoodCost>EXPLORATION.optionalFoodSd*review.quietRequirement()) return "optional food ceiling exceeded";
   }
   if (!o.reference && !reserveExempt) {
     const last = x.consequences.blocks.at(-1)!;

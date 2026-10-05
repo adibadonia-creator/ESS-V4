@@ -55,6 +55,7 @@ interface RateSample {
   logRate: number;
 }
 export interface PersonEvidence {
+  frontiers: Record<string, Evidence>;
   occupancy: Record<string, { alpha: number; beta: number }>;
   occupancyCoverage: Record<string, Record<number, number>>;
   discoveredSites: Record<string, boolean>;
@@ -137,7 +138,7 @@ export class EvidenceService {
     private regionKm = PUBLIC_MAP_PROFILE.regionCells *
       PUBLIC_MAP_PROFILE.cellKm,
     private methods = METHOD_INDEX,
-    private profile = PUBLIC_MAP_PROFILE,
+    private profile: import("./types").MapProfile = PUBLIC_MAP_PROFILE,
   ) {
     this.state = state;
     for (let i = 0; i < state.pinnedGeography.length; i++) {
@@ -151,7 +152,16 @@ export class EvidenceService {
         (this.geographyPinCounts.get(id) ?? 0) + 1,
       );
     for (const p of state.people) {
-      if (!p.rateStatistics || !p.rateProvenance)
+      if (
+        !p.rateStatistics ||
+        !p.rateProvenance ||
+        !p.frontiers ||
+        !p.occupancy ||
+        !p.occupancyCoverage ||
+        !p.discoveredSites ||
+        !p.exploration ||
+        !p.explorationProvenance
+      )
         throw Error("Missing rate continuation state");
       for (const stat of Object.values(p.rateStatistics))
         if (
@@ -180,10 +190,17 @@ export class EvidenceService {
         beliefs: null,
         postings: null,
         routes: null,
+        frontiers: null,
       });
       this.membership.set(p.owner, new Map());
       this.subjectRecords.set(p.owner, new Map());
       for (const e of p.records) this.indexBelief(p, immutable(e));
+      for (const [key, e] of Object.entries(p.frontiers))
+        this.readIndexes.get(p.owner)!.frontiers = put(
+          this.readIndexes.get(p.owner)!.frontiers,
+          key,
+          immutable(e),
+        );
       const indexes = this.readIndexes.get(p.owner)!;
       for (const route of p.routes)
         indexes.routes = put(indexes.routes, route.subject, immutable(route));
@@ -216,6 +233,7 @@ export class EvidenceService {
     if (this.people.has(owner)) return;
     const p: PersonEvidence = {
       owner,
+      frontiers: {},
       occupancy: {},
       occupancyCoverage: {},
       discoveredSites: {},
@@ -248,6 +266,7 @@ export class EvidenceService {
       beliefs: null,
       postings: null,
       routes: null,
+      frontiers: null,
     });
     this.membership.set(owner, new Map());
     this.subjectRecords.set(owner, new Map());
@@ -700,6 +719,21 @@ export class EvidenceService {
       provenance,
       "trial",
     );
+    if (
+      outcome.completed &&
+      !outcome.success &&
+      outcome.method &&
+      this.latest(owner, `method:${outcome.method}`, "known")?.value === true
+    ) {
+      const subject = `method:${outcome.method}`,
+        property = `confidence:${context}`;
+      const old = Number(
+        this.latest(owner, subject, property)?.value ??
+          this.latest(owner, subject, "confidence")?.value ??
+          EXPLORATION.trialConfidence,
+      );
+      this.fact(owner, subject, property, old * 0.6, at, provenance, "trial");
+    }
     if (outcome.completed && outcome.success && outcome.method) {
       this.fact(
         owner,
@@ -748,6 +782,17 @@ export class EvidenceService {
   }
   foundMethods(owner: string, methods: string[], at: number): void {
     this.foundPerformancePriors(owner, methods, at);
+    if (methods.includes("try-compatible"))
+      for (const operation of EVIDENCE_PROFILE.foundingOperations)
+        this.fact(
+          owner,
+          `operation:${operation}`,
+          "compatible-operation",
+          operation,
+          at,
+          "declared cultural compatibility",
+          "record",
+        );
     for (const method of methods)
       this.fact(
         owner,
@@ -855,6 +900,7 @@ export class EvidenceService {
         c.detection > (p.coverage[c.cell] ?? 0)
       );
     });
+    let deliveredSurvey = false;
     if (cells.length && accept()) {
       const delivered = this.deliver({
         owner,
@@ -874,6 +920,7 @@ export class EvidenceService {
         footprint: packet.footprint,
       });
       if (delivered) {
+        deliveredSurvey = true;
         const event = this.latestIndex
           .get(owner)!
           .get(beliefKey("local-survey", "terrain"))!;
@@ -929,7 +976,7 @@ export class EvidenceService {
           this.geographyVersions.delete(previous.id);
       }
     }
-    if (packet.resourceClasses) {
+    if (packet.resourceClasses && (deliveredSurvey || directed)) {
       for (const resource of packet.resourceClasses) {
         const coverage = (p.occupancyCoverage[resource] ??= {});
         for (const c of packet.terrain) {
@@ -960,7 +1007,7 @@ export class EvidenceService {
     }
     // Incremental personally represented frontier: only affected geometry and
     // its immediate neighbours. No unseen terrain or whole-map enumeration.
-    if (cells.length) {
+    if (deliveredSurvey) {
       const affected = new Set<number>();
       const width = this.profile.width,
         height = this.profile.height;
@@ -993,20 +1040,37 @@ export class EvidenceService {
             b! < height &&
             p.cells[a! + b! * width]?.passable,
         );
-        this.fact(
-          owner,
-          `frontier:${k}`,
-          "frontier",
-          !p.cells[k] && adjacent
-            ? {
+        const key = `frontier:${k}`,
+          ix = this.readIndexes.get(owner)!;
+        if (!p.cells[k] && adjacent) {
+          if (!p.frontiers[key]) {
+            const e: Evidence = {
+              owner,
+              subject: key,
+              property: "frontier",
+              value: {
                 x: (x + 0.5) * this.profile.cellKm,
                 y: (y + 0.5) * this.profile.cellKm,
-              }
-            : false,
-          at,
-          "personal coverage frontier",
-          "inference",
-        );
+              },
+              observedAt: at,
+              receivedAt: at,
+              modality: "inference",
+              provenance: digest([owner, key, at]),
+              context: "personal coverage frontier",
+              reliability: 1,
+              uncertainty: 1,
+              volatilityClass: "slow",
+              expiry: null,
+              pinned: false,
+              version: 1,
+            };
+            p.frontiers[key] = e;
+            ix.frontiers = put(ix.frontiers, key, immutable(e));
+          }
+        } else if (p.frontiers[key]) {
+          delete p.frontiers[key];
+          ix.frontiers = drop(ix.frontiers, key);
+        }
       }
     }
     // Packet order is geometric and independent of hidden allocation/keys.

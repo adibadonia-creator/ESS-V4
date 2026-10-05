@@ -95,7 +95,7 @@ export type Command =
   | { id: number; kind: "create"; seed: string }
   | {
       id: number;
-      kind: "create-evidence" | "create-body" | "create-autonomous";
+      kind: "create-evidence" | "create-body" | "create-autonomous" | "create-exploration";
       seed: string;
     }
   | {

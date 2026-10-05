@@ -53,6 +53,8 @@ export interface BoundOption {
   goods: Record<string, number>;
   reference: boolean;
   informationValue?: number;
+  optionalDuration?: number;
+  valuationDependencies?: Dependency[];
 }
 export interface ConsequenceBlock {
   start: number;

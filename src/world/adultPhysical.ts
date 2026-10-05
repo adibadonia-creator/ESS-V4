@@ -2,6 +2,8 @@ import effects from "../content/material-effects.json";
 import {
   COMPATIBLE_OPERATIONS,
   MATERIAL_KINDS,
+  OPERATION_INDEX,
+  MATERIAL_KIND_INDEX,
   EXPLORATION,
 } from "../content/exploration";
 import { pleasantWeight, decayed } from "../laws/enjoyment";
@@ -204,7 +206,7 @@ export class AdultPhysical {
       capability: AdultCapability;
       mastery: Masteries;
       wound?: number;
-      initial?: { condition: number; fatigue: number; enjoyment: number };
+      initial?: { condition: number; fatigue: number; enjoyment: number; satiation?: number };
     },
   ) {
     if (this.port.now() !== 0 || this.bodies.has(actor))
@@ -218,6 +220,7 @@ export class AdultPhysical {
         b.anchor.c = profile.initial.condition;
         b.d = profile.initial.fatigue;
         b.f = profile.initial.enjoyment;
+        b.satiation = profile.initial.satiation ?? 0;
       }
       reanchorBody(b, 0, 0, 0);
       validateBodyAt(b, this.port.now());
@@ -290,7 +293,7 @@ export class AdultPhysical {
       "direct local resource observation",
     );
     if (s.materialKind) {
-      const material = MATERIAL_KINDS.find((k) => k.id === s.materialKind);
+      const material = MATERIAL_KIND_INDEX.get(s.materialKind);
       this.port.fact(
         actor,
         key,
@@ -532,9 +535,9 @@ export class AdultPhysical {
     }
     if (
       step.family === "Work" &&
-      (step.experiment || COMPATIBLE_OPERATIONS.some((o) => o.id === step.law))
+      (step.experiment || OPERATION_INDEX.has(step.law))
     ) {
-      const operation = COMPATIBLE_OPERATIONS.find((o) => o.id === step.law);
+      const operation = OPERATION_INDEX.get(step.law);
       const ref = step.site ? this.port.reference(task.actor, step.site) : null;
       const site = ref ? this.sites.get(ref) : null;
       const p = this.port.position(task.actor);
@@ -671,13 +674,10 @@ export class AdultPhysical {
     let quantity = s.output;
     const costs: Record<string, number> = {};
     const step = task.steps[task.cursor];
-    if (
-      step?.family === "Work" &&
-      COMPATIBLE_OPERATIONS.some((o) => o.id === step.law)
-    ) {
+    if (step?.family === "Work" && OPERATION_INDEX.has(step.law)) {
       const completed = final && now >= s.remainingEnd;
       if (completed) {
-        const operation = COMPATIBLE_OPERATIONS.find((o) => o.id === step.law)!;
+        const operation = OPERATION_INDEX.get(step.law)!;
         const site = this.sites.get(
           this.port.reference(task.actor, step.site!)!,
         )!;

@@ -305,6 +305,20 @@ export class Mind {
         );
         if (suffix) append(o, copy(suffix));
       }
+    if (opportunities.length) {
+      const shorts=primitives.filter(o=>o.status === "executable" && o.duration<QUANTA).sort((a,b)=>a.duration-b.duration || compareKey(a.key,b.key));
+      // Spend descriptor work for at most two serial alternatives. A known
+      // discretionary end may follow another already-bound short end. Their
+      // entire paid schedule (including upkeep) competes with each primitive.
+      for (const prefix of shorts.slice(0,2)) {
+        const suffix=shorts.find(o=>effectOf(o.objective)!==effectOf(prefix.objective));
+        const upkeep=primitives.find(o=>o.status === "executable" && o.duration>=QUANTA && effectOf(o.objective)!==effectOf(prefix.objective) && effectOf(o.objective)!==effectOf(suffix?.objective ?? prefix.objective));
+        if (!suffix || !upkeep || !meter.spend("descriptor")) continue;
+        const combined=copy(prefix);append(combined,copy(suffix));append(combined,copy(upkeep));
+        combined.reason="explicit serial alternatives from this admitted agenda; all prefixes paid";
+        bound.push(combined);
+      }
+    }
     const executable = bound.filter((o) => o.status === "executable");
     const first = [
       ...new Map(executable.map((o) => [effectOf(o.objective), o])).keys(),
@@ -315,7 +329,11 @@ export class Mind {
     const start = extras.length ? s.comparisonCursor % extras.length : 0;
     const fairExtras = [...extras.slice(start), ...extras.slice(0, start)];
     s.comparisonCursor++;
-    const candidates = [reference, ...first, ...fairExtras].slice(0, 6);
+    // The ordinary comparison cursor also reaches alternative bindings when
+    // many distinct ends fill the panel; no source has a protected action slot.
+    const remaining=[...first.slice(2),...extras];
+    const rotating=remaining.length ? remaining[(s.comparisonCursor-1)%remaining.length] : undefined;
+    const candidates=[reference,...new Set([...first.slice(0,2),...(rotating?[rotating]:[]),...first.slice(2),...fairExtras])].slice(0,6);
     for (const o of bound.filter(
       (o) => o.status === "executable" && !candidates.includes(o),
     )) {
@@ -435,7 +453,7 @@ export class Mind {
     );
     s.consulted = copy([
       ...binder.dependencies,
-      ...opportunities.flatMap((o) => o.dependencies),
+      ...opportunities.flatMap(o => [...o.dependencies,...(o.valuationDependencies ?? [])]),
     ]);
     const trace: DecisionTrace = {
       actor: review.owner,
@@ -448,7 +466,7 @@ export class Mind {
       agenda: admitted.map((d) => d.objective),
       methods: [...binder.methods],
       bindings: copy(bound),
-      dependencies: copy(binder.dependencies),
+      dependencies: copy(s.consulted),
       premises: {
         self: copy(review.self),
         geographyId: review.geographyId,
@@ -456,7 +474,7 @@ export class Mind {
         ownedInputs: copy(page.lots),
       },
       evidence: [
-        ...binder.dependencies,
+        ...s.consulted,
         { subject: "self", property: "body-experience" },
         { subject: "self", property: "quiet-requirement" },
       ]
@@ -498,6 +516,8 @@ function append(prefix: BoundOption, suffix: BoundOption) {
     ).values(),
   ];
   prefix.duration += suffix.duration;
+  if (suffix.optionalDuration) prefix.optionalDuration=(prefix.optionalDuration ?? 0)+suffix.optionalDuration;
+  if (suffix.informationValue) prefix.informationValue=(prefix.informationValue ?? 0)+suffix.informationValue;
   for (const [good, q] of Object.entries(suffix.goods))
     prefix.goods[good] = (prefix.goods[good] ?? 0) + q;
   prefix.key = optionKey(prefix);
@@ -618,6 +638,7 @@ function authorization(
     dependsOn: o.dependencies.map((d) => ({
       key: canonical([d.subject, d.property]),
       version: d.version,
+      ...(["stocks","own-local-stocks"].includes(d.property) ? {valueFingerprint:digest(review.belief(d.subject,d.property)?.value)} : {}),
     })),
     authorised: {
       time: Math.ceil(o.duration * 1.25),

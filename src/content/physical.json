@@ -139,7 +139,8 @@
       "speedFactor": 1,
       "uncertainty": 1,
       "context": "declared founding cultural unseen-terrain expectation"
-    }
+    },
+    "foundingOperations": ["strike"]
   },
   "methods": [
     {

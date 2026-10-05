@@ -383,6 +383,11 @@ export class PhysicalSimulation {
           this.evidence.pinGeographyVersion(id, scope),
         unpinGeography: (scope) => this.evidence.unpinGeography(scope),
         pin: (task) => {
+          for (const [index,route] of Object.entries(task.preparedRoutes ?? {})) {
+            const scope=`prepared:${task.actor}:${task.semanticKey}:${index}`;
+            if (+index>=task.cursor && route.geographyId) this.evidence.pinGeographyVersion(route.geographyId,scope);
+            else this.evidence.unpinGeography(scope);
+          }
           const subjects = [
             ...Object.values(task.bindings),
             ...task.steps
@@ -407,7 +412,10 @@ export class PhysicalSimulation {
             this.kernel.state.now,
           );
         },
-        unpin: (task) => this.evidence.unpin(task.actor, task.taskId),
+        unpin: (task) => {
+          this.evidence.unpin(task.actor,task.taskId);
+          if (task.status === "done") for (const index of Object.keys(task.preparedRoutes ?? {})) this.evidence.unpinGeography(`prepared:${task.actor}:${task.semanticKey}:${index}`);
+        },
         exactSelf: (actor) => this.exactSelf(actor),
         blockedCells: (actor, cells) =>
           this.evidence.blockedCells(actor, cells),
@@ -902,7 +910,7 @@ export class PhysicalSimulation {
       capability: import("../world/body").AdultCapability;
       mastery: import("../world/body").Masteries;
       wound?: number;
-      initial?: { condition: number; fatigue: number; enjoyment: number };
+      initial?: { condition: number; fatigue: number; enjoyment: number; satiation?: number };
     },
   ) {
     this.enablePersonal(actor);
@@ -1381,7 +1389,7 @@ export class PhysicalSimulation {
           y: (leg.from.y + leg.to.y) / 2,
         };
         for (const key of this.spatial.query(mid, r + s.cellKm * 2)) {
-          if (this.byActor.has(key)) continue;
+          if (this.byActor.has(key) || this.adultPhysical.site(key)) continue;
           for (const radius of [r, this.config.movement.workRadiusKm]) {
             const u = entryFraction(
               leg.from,
@@ -1786,7 +1794,9 @@ export class PhysicalSimulation {
       seed: this.seed,
       hash: this.causalHash(),
       eventHash: this.kernel.state.historyHash,
-      fixture: this.mind.state.length
+      fixture: this.mind.state.length && this.config.spatial.width === 6 && this.config.spatial.height === 6
+        ? "Pack 0C3A exploration proof — autonomous adults, no selected actions"
+        : this.mind.state.length
         ? "Pack 0C2 autonomous personal review"
         : this.adultPhysical.state.bodies.length
           ? "Pack 0C1 diagnostic body/work/recovery fixture — no autonomous choice"

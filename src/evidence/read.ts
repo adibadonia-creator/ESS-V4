@@ -25,6 +25,7 @@ export interface PersonalIndexes {
   beliefs: Tree<Evidence>;
   postings: Tree<Tree<Evidence>>;
   routes: Tree<RouteBelief>;
+  frontiers: Tree<Evidence>;
 }
 import { range } from "../kernel/index";
 export const readKey = (subject: string, property: string, context?: string) =>
@@ -72,6 +73,8 @@ export class PersonalReview {
     property: string,
     context?: string,
   ): DeepReadonly<Evidence> | null {
+    if (property === "frontier")
+      return get(this.indexes.frontiers, subject, this.visit);
     return get(
       this.indexes.beliefs,
       readKey(subject, property, context),
@@ -106,11 +109,10 @@ export class PersonalReview {
     if (!Number.isSafeInteger(limit) || limit < 0)
       throw Error("Invalid personal read limit");
     if (limit === 0) return immutable({ entries: [], next: null });
-    const posting = get(
-      this.indexes.postings,
-      postingKey(property, region),
-      this.visit,
-    );
+    const posting =
+      property === "eligible-frontier"
+        ? this.indexes.frontiers
+        : get(this.indexes.postings, postingKey(property, region), this.visit);
     if (!posting) return immutable({ entries: [], next: null });
     const rows = range(
       posting,
