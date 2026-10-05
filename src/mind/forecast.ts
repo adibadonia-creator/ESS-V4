@@ -9,6 +9,7 @@ import {
   enjoymentClosure,
 } from "../laws/physiology";
 import type { Operation } from "../runtime/types";
+import { explorationWeight } from "./exploration";
 import { bodySignals, ownedLots } from "./signals";
 import { ReviewEffort } from "./effort";
 import type { BoundOption, Consequences, ConsequenceBlock } from "./types";
@@ -59,8 +60,15 @@ function activity(
       a.effort = law.effort;
       a.rate = review.rateEstimate(step.law, law.siteKind)?.rate ?? 0;
     }
+    if (step.experiment) {
+      a.load = 0.2;
+      a.effort = 0.4;
+      a.pleasant = explorationWeight(review, step.experiment);
+    }
     a.compulsory = step.compulsory ?? false;
   }
+  if (step.family === "Attend" && step.experiment)
+    a.pleasant = explorationWeight(review, step.experiment);
   if (step.family === "Recover") {
     a.rest = (step.mode ?? step.law) === "rest";
     if ((step.mode ?? step.law) === "leisure") {
@@ -263,7 +271,7 @@ export function forecast(
   return {
     horizon,
     blocks,
-    oneOff: 0,
+    oneOff: -(option.informationValue ?? 0),
     severeHazard,
     severeProbability: -math.expm1((-severeHazard * 3) / horizon),
     commitments: [],

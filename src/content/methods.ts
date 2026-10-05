@@ -12,7 +12,7 @@ export interface MethodSchema {
   targetProperty?: string;
   targetValue?: string;
   prerequisites: { effect: string; good: string; consumes: boolean }[];
-  operation: "consume" | "extract" | "recover";
+  operation: "consume" | "extract" | "recover" | "material";
   law: string;
   good?: string;
   mode?: "rest" | "leisure";

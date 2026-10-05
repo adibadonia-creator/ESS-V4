@@ -3,6 +3,7 @@ import { QUANTA } from "../kernel/time";
 export interface ResourceSite {
   key: string;
   kind: string;
+  materialKind?: string;
   point: { x: number; y: number };
   anchor: { at: number; stock: number; demand: number };
   capacity: number;

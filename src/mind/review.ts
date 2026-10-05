@@ -14,6 +14,7 @@ import { METHOD_INDEX, type MethodIndex } from "../content/methods";
 import { openReview, ReviewEffort } from "./effort";
 import { Binder, optionKey } from "./binder";
 import { bodySignals, drives, ownedLots, ownedLotsPage } from "./signals";
+import { explorationOptions, explorationWeight } from "./exploration";
 import { forecast } from "./forecast";
 import {
   heldErrors,
@@ -78,6 +79,7 @@ export class Mind {
       capCount: 0,
       epoch: 0,
       signatures: {},
+      trialCursor: null,
       agendaCursor: 0,
       comparisonCursor: 0,
       methodCursors: {},
@@ -220,7 +222,28 @@ export class Mind {
     const refForecast = forecast(review, reference, meter, 3, page.lots);
     if (!refForecast)
       throw Error("Mandatory reference forecast was not reserved");
-    const allDrives = drives(review, page.lots);
+    const opportunities = explorationOptions(review, s, meter);
+    const allDrives = [
+      ...drives(review, page.lots),
+      ...opportunities.map((o) => {
+        const experiment = o.steps.find(
+          (step) =>
+            (step.family === "Work" || step.family === "Attend") &&
+            step.experiment,
+        );
+        const process =
+          experiment &&
+          (experiment.family === "Work" || experiment.family === "Attend")
+            ? explorationWeight(review, experiment.experiment!)
+            : 0;
+        return {
+          objective: o.objective,
+          urgency:
+            (o.informationValue ?? 0) +
+            process * (1 - bodySignals(review).enjoyment) ** 2,
+        };
+      }),
+    ];
     this.counts.drivesConsidered += allDrives.length;
     const ordered = [...allDrives].sort(
       (a, b) =>
@@ -242,9 +265,16 @@ export class Mind {
     this.counts.agendaDeferred += allDrives.length - admitted.length;
     const bound: BoundOption[] = [],
       deferrals: string[] = [];
-    for (const item of admitted)
-      for (const method of binder.admission(effectOf(item.objective))) {
-        const o = binder.bind(item.objective, method);
+    for (const item of admitted) {
+      const opportunity = opportunities.find(
+        (o) => effectOf(o.objective) === effectOf(item.objective),
+      );
+      const choices = opportunity
+        ? [opportunity]
+        : binder
+            .admission(effectOf(item.objective))
+            .map((method) => binder.bind(item.objective, method));
+      for (const o of choices) {
         // A short alternative may resume the already authorised remaining plan.
         // Both prefix and continuation are explicit paid operations in the new
         // envelope. No no-new-intention reference gets free maintenance.
@@ -258,6 +288,7 @@ export class Mind {
         bound.push(o);
         if (o.status === "computationally-deferred") deferrals.push(o.reason);
       }
+    }
     // Generic agenda composition: when there is no incumbent, a short end may
     // be followed by the highest urgency different executable end already bound
     // in this review. This represents an explicit serial plan, not future funds.
@@ -402,7 +433,10 @@ export class Mind {
     s.deferred = copy(
       bound.filter((o) => o.status === "computationally-deferred").slice(0, 5),
     );
-    s.consulted = copy(binder.dependencies);
+    s.consulted = copy([
+      ...binder.dependencies,
+      ...opportunities.flatMap((o) => o.dependencies),
+    ]);
     const trace: DecisionTrace = {
       actor: review.owner,
       at: review.time,

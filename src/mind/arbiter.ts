@@ -3,6 +3,7 @@ import { normal } from "../kernel/random";
 import { canonical, compareKey } from "../kernel/canonical";
 import type { PersonalReview } from "../evidence/read";
 import { ownedLots } from "./signals";
+import { EXPLORATION, COMPATIBLE_OPERATIONS } from "../content/exploration";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { QUANTA } from "../kernel/time";
 import type { Compared, Consequences, Dispositions } from "./types";
@@ -107,7 +108,7 @@ export function feasibility(
   const spent: Record<string, number> = {};
   for (const [i, step] of o.steps.entries()) {
     if (step.family === "Move") {
-      if (!o.routes[i] || o.routes[i]!.status !== "found" || step.exploratory)
+      if (!o.routes[i] || o.routes[i]!.status !== "found")
         return "no personally established executable route";
       location = step.target;
     } else {
@@ -136,6 +137,28 @@ export function feasibility(
           return "unauthorised material spending";
       }
       if (step.family === "Work") {
+        if (COMPATIBLE_OPERATIONS.some((o) => o.id === step.law)) {
+          const operation = COMPATIBLE_OPERATIONS.find(
+            (o) => o.id === step.law,
+          )!;
+          const p = step.site
+            ? (review.belief(step.site, "location")?.value as
+                { x: number; y: number } | undefined)
+            : undefined;
+          if (
+            !p ||
+            (p.x - location.x) ** 2 + (p.y - location.y) ** 2 > 0.08 ** 2 ||
+            Number(
+              review.belief(step.site!, `stock:${operation.input}`)?.value ?? 0,
+            ) < 1 ||
+            Number(review.self.carried.stocks[operation.hammer] ?? 0) < 1 ||
+            review.belief(`method:${o.method}`, "known")?.value !== true
+          )
+            return "personally established trial backing unavailable";
+          if ((o.goods[operation.input] ?? 0) < 1)
+            return "trial input outside envelope";
+          continue;
+        }
         const law = EXTRACTION_INDEX.method(step.law),
           p = step.site
             ? (review.belief(step.site, "location")?.value as
@@ -161,6 +184,44 @@ export function feasibility(
         );
       }
     }
+  }
+  if (
+    !o.reference &&
+    (o.objective.kind === "knows" || o.objective.kind === "tried")
+  ) {
+    // This ceiling covers the optional experiment prefix. An explicitly bound
+    // ordinary continuation remains funded and assessed separately.
+    let duration = 0;
+    for (const [i, step] of o.steps.entries()) {
+      duration +=
+        step.family === "Move"
+          ? (o.routes[i]?.nodes[o.routes[i]!.goal]?.g ?? 0) /
+            (80 *
+              math.sqrt(
+                Math.max(
+                  0.05,
+                  Number(
+                    (
+                      review.belief("self", "body-experience")?.value as Record<
+                        string,
+                        number
+                      >
+                    ).condition,
+                  ),
+                ),
+              ))
+          : step.duration / QUANTA;
+      if (
+        (step.family === "Work" || step.family === "Attend") &&
+        step.experiment
+      )
+        break;
+    }
+    if (
+      duration > EXPLORATION.optionalTimeSd ||
+      duration > EXPLORATION.optionalFoodSd
+    )
+      return "optional inquiry/trial prefix ceiling exceeded";
   }
   if (!o.reference && !reserveExempt) {
     const last = x.consequences.blocks.at(-1)!;

@@ -27,7 +27,8 @@ export type Value =
   | null
   | Point
   | SeenCell[]
-  | Record<string, number>;
+  | Record<string, number>
+  | ExplorationOutcome;
 export interface Evidence {
   owner: string;
   subject: string;
@@ -135,7 +136,21 @@ export interface PerceptibleFact {
   }[];
   detection: number;
 }
+export interface ExplorationOutcome {
+  form: "T1" | "inquiry";
+  operation: string;
+  targetKind: string;
+  descriptor: string;
+  evidenceVersion: number;
+  paid: number;
+  completed: boolean;
+  success: boolean;
+  method?: string;
+  good?: string;
+  yield?: number;
+}
 export interface PerceptionPacket {
+  resourceClasses?: string[];
   terrain: SeenCell[];
   facts: PerceptibleFact[];
   footprint: Footprint;

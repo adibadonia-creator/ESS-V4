@@ -1,3 +1,11 @@
+import effects from "../content/material-effects.json";
+import {
+  COMPATIBLE_OPERATIONS,
+  MATERIAL_KINDS,
+  EXPLORATION,
+} from "../content/exploration";
+import { pleasantWeight, decayed } from "../laws/enjoyment";
+import type { ExplorationOutcome } from "../evidence/types";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import type { Operation, Task } from "../runtime/types";
 import { QUANTA } from "../kernel/time";
@@ -87,7 +95,16 @@ export interface PhysicalPort {
     value: unknown,
     context: string,
   ): void;
-  source(to: string, good: string, quantity: number): void;
+  source(
+    to: string,
+    good: string,
+    quantity: number,
+    production?: boolean,
+  ): void;
+  recipeInput(actor: string, good: string, quantity: number): void;
+  effectInstalled(id: string): boolean;
+  frustration(actor: string, context: string): number;
+  outcome(actor: string, outcome: ExplorationOutcome, provenance: string): void;
   consume(
     actor: string,
     from: string,
@@ -210,7 +227,13 @@ export class AdultPhysical {
     this.goods.resolveAdultCargo(actor, cargoNominal(b), this.port.now());
     return b;
   }
-  addSite(key: string, kind: string, point: Point, stock: number) {
+  addSite(
+    key: string,
+    kind: string,
+    point: Point,
+    stock: number,
+    materialKind?: string,
+  ) {
     const def = EXTRACTION_INDEX.resource(kind);
     if (
       !def ||
@@ -223,6 +246,7 @@ export class AdultPhysical {
     const s: ResourceSite = {
       key,
       kind,
+      ...(materialKind ? { materialKind } : {}),
       point: { ...point },
       anchor: { at: this.port.now(), stock, demand: 0 },
       capacity: def.capacity,
@@ -265,6 +289,23 @@ export class AdultPhysical {
       s.kind,
       "direct local resource observation",
     );
+    if (s.materialKind) {
+      const material = MATERIAL_KINDS.find((k) => k.id === s.materialKind);
+      this.port.fact(
+        actor,
+        key,
+        "material-kind",
+        s.materialKind,
+        "perceived material kind",
+      );
+      this.port.fact(
+        actor,
+        key,
+        "perceptible-properties",
+        material?.perceptible.join(",") ?? "",
+        "perceived material properties",
+      );
+    }
     const b = this.body(actor),
       def = EXTRACTION_INDEX.resource(s.kind)!;
     this.port.observeStock(
@@ -471,7 +512,60 @@ export class AdultPhysical {
         seg.reason = "food exhausted";
       }
     }
-    if (step.family === "Work") {
+    if (
+      (step.family === "Work" || step.family === "Attend") &&
+      step.experiment
+    ) {
+      const context = `${step.experiment.form}:${step.experiment.operation}:${step.experiment.targetKind}`;
+      seg.descriptor = step.experiment.descriptor;
+      const exposure = b.exposures[seg.descriptor];
+      const count = exposure
+        ? decayed(exposure.count, exposure.at, now, 36 * QUANTA)
+        : 0;
+      seg.pleasant = pleasantWeight(
+        EXPLORATION.familyWeight,
+        EXPLORATION.unfamiliaritySensitivity,
+        count,
+        b.familySatiation.exploration ?? 0,
+        this.port.frustration(task.actor, context),
+      );
+    }
+    if (
+      step.family === "Work" &&
+      (step.experiment || COMPATIBLE_OPERATIONS.some((o) => o.id === step.law))
+    ) {
+      const operation = COMPATIBLE_OPERATIONS.find((o) => o.id === step.law);
+      const ref = step.site ? this.port.reference(task.actor, step.site) : null;
+      const site = ref ? this.sites.get(ref) : null;
+      const p = this.port.position(task.actor);
+      // Public prerequisites only. Hidden material effects are not read here.
+      if (
+        !operation ||
+        !site ||
+        math.sqrt((p.x - site.point.x) ** 2 + (p.y - site.point.y) ** 2) >
+          this.port.workRadiusKm ||
+        stockAt(site, now) < 1 ||
+        this.goods.available(
+          this.goods.carriedContainer(task.actor).key,
+          operation.hammer,
+        ) < 1
+      )
+        return {
+          ok: false,
+          observed: "visible trial input or held hammer unavailable",
+        };
+      if (!this.port.knownMethod(task.actor, task.method))
+        return {
+          ok: false,
+          observed: "operation not authorised from personal knowledge",
+        };
+      seg.category = "work";
+      seg.load = operation.load;
+      seg.effort = operation.effort;
+      this.active.set(task.actor, seg);
+      this.segmentSlots.set(task.actor, this.state.segments.length);
+      this.state.segments.push(seg);
+    } else if (step.family === "Work") {
       this.counts.methodRecordsConsulted++;
       const m = EXTRACTION_INDEX.method(step.law),
         ref = step.site ? this.port.reference(task.actor, step.site) : null,
@@ -555,6 +649,7 @@ export class AdultPhysical {
       s.category === "rest",
       s.pleasant,
       s.compulsory,
+      s.descriptor && s.category !== "leisure" ? "exploration" : "leisure",
     );
     if (s.category === "rest" || s.category === "leisure")
       this.counts.recoverPaidSegments++;
@@ -574,6 +669,94 @@ export class AdultPhysical {
       this.scheduleSite(site);
     }
     let quantity = s.output;
+    const costs: Record<string, number> = {};
+    const step = task.steps[task.cursor];
+    if (
+      step?.family === "Work" &&
+      COMPATIBLE_OPERATIONS.some((o) => o.id === step.law)
+    ) {
+      const completed = final && now >= s.remainingEnd;
+      if (completed) {
+        const operation = COMPATIBLE_OPERATIONS.find((o) => o.id === step.law)!;
+        const site = this.sites.get(
+          this.port.reference(task.actor, step.site!)!,
+        )!;
+        this.settleSite(site);
+        if (site.anchor.stock >= 1) {
+          site.anchor.stock--;
+          this.updateDemand(site);
+          this.port.source(
+            this.goods.carriedContainer(task.actor).key,
+            operation.input,
+            1,
+          );
+          this.port.recipeInput(task.actor, operation.input, 1);
+          costs[operation.input] = 1;
+          // The first successful-schema lookup is AFTER all required paid work.
+          const effect = effects.find(
+            (e) =>
+              e.operation === step.law &&
+              e.kind === site.materialKind &&
+              this.port.effectInstalled(e.id),
+          );
+          quantity = effect
+            ? effect.yield * (step.experiment ? EXPLORATION.trialYield : 1)
+            : 0;
+          if (quantity > 0 && effect) {
+            this.port.source(
+              this.goods.carriedContainer(task.actor).key,
+              effect.output,
+              quantity,
+              true,
+            );
+            s.good = effect.output;
+          }
+          if (step.experiment)
+            this.port.outcome(
+              task.actor,
+              {
+                ...step.experiment,
+                paid: now - s.start,
+                completed: true,
+                success: quantity > 0,
+                ...(effect
+                  ? { method: effect.id, good: effect.output, yield: quantity }
+                  : {}),
+              },
+              `${task.semanticKey}:${task.cursor}:${now}`,
+            );
+          else if (effect)
+            this.port.outcome(
+              task.actor,
+              {
+                form: "T1",
+                operation: step.law,
+                targetKind: site.materialKind ?? site.kind,
+                descriptor: `use:${effect.id}:${step.site}`,
+                evidenceVersion: 0,
+                paid: now - s.start,
+                completed: true,
+                success: quantity > 0,
+                method: effect.id,
+                good: effect.output,
+                yield: quantity,
+              },
+              `${task.semanticKey}:${task.cursor}:${now}`,
+            );
+          this.observeSite(task.actor, site.key);
+        }
+      } else if (step.experiment && now > s.start)
+        this.port.outcome(
+          task.actor,
+          {
+            ...step.experiment,
+            paid: now - s.start,
+            completed: false,
+            success: false,
+          },
+          `${task.semanticKey}:${task.cursor}:${now}`,
+        );
+    }
     if (s.from && s.reservation && now > s.start) {
       const r = this.goods.reservation(s.reservation);
       quantity = Math.min((s.rate * (now - s.start)) / QUANTA, r.remaining);
@@ -620,6 +803,7 @@ export class AdultPhysical {
     this.experience(task.actor);
     return {
       quantity,
+      costs,
       ...(s.good ? { good: s.good } : {}),
       ...(final && s.reason && now >= s.end ? { reason: s.reason } : {}),
     };
@@ -658,6 +842,7 @@ export class AdultPhysical {
         compulsorySd: b.interval.compulsory / QUANTA,
         leisureSd: b.interval.leisure / QUANTA,
         satiation: b.satiation,
+        familySatiation: { ...b.familySatiation },
         familiarity: b.exposures,
         practice: b.practice,
       },

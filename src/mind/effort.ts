@@ -21,10 +21,17 @@ export class ReviewEffort {
     readonly counts: Counters,
   ) {}
   spend(
-    kind: "descriptor" | "retrieval" | "binding" | "forecast",
+    kind:
+      | "descriptor"
+      | "retrieval"
+      | "binding"
+      | "forecast"
+      | "trial"
+      | "information",
     amount = 1,
   ): boolean {
-    const cost = kind === "binding" ? 4 * amount : amount;
+    const cost =
+      kind === "binding" ? 4 * amount : kind === "trial" ? 3 * amount : amount;
     if (
       this.account.spent + cost > this.account.allowance ||
       (kind === "binding" && this.nodes + amount > 16)

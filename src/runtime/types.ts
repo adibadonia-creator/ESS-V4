@@ -9,7 +9,12 @@ export type Operation =
       target: Point;
       exploratory: boolean;
     }
-  | { family: "Attend"; duration: number; scope: "local-survey" }
+  | {
+      family: "Attend";
+      duration: number;
+      scope: "local-survey";
+      experiment?: import("../evidence/types").ExplorationOutcome;
+    }
   | {
       family: "Transfer";
       duration: number;
@@ -26,6 +31,7 @@ export type Operation =
       duration: number;
       site?: string;
       compulsory?: boolean;
+      experiment?: import("../evidence/types").ExplorationOutcome;
     }
   | {
       family: "Recover";
@@ -68,6 +74,8 @@ export interface SelectedIntention {
       service?: string;
       good?: string;
       place?: string;
+      question?: string;
+      context?: string;
     };
     targets: string[];
     quantity: { estimate: number; low: number; high: number };
@@ -163,6 +171,7 @@ export interface RuntimePort {
     quantity: number;
     good?: string;
     reason?: string;
+    costs?: Record<string, number>;
     ownWrites?: { key: string; before: number; after: number }[];
   };
   paidPhysical(task: Task, start: number, end: number): void;

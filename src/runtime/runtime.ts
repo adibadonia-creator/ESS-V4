@@ -631,6 +631,15 @@ export class TaskRuntime {
       if (d) d.version = write.after;
     }
     if (step?.family === "Work") t.physicalStepOutput += result.quantity;
+    for (const [good, quantity] of Object.entries(result.costs ?? {})) {
+      const budget = this.budget(t);
+      budget.spent.goods[good] = (budget.spent.goods[good] ?? 0) + quantity;
+      if (
+        budget.spent.goods[good]! >
+        (budget.authorised.goods[good] ?? 0) + 1e-9
+      )
+        throw Error("Material-effect budget overrun");
+    }
     if (
       step?.family === "Transfer" &&
       step.use === "consume" &&

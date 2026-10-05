@@ -1,3 +1,5 @@
+import { EXPLORATION } from "../content/exploration";
+import type { ExplorationOutcome } from "./types";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { METHOD_INDEX } from "../content/methods";
 import {
@@ -53,6 +55,23 @@ interface RateSample {
   logRate: number;
 }
 export interface PersonEvidence {
+  occupancy: Record<string, { alpha: number; beta: number }>;
+  occupancyCoverage: Record<string, Record<number, number>>;
+  discoveredSites: Record<string, boolean>;
+  exploration: Record<
+    string,
+    {
+      alpha: number;
+      beta: number;
+      failures: number;
+      at: number;
+      attempts: number;
+      paid: number;
+      evidenceVersion: number;
+      completed: boolean;
+    }
+  >;
+  explorationProvenance: Record<string, boolean>;
   rateStatistics: Record<string, RateStatistic>;
   // Exact provenance backing is historical, never enumerated by a current estimate.
   rateProvenance: Record<string, RateSample>;
@@ -118,6 +137,7 @@ export class EvidenceService {
     private regionKm = PUBLIC_MAP_PROFILE.regionCells *
       PUBLIC_MAP_PROFILE.cellKm,
     private methods = METHOD_INDEX,
+    private profile = PUBLIC_MAP_PROFILE,
   ) {
     this.state = state;
     for (let i = 0; i < state.pinnedGeography.length; i++) {
@@ -196,6 +216,11 @@ export class EvidenceService {
     if (this.people.has(owner)) return;
     const p: PersonEvidence = {
       owner,
+      occupancy: {},
+      occupancyCoverage: {},
+      discoveredSites: {},
+      exploration: {},
+      explorationProvenance: {},
       rateStatistics: {},
       rateProvenance: {},
       geographyRevision: 0,
@@ -616,6 +641,111 @@ export class EvidenceService {
       "slow",
     );
   }
+  observeExploration(
+    owner: string,
+    outcome: ExplorationOutcome,
+    at: number,
+    provenance: string,
+  ): void {
+    const p = this.person(owner);
+    if (p.explorationProvenance[provenance]) return;
+    p.explorationProvenance[provenance] = true;
+    const context = `${outcome.form}:${outcome.operation}:${outcome.targetKind}`;
+    for (const [key, weight] of [
+      [context, 1],
+      [`${outcome.form}:${outcome.operation}:*`, EXPLORATION.generalisation],
+      [outcome.descriptor, 1],
+    ] as const) {
+      const s = (p.exploration[key] ??= {
+        alpha: EXPLORATION.alpha,
+        beta: EXPLORATION.beta,
+        failures: 0,
+        at,
+        attempts: 0,
+        paid: 0,
+        evidenceVersion: 0,
+        completed: false,
+      });
+      s.failures *= math.exp(
+        -(at - s.at) / QUANTA / EXPLORATION.frustrationDecaySd,
+      );
+      s.at = at;
+      s.paid += outcome.paid * weight;
+      if (outcome.completed) {
+        s.attempts += weight;
+        if (outcome.success) s.alpha += weight;
+        else {
+          s.beta += weight;
+          s.failures += weight;
+        }
+        s.completed = true;
+        s.evidenceVersion = outcome.evidenceVersion;
+      }
+      this.fact(
+        owner,
+        "exploration",
+        key,
+        { ...s, completed: s.completed ? 1 : 0 },
+        at,
+        provenance,
+        "inference",
+      );
+    }
+    this.fact(
+      owner,
+      outcome.descriptor,
+      "outcome",
+      outcome,
+      at,
+      provenance,
+      "trial",
+    );
+    if (outcome.completed && outcome.success && outcome.method) {
+      this.fact(
+        owner,
+        `affordance:${outcome.operation}:${outcome.targetKind}`,
+        "known",
+        true,
+        at,
+        provenance,
+        "trial",
+      );
+      const subject = `method:${outcome.method}`;
+      const previous = this.latest(owner, subject, "confidence")?.value;
+      const confidence =
+        typeof previous === "number"
+          ? 1 - (1 - previous) * 0.6
+          : EXPLORATION.trialConfidence;
+      this.fact(
+        owner,
+        subject,
+        "observed-yield",
+        { yield: outcome.yield ?? 0, paid: outcome.paid },
+        at,
+        provenance,
+        "trial",
+      );
+      this.fact(
+        owner,
+        subject,
+        "confidence",
+        confidence,
+        at,
+        provenance,
+        "trial",
+      );
+      this.fact(
+        owner,
+        subject,
+        "observed-context",
+        context,
+        at,
+        provenance,
+        "trial",
+      );
+      this.fact(owner, subject, "known", true, at, provenance, "trial");
+    }
+  }
   foundMethods(owner: string, methods: string[], at: number): void {
     this.foundPerformancePriors(owner, methods, at);
     for (const method of methods)
@@ -799,6 +929,86 @@ export class EvidenceService {
           this.geographyVersions.delete(previous.id);
       }
     }
+    if (packet.resourceClasses) {
+      for (const resource of packet.resourceClasses) {
+        const coverage = (p.occupancyCoverage[resource] ??= {});
+        for (const c of packet.terrain) {
+          const scope = `${resource}:${c.terrain}`;
+          const posterior = (p.occupancy[scope] ??= {
+            alpha:
+              resource === "food-patch"
+                ? EXPLORATION.foodDensityKm2
+                : EXPLORATION.rawDensityKm2,
+            beta: EXPLORATION.occupancyStrengthKm2,
+          });
+          const detection = directed ? 1 : c.detection;
+          posterior.beta +=
+            this.profile.cellKm ** 2 *
+            Math.max(0, detection - (coverage[c.cell] ?? 0));
+          coverage[c.cell] = Math.max(coverage[c.cell] ?? 0, detection);
+          this.fact(
+            owner,
+            "occupancy",
+            scope,
+            { ...posterior },
+            at,
+            "qualified personal coverage",
+            "inference",
+          );
+        }
+      }
+    }
+    // Incremental personally represented frontier: only affected geometry and
+    // its immediate neighbours. No unseen terrain or whole-map enumeration.
+    if (cells.length) {
+      const affected = new Set<number>();
+      const width = this.profile.width,
+        height = this.profile.height;
+      for (const c of cells)
+        for (const [dx, dy] of [
+          [0, 0],
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ]) {
+          const x = (c.cell % width) + dx!,
+            y = Math.floor(c.cell / width) + dy!;
+          if (x >= 0 && x < width && y >= 0 && y < height)
+            affected.add(x + y * width);
+        }
+      for (const k of affected) {
+        const x = k % width,
+          y = Math.floor(k / width);
+        const adjacent = [
+          [x - 1, y],
+          [x + 1, y],
+          [x, y - 1],
+          [x, y + 1],
+        ].some(
+          ([a, b]) =>
+            a! >= 0 &&
+            b! >= 0 &&
+            a! < width &&
+            b! < height &&
+            p.cells[a! + b! * width]?.passable,
+        );
+        this.fact(
+          owner,
+          `frontier:${k}`,
+          "frontier",
+          !p.cells[k] && adjacent
+            ? {
+                x: (x + 0.5) * this.profile.cellKm,
+                y: (y + 0.5) * this.profile.cellKm,
+              }
+            : false,
+          at,
+          "personal coverage frontier",
+          "inference",
+        );
+      }
+    }
     // Packet order is geometric and independent of hidden allocation/keys.
     for (const f of packet.facts) {
       if (
@@ -811,6 +1021,33 @@ export class EvidenceService {
         continue;
       if (!accept()) break;
       const subject = this.handle(owner, f.reference);
+      const resource = f.properties.find(
+        (item) => item.property === "resource-kind",
+      )?.value;
+      if (typeof resource === "string" && !p.discoveredSites[f.reference]) {
+        p.discoveredSites[f.reference] = true;
+        const k =
+          Math.floor(f.position.x / this.profile.cellKm) +
+          this.profile.width * Math.floor(f.position.y / this.profile.cellKm);
+        const scope = `${resource}:${p.cells[k]?.terrain ?? 0}`;
+        const posterior = (p.occupancy[scope] ??= {
+          alpha:
+            resource === "food-patch"
+              ? EXPLORATION.foodDensityKm2
+              : EXPLORATION.rawDensityKm2,
+          beta: EXPLORATION.occupancyStrengthKm2,
+        });
+        posterior.alpha++;
+        this.fact(
+          owner,
+          "occupancy",
+          scope,
+          { ...posterior },
+          at,
+          "independent personally detected site",
+          "inference",
+        );
+      }
       this.fact(owner, subject, "existence", true, at, context);
       this.fact(owner, subject, "location", f.position, at, context);
       this.fact(owner, subject, "kind", f.kind, at, context);
@@ -917,6 +1154,15 @@ export class EvidenceService {
       );
     };
     add(e.property);
+    if (
+      e.property === "frontier" &&
+      typeof e.value === "object" &&
+      e.value !== null
+    )
+      add("eligible-frontier");
+    if (e.property === "perceptible-properties" && typeof e.value === "string")
+      for (const property of e.value.split(","))
+        add(`material-property:${property}`);
     if (
       e.property === "own-local-stocks" &&
       e.value &&

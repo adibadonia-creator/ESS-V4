@@ -1,3 +1,5 @@
+import { stockAt } from "../world/resources";
+import { EXTRACTION_INDEX } from "../content/extraction";
 import { AdultPhysical, type AdultPhysicalState } from "../world/adultPhysical";
 import {
   cargoNominal,
@@ -206,6 +208,8 @@ export class PhysicalSimulation {
       saved?.evidence,
       (owner, kind, detail) => this.kernel.record(kind, owner, detail),
       config.spatial.regionCells * config.spatial.cellKm,
+      undefined,
+      config.spatial,
     );
     this.epistemicActors = new Set(saved?.epistemicActors ?? []);
     this.adultPhysical = new AdultPhysical(
@@ -268,10 +272,38 @@ export class PhysicalSimulation {
             cognitive,
             field,
           ),
-        source: (to, good, quantity) => {
+        effectInstalled: (id) => config.materialEffects.includes(id),
+        frustration: (actor, context) => {
+          const e = this.personalReview(actor).belief("exploration", context);
+          const s = e?.value as Record<string, number> | undefined;
+          return s
+            ? s.failures! *
+                math.exp(-(this.kernel.state.now - s.at!) / QUANTA / 24)
+            : 0;
+        },
+        outcome: (actor, outcome, provenance) =>
+          this.evidence.observeExploration(
+            actor,
+            outcome,
+            this.kernel.state.now,
+            provenance,
+          ),
+        recipeInput: (actor, good, quantity) => {
+          const from = this.ledger.carriedContainer(actor).key;
+          this.goods({
+            kind: "sink",
+            sink: "recipe-input",
+            actor,
+            from,
+            good,
+            quantity,
+          });
+          this.publishOwnStocks(actor, from);
+        },
+        source: (to, good, quantity, production = false) => {
           this.goods({
             kind: "source",
-            source: "extraction",
+            source: production ? "production" : "extraction",
             to,
             good,
             quantity,
@@ -316,6 +348,8 @@ export class PhysicalSimulation {
       this.counters,
       saved?.adultPhysical,
     );
+    for (const site of this.adultPhysical.state.sites)
+      this.spatial.put(site.key, site.point);
     this.runtime = new TaskRuntime(
       {
         beginPhysical: (task, step, remaining) => {
@@ -383,8 +417,28 @@ export class PhysicalSimulation {
           this.movement.interrupt(this.actor(actor), this.kernel.state.now);
           this.kernel.invalidate(motionScope(actor));
         },
-        observe: (actor, duration) =>
-          this.perceive(actor, "paid directed Attend", true, duration),
+        observe: (actor, duration) => {
+          const task = this.runtime.task(actor),
+            step = task?.steps[task.cursor];
+          this.perceive(actor, "paid directed Attend", true, duration);
+          if (task && step?.family === "Attend" && step.experiment) {
+            const count = this.personalReview(actor).belief(
+              "local-survey",
+              "site-detection-count",
+            )?.value;
+            this.evidence.observeExploration(
+              actor,
+              {
+                ...step.experiment,
+                paid: duration,
+                completed: true,
+                success: typeof count === "number" && count > 0,
+              },
+              this.kernel.state.now,
+              `${task.semanticKey}:${task.cursor}:${this.kernel.state.now}`,
+            );
+          }
+        },
         schedule: (task, at, kind) =>
           this.kernel.schedule(
             digest(["task-operation", task.actor, task.semanticKey]),
@@ -855,12 +909,18 @@ export class PhysicalSimulation {
     this.adultPhysical.found(actor, class_, profile);
     this.adultPhysical.experience(actor);
   }
-  diagnosticResource(kind: string, point: Point, stock: number): Key {
+  diagnosticResource(
+    kind: string,
+    point: Point,
+    stock: number,
+    materialKind?: string,
+  ): Key {
     const key = this.kernel.ids.allocate(
       "physical-resource",
       digest([this.seed, kind, point]),
     ).key;
-    this.adultPhysical.addSite(key, kind, point, stock);
+    this.adultPhysical.addSite(key, kind, point, stock, materialKind);
+    this.spatial.put(key, point);
     return key;
   }
   diagnosticObserveResource(actor: Key, key: Key): string {
@@ -931,6 +991,57 @@ export class PhysicalSimulation {
     )) {
       if (key === actor || (focus && key !== focus)) continue;
       this.counters.perceptionCandidateChecks++;
+      const resource = this.adultPhysical.site(key);
+      if (resource) {
+        if (!visible(this.terrain, p, resource.point, sight)) continue;
+        const def = EXTRACTION_INDEX.resource(resource.kind)!;
+        const distance = math.sqrt(
+          (p.x - resource.point.x) ** 2 + (p.y - resource.point.y) ** 2,
+        );
+        const material = this.config.materialKinds.find(
+          (k) => k.id === resource.materialKind,
+        );
+        facts.push({
+          reference: key,
+          kind: "site",
+          position: resource.point,
+          detection: detection(distance, sight),
+          properties: [
+            {
+              property: "resource-kind",
+              value: resource.kind,
+              volatility: "fixed",
+              uncertainty: 0,
+            },
+            {
+              property: `stock:${def.good}`,
+              value: stockAt(resource, this.kernel.state.now),
+              volatility: "fast",
+              uncertainty:
+                distance <= this.config.movement.workRadiusKm
+                  ? 0
+                  : this.config.evidence.stockLogSd,
+            },
+            ...(material
+              ? [
+                  {
+                    property: "material-kind",
+                    value: material.id,
+                    volatility: "fixed" as const,
+                    uncertainty: 0,
+                  },
+                  {
+                    property: "perceptible-properties",
+                    value: material.perceptible.join(","),
+                    volatility: "fixed" as const,
+                    uncertainty: 0,
+                  },
+                ]
+              : []),
+          ],
+        });
+        continue;
+      }
       const other = this.byActor.get(key),
         c = other ? null : this.ledger.get(key),
         q = other ? this.position(key) : this.ledger.location(key);
@@ -994,6 +1105,9 @@ export class PhysicalSimulation {
       actor,
       {
         terrain: observedTerrain,
+        ...(!geometryOnly && !focus
+          ? { resourceClasses: ["food-patch", "stone-deposit"] }
+          : {}),
         facts: geometryOnly ? [] : facts,
         footprint: {
           cells: observedTerrain.map((c) => ({
@@ -1272,7 +1386,7 @@ export class PhysicalSimulation {
             const u = entryFraction(
               leg.from,
               leg.to,
-              this.ledger.location(key),
+              this.adultPhysical.site(key)?.point ?? this.ledger.location(key),
               radius,
             );
             if (u !== null) {
