@@ -103,7 +103,7 @@ type PhysicalEvent =
       focus?: Key;
       mandatory?: boolean;
     }
-  | { kind: "runtime-boundary"; actor: Key }
+  | { kind: "runtime-boundary"; actor: Key; motion: Key; generation: number }
   | { kind: "runtime-operation"; taskId: string; event: "operation" | "budget" }
   | { kind: "representative-closure"; actor: Key }
   | {
@@ -509,7 +509,7 @@ export class PhysicalSimulation {
           this.kernel.schedule(
             id.key,
             this.kernel.state.now +
-              (this.kernel.state.phase > PHASE.harm ? 1 : 0),
+              (this.kernel.state.phase >= PHASE.harm ? 1 : 0),
             PHASE.harm,
             { kind: "animal-harm", actor, wound, fatal },
           );
@@ -1989,6 +1989,13 @@ export class PhysicalSimulation {
         );
     }
     if (p.kind === "runtime-boundary") {
+      const m = this.actor(p.actor).motion;
+      if (
+        m?.key !== p.motion ||
+        m.generation !== p.generation ||
+        m.status !== "arrived"
+      )
+        return;
       this.perceive(p.actor, "movement arrival");
       this.runtime.movementBoundary(p.actor);
     }
@@ -2041,7 +2048,12 @@ export class PhysicalSimulation {
             digest(["runtime-boundary", a.key]),
             e.at,
             PHASE.decide,
-            { kind: "runtime-boundary", actor: a.key },
+            {
+              kind: "runtime-boundary",
+              actor: a.key,
+              motion: a.motion!.key,
+              generation: a.motion!.generation,
+            },
           );
       }
     }
@@ -3009,6 +3021,22 @@ function validateSaved(s: Save): void {
     )
       throw Error("Resource without valid identity/location");
   }
+  for (const r of s.goods.reservations) {
+    if (
+      !s.goods.containers.some((c) => c.key === r.container) ||
+      !owners.has(r.actor) ||
+      !s.config.goods.some((g) => g.id === r.good) ||
+      ![r.opening, r.remaining, r.spoiled ?? 0].every(
+        (q) => Number.isFinite(q) && q >= 0,
+      ) ||
+      r.remaining + (r.spoiled ?? 0) >
+        r.opening + s.config.diagnostic.quantityTolerance ||
+      !Number.isSafeInteger(r.expires) ||
+      r.expires < 0 ||
+      !["active", "released", "spent", "expired"].includes(r.status)
+    )
+      throw Error("Invalid saved reservation backing");
+  }
   for (const segment of s.adultPhysical.segments) {
     const task = liveTasks.get(segment.actor);
     if (
@@ -3019,6 +3047,25 @@ function validateSaved(s: Save): void {
       (task.active.end !== segment.end && task.active.family !== "Move")
     )
       throw Error("Physical segment without matching active task");
+    if (segment.maintenance) {
+      const m = segment.maintenance,
+        container = s.goods.containers.find((c) => c.key === m.from),
+        r = s.goods.reservations.find((r) => r.key === m.reservation),
+        flow = s.storage.anchors[m.from]?.flow;
+      if (
+        !container ||
+        container.custodian !== segment.actor ||
+        !r ||
+        r.actor !== segment.actor ||
+        r.container !== m.from ||
+        r.good !== m.good ||
+        r.status !== "active" ||
+        !flow ||
+        flow.good !== m.good ||
+        flow.rate !== m.rate
+      )
+        throw Error("Standing nourishment without goods/flow backing");
+    }
     if (segment.from) {
       const container = s.goods.containers.find((c) => c.key === segment.from),
         reservation = s.goods.reservations.find(

@@ -54,7 +54,7 @@ export class Mind {
     private catalogue: MethodIndex = METHOD_INDEX,
   ) {
     for (const s of state) {
-      validateMind(s);
+      validateMind(s, true);
       Object.freeze(s.dispositions);
       this.people.set(s.actor, s);
     }
@@ -1253,7 +1253,48 @@ function authorization(
     },
   };
 }
-export function validateMind(s: MindState): void {
+export function validateMind(s: MindState, deep = false): void {
+  if (
+    (s.projects?.length ?? 0) > 2 ||
+    (s.projectCursor !== undefined &&
+      (!Number.isSafeInteger(s.projectCursor) || s.projectCursor < 0))
+  )
+    throw Error("Invalid project lifecycle");
+  if (deep) {
+    if (
+      s.closedProjects?.some(
+        (p) => p.status !== "complete" && p.status !== "abandoned",
+      )
+    )
+      throw Error("Invalid closed project history");
+    for (const p of [...(s.projects ?? []), ...(s.closedProjects ?? [])]) {
+      if (
+        !p.key ||
+        !Array.isArray(p.frames) ||
+        !p.frames.length ||
+        !Number.isSafeInteger(p.focus) ||
+        p.focus < 0 ||
+        p.focus >= p.frames.length ||
+        !Number.isSafeInteger(p.visits) ||
+        p.visits < 0 ||
+        !Array.isArray(p.dependencies) ||
+        (p.remainingSd !== undefined &&
+          (!Number.isFinite(p.remainingSd) || p.remainingSd < 0))
+      )
+        throw Error("Invalid saved project frontier");
+      p.frames.forEach((f, i) => {
+        if (
+          !f.effect ||
+          !Number.isFinite(f.quantity) ||
+          f.quantity <= 0 ||
+          (f.parent !== null &&
+            (!Number.isSafeInteger(f.parent) || f.parent < 0 || f.parent >= i))
+        )
+          throw Error("Invalid saved prerequisite ancestry");
+      });
+    }
+  }
+
   const wakeCauses = ["periodic", "food", "rest", "completion", "failure"];
   if (
     !s.actor ||

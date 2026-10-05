@@ -22,6 +22,7 @@ export interface Reservation {
   good: string;
   opening: number;
   remaining: number;
+  spoiled?: number;
   expires: Time;
   status: "active" | "released" | "spent" | "expired";
 }
@@ -81,9 +82,17 @@ export class GoodsLedger {
   private seen: Set<Key>;
   private byActor = new Map<Key, Set<Key>>();
   private goodById: Map<string, PhysicalConfig["goods"][number]>;
-  private owned = new Map<Key,Container[]>();
-  ownedContainers(actor:Key){return this.owned.get(actor)??[];}
-  private indexContainer(c:Container){if(c.custodian){const rows=this.owned.get(c.custodian)??[];rows.push(c);this.owned.set(c.custodian,rows);}}
+  private owned = new Map<Key, Container[]>();
+  ownedContainers(actor: Key) {
+    return this.owned.get(actor) ?? [];
+  }
+  private indexContainer(c: Container) {
+    if (c.custodian) {
+      const rows = this.owned.get(c.custodian) ?? [];
+      rows.push(c);
+      this.owned.set(c.custodian, rows);
+    }
+  }
   private carried = new Map<Key, Key>();
   private held = new Map<string, Set<Key>>();
   constructor(
@@ -96,7 +105,7 @@ export class GoodsLedger {
     this.goodById = new Map(config.goods.map((g) => [g.id, g]));
     if (this.goodById.size !== config.goods.length)
       throw Error("Duplicate physical good");
-    for (const c of state.containers)this.indexContainer(c);
+    for (const c of state.containers) this.indexContainer(c);
     for (const c of state.containers)
       if (c.kind === "carried" && c.location.kind === "carrier")
         this.carried.set(c.location.actor, c.key);
@@ -148,7 +157,9 @@ export class GoodsLedger {
       ? { ...c.location.point }
       : this.position(c.location.actor);
   }
-  nutrition(good:string) { return this.good(good).nutrition??0; }
+  nutrition(good: string) {
+    return this.good(good).nutrition ?? 0;
+  }
   carrier(key: Key): Key | null {
     const seen = new Set<Key>();
     let c = this.get(key);
@@ -159,13 +170,14 @@ export class GoodsLedger {
     }
     return c.location.kind === "carrier" ? c.location.actor : null;
   }
-  load(key: Key, override?:Map<Key,Record<string,number>>): number {
+  load(key: Key, override?: Map<Key, Record<string, number>>): number {
     const c = this.get(key);
     let load = 0;
-    for (const good of Object.keys(override?.get(key)??c.stocks).sort())
-      load += (override?.get(key)??c.stocks)[good]! * this.good(good).bulk;
+    for (const good of Object.keys(override?.get(key) ?? c.stocks).sort())
+      load += (override?.get(key) ?? c.stocks)[good]! * this.good(good).bulk;
     // Nesting is supported, but no child registry scan in hot load accounting.
-    for (const child of this.children.get(key) ?? []) load += this.load(child,override);
+    for (const child of this.children.get(key) ?? [])
+      load += this.load(child, override);
     return load;
   }
   private children = new Map<Key, Set<Key>>();
@@ -238,9 +250,14 @@ export class GoodsLedger {
     }
     return amount;
   }
-  available(container: Key, good: string, override?:Map<Key,Record<string,number>>): number {
+  available(
+    container: Key,
+    good: string,
+    override?: Map<Key, Record<string, number>>,
+  ): number {
     return (
-      ((override?.get(container)??this.get(container).stocks)[good] ?? 0) - this.reserved(container, good)
+      ((override?.get(container) ?? this.get(container).stocks)[good] ?? 0) -
+      this.reserved(container, good)
     );
   }
   private ancestors(key: Key): Key[] {
@@ -261,7 +278,12 @@ export class GoodsLedger {
       throw e;
     }
   }
-  private validate(key: Key, at: Time, request: GoodsRequest, override?:Map<Key,Record<string,number>>): PreparedGoods {
+  private validate(
+    key: Key,
+    at: Time,
+    request: GoodsRequest,
+    override?: Map<Key, Record<string, number>>,
+  ): PreparedGoods {
     checkTime(at);
     request = JSON.parse(JSON.stringify(request)) as GoodsRequest;
     const revision = this.state.transactions.length;
@@ -305,7 +327,10 @@ export class GoodsLedger {
         deltas.set(request.to, quantity);
       } else {
         const from = this.get(request.from);
-        const a = request.kind==="sink"&&request.sink==="spoilage"?this.location(from.key):this.position(request.actor),
+        const a =
+            request.kind === "sink" && request.sink === "spoilage"
+              ? this.location(from.key)
+              : this.position(request.actor),
           p = this.location(from.key);
         if (
           math.sqrt((a.x - p.x) ** 2 + (a.y - p.y) ** 2) >
@@ -316,7 +341,7 @@ export class GoodsLedger {
           if (
             !Number.isSafeInteger(request.expires) ||
             request.expires <= at ||
-            quantity > this.available(from.key, good,override)
+            quantity > this.available(from.key, good, override)
           )
             throw new Error("Unbacked reservation");
           newReservation = {
@@ -343,8 +368,10 @@ export class GoodsLedger {
               throw new Error("Reservation cannot fund this debit");
           }
           if (
-            ((override?.get(from.key)??from.stocks)[good] ?? 0) -
-              (request.kind==="sink"&&request.sink==="spoilage"?0:this.reserved(from.key, good, request.reservation)) <
+            ((override?.get(from.key) ?? from.stocks)[good] ?? 0) -
+              (request.kind === "sink" && request.sink === "spoilage"
+                ? 0
+                : this.reserved(from.key, good, request.reservation)) <
             quantity
           )
             throw new Error("Insufficient finite backing");
@@ -372,9 +399,12 @@ export class GoodsLedger {
               throw new Error("Remote transfer");
             deltas.set(to.key, (deltas.get(to.key) ?? 0) + quantity);
           } else if (
-            !["consumption", "destruction", "recipe-input", "spoilage"].includes(
-              request.sink,
-            )
+            ![
+              "consumption",
+              "destruction",
+              "recipe-input",
+              "spoilage",
+            ].includes(request.sink)
           )
             throw new Error("Undeclared sink");
         }
@@ -388,7 +418,7 @@ export class GoodsLedger {
           (ancestorDelta.get(a) ?? 0) + delta * this.good(good).bulk,
         );
     for (const [c, delta] of ancestorDelta)
-      if (this.load(c,override) + delta > this.get(c).capacityCu + tolerance)
+      if (this.load(c, override) + delta > this.get(c).capacityCu + tolerance)
         throw new Error("Capacity exceeded");
     const loadActors = [
       ...new Set(
@@ -409,7 +439,33 @@ export class GoodsLedger {
         // No operation below this line can fail: all affected writes are prevalidated.
         for (const [c, delta] of deltas) {
           const record = this.get(c);
-          record.stocks[good] = (record.stocks[good] ?? 0) + delta;
+          const before = record.stocks[good] ?? 0;
+          record.stocks[good] = before + delta;
+          if (
+            request.kind === "sink" &&
+            request.sink === "spoilage" &&
+            before > 0
+          ) {
+            // Fungible claims lose backing when surviving stock cannot cover
+            // them. Share that shortfall across local indexed reservations.
+            const claimed = this.reserved(c, good);
+            const fraction =
+              claimed > 0
+                ? Math.min(1, Math.max(0, record.stocks[good] ?? 0) / claimed)
+                : 1;
+            for (const held of [
+              ...(this.held.get(c + ":" + good) ?? []),
+            ].sort()) {
+              const r = this.reservations.get(held)!,
+                remaining = r.remaining * fraction;
+              r.spoiled = (r.spoiled ?? 0) + (r.remaining - remaining);
+              r.remaining = remaining;
+              if (remaining === 0) {
+                r.status = "released";
+                this.unindexReservation(r);
+              }
+            }
+          }
         }
         if (newReservation) {
           this.state.reservations.push(newReservation);
@@ -441,7 +497,14 @@ export class GoodsLedger {
       },
     };
   }
-  validateProjected(key:Key,at:Time,request:GoodsRequest,stocks:Map<Key,Record<string,number>>) { this.validate(key,at,request,stocks); }
+  validateProjected(
+    key: Key,
+    at: Time,
+    request: GoodsRequest,
+    stocks: Map<Key, Record<string, number>>,
+  ) {
+    this.validate(key, at, request, stocks);
+  }
   transact(key: Key, at: Time, request: GoodsRequest): Transaction {
     return this.prepare(key, at, request).commit();
   }

@@ -244,3 +244,55 @@ it("material-life observer reads and host partitions preserve active causal stat
     true,
   );
 });
+
+it("natural predator harm and flight preserve event phases and movement ownership across seeds", () => {
+  for (const seed of ["material-life-b", "material-life-c"]) {
+    const s = createMaterialFixture(seed);
+    s.advanceTo(time(0.3));
+    const r = PhysicalSimulation.restore(s.checkpoint());
+    s.advanceTo(time(2.1));
+    for (const at of [0.5, 0.9, 1.4, 1.9, 2.1]) r.advanceTo(time(at));
+    expect(r.causalHash()).toBe(s.causalHash());
+    expect(s.snapshot().reconciliation.ok).toBe(true);
+  }
+});
+
+it("paying a short making prefix cannot falsely complete a retained material project", () => {
+  let s = flatWorld("unfinished-milestone");
+  const a = s.actorKeys()[0]!;
+  s.diagnosticFoundAdult(a);
+  const held = s.snapshot().actors[0]!.container;
+  for (const good of ["wood", "stone"])
+    s.diagnosticGoods({
+      kind: "source",
+      source: "initial-endowment",
+      to: held,
+      good,
+      quantity: 1,
+    });
+  s.enableAutonomous(a, { p: 0, rT: 0, aT: 0 });
+  const p = ProjectFrontier.found({
+    kind: "have",
+    good: "work-tool",
+    quantity: 1,
+    place: "carried",
+  });
+  s = editWorld(s, (b) => {
+    b.mind[0].projects = [p];
+  });
+  const t = task(
+    s,
+    [{ family: "Work", law: "make-work-tool", duration: time(0.001) }],
+    "short-project-prefix",
+  );
+  t.method = "make-work-tool";
+  t.project = p.key;
+  t.projectFinal = true;
+  t.projectMilestone = 0;
+  t.authorised.goods = { wood: 1, stone: 1 };
+  s.diagnosticSelect(t);
+  s.advanceTo(time(0.002));
+  expect(s.materialSnapshot().work[0]!.complete).toBe(false);
+  expect(s.decisionPanel(a)!.projects![0]!.status).not.toBe("complete");
+  expect(s.snapshot().reconciliation.ok).toBe(true);
+});

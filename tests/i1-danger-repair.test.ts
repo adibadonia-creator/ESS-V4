@@ -229,3 +229,61 @@ it("a same-target detour spends at most 40 EU and retains time already paid", ()
   expect(execution(s).task.status).toBe("done");
   expect(s.snapshot().reconciliation.ok).toBe(true);
 });
+
+it("supplier, rights and funding changes outside the retained envelope escalate to ordinary review", () => {
+  const s = flatWorld("repair-negative"),
+    a = s.actorKeys()[0]!;
+  s.diagnosticFoundAdult(a);
+  const own = s.personalReview(a).self.carried.subject,
+    cache = s
+      .personalReview(a)
+      .places("owned-good:food", 4)
+      .entries.find((e) => e.subject !== own)!.subject;
+  const t = task(s, [
+    {
+      family: "Transfer",
+      from: cache,
+      to: own,
+      good: "food",
+      quantity: 0.8,
+      basis: "own-custody",
+      duration: time(0.1),
+    },
+  ]);
+  t.repairScope = { moveTargets: [], bindings: { "input:0": [cache] } };
+  s.diagnosticSelect(t);
+  s.diagnosticTaskInterrupt(a);
+  const x = execution(s),
+    full = { ...x.task, envelope: { purpose: x.task.objective } } as any;
+  const rights = boundedRepair(
+    s.personalReview(a),
+    { ...full, steps: [{ ...full.steps[0], basis: "diagnostic-physical" }] },
+    x.budget,
+    s.counters,
+  );
+  const supplier = boundedRepair(
+    s.personalReview(a),
+    {
+      ...full,
+      repairScope: {
+        moveTargets: [],
+        bindings: { "input:0": ["unknown-supplier"] },
+      },
+    },
+    x.budget,
+    s.counters,
+  );
+  const funding = boundedRepair(
+    s.personalReview(a),
+    full,
+    { authorised: { time: 1, goods: { food: 0.1 } }, spent: x.budget.spent },
+    s.counters,
+  );
+  for (const result of [rights, supplier, funding]) {
+    expect(result.repair).toBeNull();
+    expect(result.effort.spent).toBeLessThanOrEqual(40);
+  }
+  expect(rights.reason).toContain("ordinary review");
+  expect(supplier.reason).toContain("ordinary review");
+  expect(funding.reason).toContain("funding");
+});

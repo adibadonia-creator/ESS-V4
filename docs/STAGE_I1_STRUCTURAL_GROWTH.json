@@ -1,0 +1,221 @@
+{
+  "scope": "Deterministic structural diagnostics, not autonomous cognition or Pack-0 performance proof",
+  "versions": {
+    "model": "ESS-4.0-i1-core",
+    "schema": 11,
+    "source": "1ad7b094bdbd31b85971344375b9c59fc70081e767a5d0243e3a109e00842eb4",
+    "spec": "d9c1c63060e9a2cbf56a1e4fe4ace994f21c24b74d21c5f24e27610322b59882",
+    "rng": "philox4x32-10-semantic-v1",
+    "sampler": "marsaglia-polar-binary64-v1",
+    "numerical": "binary64-polynomial-survival-v1-finite-guard",
+    "hash": "fnv4-avalanche-128-v1",
+    "runtime": "binary64-js-certified-v1",
+    "generator": "warped-fields-priority-flood-v1"
+  },
+  "runtime": "v24.19.0",
+  "machine": "AMD EPYC 9V74 80-Core Processor",
+  "restoreHashEqual": true,
+  "episodes": [
+    {
+      "episodes": 8,
+      "activeTasks": 0,
+      "terminalTasks": 8,
+      "activePrefixes": 0,
+      "paidArchive": 8,
+      "retryRecords": 8,
+      "terminalRowsVisited": 0,
+      "hotBytes": 156,
+      "archiveBytes": 6306,
+      "backingBytes": 4705
+    },
+    {
+      "episodes": 32,
+      "activeTasks": 0,
+      "terminalTasks": 32,
+      "activePrefixes": 0,
+      "paidArchive": 32,
+      "retryRecords": 32,
+      "terminalRowsVisited": 0,
+      "hotBytes": 157,
+      "archiveBytes": 25260,
+      "backingBytes": 17442
+    },
+    {
+      "episodes": 96,
+      "activeTasks": 0,
+      "terminalTasks": 96,
+      "activePrefixes": 0,
+      "paidArchive": 96,
+      "retryRecords": 96,
+      "terminalRowsVisited": 0,
+      "hotBytes": 159,
+      "archiveBytes": 75916,
+      "backingBytes": 51426
+    },
+    {
+      "episodes": 256,
+      "activeTasks": 0,
+      "terminalTasks": 256,
+      "activePrefixes": 0,
+      "paidArchive": 256,
+      "retryRecords": 256,
+      "terminalRowsVisited": 0,
+      "hotBytes": 159,
+      "archiveBytes": 203104,
+      "backingBytes": 137011
+    },
+    {
+      "episodes": 512,
+      "activeTasks": 0,
+      "terminalTasks": 512,
+      "activePrefixes": 0,
+      "paidArchive": 513,
+      "retryRecords": 512,
+      "terminalRowsVisited": 0,
+      "hotBytes": 189,
+      "archiveBytes": 406863,
+      "backingBytes": 273971
+    }
+  ],
+  "geography": [
+    {
+      "rememberedCells": 8,
+      "beliefValue": 4,
+      "places": 1,
+      "entriesVisited": 5,
+      "mapPagesVisited": 0,
+      "fullInspectorCalls": 0,
+      "lookupMs": 0.1285929999999098
+    },
+    {
+      "rememberedCells": 1008,
+      "beliefValue": 4,
+      "places": 1,
+      "entriesVisited": 5,
+      "mapPagesVisited": 0,
+      "fullInspectorCalls": 0,
+      "lookupMs": 0.07393099999990227
+    },
+    {
+      "rememberedCells": 5008,
+      "beliefValue": 4,
+      "places": 1,
+      "entriesVisited": 5,
+      "mapPagesVisited": 0,
+      "fullInspectorCalls": 0,
+      "lookupMs": 0.1017829999998412
+    },
+    {
+      "rememberedCells": 12008,
+      "beliefValue": 4,
+      "places": 1,
+      "entriesVisited": 5,
+      "mapPagesVisited": 0,
+      "fullInspectorCalls": 0,
+      "lookupMs": 0.2212930000000597
+    }
+  ],
+  "routes": [
+    {
+      "journeys": 8,
+      "canonicalRoutes": 2,
+      "routeEvidence": 2,
+      "journeyFacts": 8
+    },
+    {
+      "journeys": 32,
+      "canonicalRoutes": 2,
+      "routeEvidence": 2,
+      "journeyFacts": 32
+    },
+    {
+      "journeys": 100,
+      "canonicalRoutes": 2,
+      "routeEvidence": 2,
+      "journeyFacts": 100
+    }
+  ],
+  "reservations": [
+    {
+      "closed": 0,
+      "total": 1,
+      "active": 1,
+      "available": 7,
+      "load": 8,
+      "visits": 2,
+      "goodsVisited": 1,
+      "totalGoods": 136
+    },
+    {
+      "closed": 100,
+      "total": 101,
+      "active": 1,
+      "available": 7,
+      "load": 8,
+      "visits": 2,
+      "goodsVisited": 1,
+      "totalGoods": 136
+    },
+    {
+      "closed": 1000,
+      "total": 1001,
+      "active": 1,
+      "available": 7,
+      "load": 8,
+      "visits": 2,
+      "goodsVisited": 1,
+      "totalGoods": 136
+    }
+  ],
+  "content": [
+    {
+      "entries": 1,
+      "visits": 1,
+      "found": 1
+    },
+    {
+      "entries": 129,
+      "visits": 1,
+      "found": 1
+    }
+  ],
+  "host": [
+    {
+      "slice": 1,
+      "time": 0,
+      "hash": "005cf6522ff0833a4fd67a82f53caadd",
+      "effort": {
+        "[\"03479c8b25060d75d2980fe252b8de73\",\"review\",0]": {
+          "actor": "03479c8b25060d75d2980fe252b8de73",
+          "allowance": 600,
+          "expansionsPerEu": 64,
+          "key": "[\"03479c8b25060d75d2980fe252b8de73\",\"review\",0]",
+          "kind": "review",
+          "openedAt": 0,
+          "prepaidExpansions": 41,
+          "routeExpansions": 23,
+          "spent": 1
+        }
+      }
+    },
+    {
+      "slice": 65536,
+      "time": 0,
+      "hash": "005cf6522ff0833a4fd67a82f53caadd",
+      "effort": {
+        "[\"03479c8b25060d75d2980fe252b8de73\",\"review\",0]": {
+          "actor": "03479c8b25060d75d2980fe252b8de73",
+          "allowance": 600,
+          "expansionsPerEu": 64,
+          "key": "[\"03479c8b25060d75d2980fe252b8de73\",\"review\",0]",
+          "kind": "review",
+          "openedAt": 0,
+          "prepaidExpansions": 41,
+          "routeExpansions": 23,
+          "spent": 1
+        }
+      }
+    }
+  ],
+  "hostEqual": true
+}

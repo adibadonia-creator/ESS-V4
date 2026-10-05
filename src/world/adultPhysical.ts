@@ -961,6 +961,8 @@ export class AdultPhysical {
           competence(b, "Make"),
         );
       quantity = made.quantity;
+      if (final && now >= s.end && made.quantity === 0)
+        s.reason = "located work remains unfinished";
       if ("output" in made) outputSubject = String(made.output);
       for (const [good, q] of Object.entries(made.costs))
         costs[good] = (costs[good] ?? 0) + q;

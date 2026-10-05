@@ -1,0 +1,675 @@
+{
+  "scope": "Three seeds, four adults, two SD; declared founding prehistory/endowments/observations, no selected actions. Diagnostic natural panel, no behavioral quotas or performance certification.",
+  "runtime": "v24.19.0",
+  "machine": "AMD EPYC 9V74 80-Core Processor",
+  "versions": {
+    "model": "ESS-4.0-i1-core",
+    "schema": 11,
+    "source": "1ad7b094bdbd31b85971344375b9c59fc70081e767a5d0243e3a109e00842eb4",
+    "spec": "d9c1c63060e9a2cbf56a1e4fe4ace994f21c24b74d21c5f24e27610322b59882",
+    "rng": "philox4x32-10-semantic-v1",
+    "sampler": "marsaglia-polar-binary64-v1",
+    "numerical": "binary64-polynomial-survival-v1-finite-guard",
+    "hash": "fnv4-avalanche-128-v1",
+    "runtime": "binary64-js-certified-v1",
+    "generator": "warped-fields-priority-flood-v1"
+  },
+  "panels": [
+    {
+      "seed": "material-life",
+      "actors": 4,
+      "sd": 2,
+      "selectedMethods": {
+        "leisure": 4,
+        "continue": 4,
+        "eat-fish": 3,
+        "consume": 5,
+        "make-work-tool": 1,
+        "inquire": 1
+      },
+      "samples": [
+        {
+          "sd": 0.5,
+          "conservation": true,
+          "condition": [
+            0.8313312644197299,
+            0.46759123138537706,
+            0.23965103644177577,
+            0.83133126441973
+          ],
+          "items": [],
+          "completedWork": 0,
+          "locatedWork": 0,
+          "liveProjects": 0,
+          "tasks": [
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "eat-fish",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "eat-fish",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 706223
+        },
+        {
+          "sd": 1,
+          "conservation": true,
+          "condition": [
+            0.9174295785875632,
+            0.5377563945605776,
+            0.4986447668212979,
+            0.6410299212752785
+          ],
+          "items": [
+            {
+              "kind": "work-tool",
+              "durability": 1
+            }
+          ],
+          "completedWork": 1,
+          "locatedWork": 0,
+          "liveProjects": 1,
+          "tasks": [
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "make-work-tool",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 890243
+        },
+        {
+          "sd": 1.5,
+          "conservation": true,
+          "condition": [
+            0.23493292160202173,
+            0.6730687107186883,
+            0.13952298107221778,
+            0.8242691432487113
+          ],
+          "items": [
+            {
+              "kind": "work-tool",
+              "durability": 1
+            }
+          ],
+          "completedWork": 1,
+          "locatedWork": 0,
+          "liveProjects": 2,
+          "tasks": [
+            {
+              "method": "make-work-tool",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "eat-fish",
+              "status": "blocked",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 1
+            }
+          ],
+          "checkpointBytes": 1110235
+        },
+        {
+          "sd": 2,
+          "conservation": true,
+          "condition": [
+            0.42681178626221744,
+            0.7393097265292251,
+            0.533140663341952,
+            0.9139723760695104
+          ],
+          "items": [
+            {
+              "kind": "work-tool",
+              "durability": 1
+            }
+          ],
+          "completedWork": 1,
+          "locatedWork": 0,
+          "liveProjects": 3,
+          "tasks": [
+            {
+              "method": "make-work-tool",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 2
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 1148407
+        }
+      ],
+      "advanceMs": {
+        "total": 300.16076700000036,
+        "max": 50.99184199999996
+      },
+      "observerInert": true,
+      "activeRestoreEqual": true,
+      "effortWithinAllowance": true,
+      "repairs": [
+        {
+          "installed": true,
+          "reason": "preauthorised equivalent own input at the same place and terms",
+          "count": 1,
+          "maxEu": 5
+        },
+        {
+          "installed": false,
+          "reason": "required non-route premise revised; ordinary review required",
+          "count": 2,
+          "maxEu": 4
+        },
+        {
+          "installed": false,
+          "reason": "fixed operation change requires ordinary review",
+          "count": 1,
+          "maxEu": 4
+        }
+      ],
+      "counters": {
+        "reviewEuTotal": 3554,
+        "bindingEu": 720,
+        "forecastEu": 859,
+        "routeEu": 17,
+        "methodsConsidered": 118,
+        "autonomousIntentionsCommitted": 15,
+        "workSettlements": 5,
+        "consumptionSettlements": 11,
+        "personalReadEntriesVisited": 41712,
+        "repairRequiredTransitions": 4,
+        "taskInterruptions": 9
+      }
+    },
+    {
+      "seed": "material-life-b",
+      "actors": 4,
+      "sd": 2,
+      "selectedMethods": {
+        "continue": 5,
+        "consume": 10,
+        "inquire": 3,
+        "leisure": 3,
+        "eat-fish": 2,
+        "make-work-tool": 1,
+        "make-spear": 1,
+        "rest": 1,
+        "escape": 2
+      },
+      "samples": [
+        {
+          "sd": 0.5,
+          "conservation": true,
+          "condition": [
+            0.37655856461692183,
+            0.6132168087686563,
+            0.83133126441973,
+            0.83133126441973
+          ],
+          "items": [],
+          "completedWork": 0,
+          "locatedWork": 0,
+          "liveProjects": 1,
+          "tasks": [
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "eat-fish",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 723171
+        },
+        {
+          "sd": 1,
+          "conservation": true,
+          "condition": [
+            0.6817731429107277,
+            0.5564244027787312,
+            0.7428220233369562,
+            0.9174295785875632
+          ],
+          "items": [
+            {
+              "kind": "work-tool",
+              "durability": 1
+            }
+          ],
+          "completedWork": 1,
+          "locatedWork": 0,
+          "liveProjects": 3,
+          "tasks": [
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "make-work-tool",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "make-spear",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 979505
+        },
+        {
+          "sd": 1.5,
+          "conservation": true,
+          "condition": [
+            0.8146608638207418,
+            0.3869459630741413,
+            0.8400337568810125,
+            0.4600733753308099
+          ],
+          "items": [
+            {
+              "kind": "work-tool",
+              "durability": 1
+            }
+          ],
+          "completedWork": 1,
+          "locatedWork": 0,
+          "liveProjects": 3,
+          "tasks": [
+            {
+              "method": "rest",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "eat-fish",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 1158729
+        },
+        {
+          "sd": 2,
+          "conservation": true,
+          "condition": [
+            0.8944039502910723,
+            0.635058261045697,
+            0.8961928801418254,
+            0.5284903079109686
+          ],
+          "items": [
+            {
+              "kind": "work-tool",
+              "durability": 1
+            }
+          ],
+          "completedWork": 1,
+          "locatedWork": 0,
+          "liveProjects": 3,
+          "tasks": [
+            {
+              "method": "rest",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 1288761
+        }
+      ],
+      "advanceMs": {
+        "total": 214.50254599999948,
+        "max": 52.22725799999989
+      },
+      "observerInert": true,
+      "activeRestoreEqual": true,
+      "effortWithinAllowance": true,
+      "repairs": [
+        {
+          "installed": false,
+          "reason": "required non-route premise revised; ordinary review required",
+          "count": 6,
+          "maxEu": 4
+        },
+        {
+          "installed": false,
+          "reason": "no bounded personally established detour",
+          "count": 1,
+          "maxEu": 7
+        },
+        {
+          "installed": false,
+          "reason": "detour exceeds retained time authority",
+          "count": 1,
+          "maxEu": 5
+        },
+        {
+          "installed": false,
+          "reason": "no personally backed authorised equivalent input; ordinary review required",
+          "count": 8,
+          "maxEu": 5
+        }
+      ],
+      "counters": {
+        "reviewEuTotal": 6683,
+        "bindingEu": 1436,
+        "forecastEu": 1704,
+        "routeEu": 31,
+        "methodsConsidered": 231,
+        "autonomousIntentionsCommitted": 31,
+        "workSettlements": 6,
+        "consumptionSettlements": 20,
+        "personalReadEntriesVisited": 92108,
+        "repairRequiredTransitions": 16,
+        "taskInterruptions": 14
+      }
+    },
+    {
+      "seed": "material-life-c",
+      "actors": 4,
+      "sd": 2,
+      "selectedMethods": {
+        "continue": 17,
+        "consume": 17,
+        "inquire": 5,
+        "leisure": 1,
+        "rest": 4,
+        "establish-cache": 2,
+        "escape": 1,
+        "make-spear": 1
+      },
+      "samples": [
+        {
+          "sd": 0.5,
+          "conservation": true,
+          "condition": [
+            0.23965103644177577,
+            0.31600453749165947,
+            0.2396510364417757,
+            0.30311996036042
+          ],
+          "items": [],
+          "completedWork": 0,
+          "locatedWork": 1,
+          "liveProjects": 1,
+          "tasks": [
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "inquire",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "rest",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 1455906
+        },
+        {
+          "sd": 1,
+          "conservation": true,
+          "condition": [
+            0.41521885661152924,
+            0.6651550064810041,
+            0.4728588427050473,
+            0.6588478067767243
+          ],
+          "items": [],
+          "completedWork": 0,
+          "locatedWork": 1,
+          "liveProjects": 2,
+          "tasks": [
+            {
+              "method": "leisure",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "rest",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 1559852
+        },
+        {
+          "sd": 1.5,
+          "conservation": true,
+          "condition": [
+            0.7137250777955462,
+            0.5233932029075212,
+            0.17992208125494588,
+            0.7995175642549407
+          ],
+          "items": [],
+          "completedWork": 0,
+          "locatedWork": 1,
+          "liveProjects": 5,
+          "tasks": [
+            {
+              "method": "rest",
+              "status": "running",
+              "cursor": 1
+            },
+            {
+              "method": "make-spear",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "blocked",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 2208353
+        },
+        {
+          "sd": 2,
+          "conservation": true,
+          "condition": [
+            0.4116448652721919,
+            0.2500123036620004,
+            0.3385458382813049,
+            0.19160521292710053
+          ],
+          "items": [],
+          "completedWork": 0,
+          "locatedWork": 2,
+          "liveProjects": 7,
+          "tasks": [
+            {
+              "method": "consume",
+              "status": "blocked",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "blocked",
+              "cursor": 0
+            },
+            {
+              "method": "consume",
+              "status": "running",
+              "cursor": 0
+            },
+            {
+              "method": "rest",
+              "status": "running",
+              "cursor": 0
+            }
+          ],
+          "checkpointBytes": 2421352
+        }
+      ],
+      "advanceMs": {
+        "total": 596.5775400000002,
+        "max": 72.94657200000029
+      },
+      "observerInert": true,
+      "activeRestoreEqual": true,
+      "effortWithinAllowance": true,
+      "repairs": [
+        {
+          "installed": false,
+          "reason": "fixed operation change requires ordinary review",
+          "count": 4,
+          "maxEu": 4
+        },
+        {
+          "installed": false,
+          "reason": "required non-route premise revised; ordinary review required",
+          "count": 5,
+          "maxEu": 4
+        },
+        {
+          "installed": false,
+          "reason": "detour exceeds retained time authority",
+          "count": 1,
+          "maxEu": 5
+        },
+        {
+          "installed": false,
+          "reason": "no personally backed authorised equivalent input; ordinary review required",
+          "count": 11,
+          "maxEu": 5
+        }
+      ],
+      "counters": {
+        "reviewEuTotal": 7753,
+        "bindingEu": 1748,
+        "forecastEu": 2261,
+        "routeEu": 40,
+        "methodsConsidered": 263,
+        "autonomousIntentionsCommitted": 36,
+        "workSettlements": 6,
+        "consumptionSettlements": 22,
+        "personalReadEntriesVisited": 127898,
+        "repairRequiredTransitions": 22,
+        "taskInterruptions": 12
+      }
+    }
+  ]
+}
