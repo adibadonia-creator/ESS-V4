@@ -1,5 +1,10 @@
-import { AdultPhysical, type AdultPhysicalState } from "./adultPhysical";
-import { cargoNominal, materialiseBody, travelAbility } from "./body";
+import { AdultPhysical, type AdultPhysicalState } from "../world/adultPhysical";
+import {
+  cargoNominal,
+  materialiseBody,
+  travelAbility,
+  competence,
+} from "../world/body";
 import {
   CONTENT_HASH,
   EFFORT_PROFILE,
@@ -22,22 +27,26 @@ import { QUANTA, checkTime, future, sd, type Time } from "../kernel/time";
 import { versions } from "../kernel/versions";
 import { math } from "../kernel/numerics";
 import type { Snapshot } from "../projection/types";
-import { GoodsLedger, type GoodsRequest, type GoodsState } from "./goods";
+import {
+  GoodsLedger,
+  type GoodsRequest,
+  type GoodsState,
+} from "../world/goods";
 import {
   Movement,
   positionAt,
   baseSpeed,
   type PersonShell,
   type MotionInputs,
-} from "./movement";
+} from "../world/movement";
 import {
   beginSearch,
   resumeSearch,
   pullPath,
   segments,
   type SearchState,
-} from "./routing";
-import { SpatialIndex } from "./spatial";
+} from "../world/routing";
+import { SpatialIndex } from "../world/spatial";
 import {
   generateTerrain,
   buildRegions,
@@ -47,7 +56,7 @@ import {
   type Terrain,
   type Point,
   type Regions,
-} from "./terrain";
+} from "../world/terrain";
 import {
   EvidenceService,
   beliefKey,
@@ -66,7 +75,10 @@ import {
   visibleTerrain,
   detection,
   entryFraction,
-} from "./perception";
+} from "../world/perception";
+import { Mind } from "../mind/review";
+import type { MindState, WakeCause, Dispositions } from "../mind/types";
+import { bodySignals, ownedLots } from "../mind/signals";
 type PhysicalEvent =
   | { kind: "leg"; actor: Key; generation: number }
   | { kind: "lease"; reservation: Key }
@@ -82,7 +94,11 @@ type PhysicalEvent =
     }
   | { kind: "runtime-boundary"; actor: Key }
   | { kind: "runtime-operation"; taskId: string; event: "operation" | "budget" }
-  | { kind: "representative-closure"; actor: Key };
+  | { kind: "representative-closure"; actor: Key }
+  | {
+      kind: "mind-periodic" | "mind-review" | "mind-food-crossing";
+      actor: Key;
+    };
 interface RouteRequest {
   actor: Key;
   target: Point;
@@ -116,6 +132,7 @@ interface Save {
   runtime: RuntimeState;
   epistemicActors: Key[];
   adultPhysical: AdultPhysicalState;
+  mind: MindState[];
 }
 const FIELDS = [
   "kind",
@@ -144,6 +161,7 @@ export class PhysicalSimulation {
   private evidence: EvidenceService;
   private runtime: TaskRuntime;
   private adultPhysical: AdultPhysical;
+  private mind: Mind;
   private epistemicActors = new Set<Key>();
   private carriedByActor = new Map<Key, Key>();
   private fork: ForkMetadata = { parentCheckpoint: null, intervention: null };
@@ -258,6 +276,8 @@ export class PhysicalSimulation {
             good,
             quantity,
           });
+          const owner = this.ledger.get(to).custodian;
+          if (owner) this.publishOwnStocks(owner, to);
         },
         consume: (actor, from, good, quantity, reservation) => {
           this.goods({
@@ -269,6 +289,7 @@ export class PhysicalSimulation {
             quantity,
             reservation,
           });
+          this.publishOwnStocks(actor, from);
         },
         reserve: (actor, from, good, quantity, expires) =>
           this.goods({ kind: "reserve", actor, from, good, quantity, expires }),
@@ -297,9 +318,25 @@ export class PhysicalSimulation {
     );
     this.runtime = new TaskRuntime(
       {
-        beginPhysical: (task, step, remaining) =>
-          this.adultPhysical.begin(task, step, remaining),
-        endPhysical: (task, final) => this.adultPhysical.end(task, final),
+        beginPhysical: (task, step, remaining) => {
+          const result = this.adultPhysical.begin(task, step, remaining);
+          if (result.ok) this.refreshMindThresholds(task.actor, step);
+          return result;
+        },
+        endPhysical: (task, final) => {
+          const before = task.dependsOn.map((d) => ({
+            key: d.key,
+            before: this.evidence.version(task.actor, d.key),
+          }));
+          const result = this.adultPhysical.end(task, final);
+          const ownWrites = before
+            .map((d) => ({
+              ...d,
+              after: this.evidence.version(task.actor, d.key),
+            }))
+            .filter((d) => d.before !== d.after);
+          return { ...result, ownWrites };
+        },
         paidPhysical: (task, start, end) =>
           this.adultPhysical.paid(task, start, end),
         physicalClosure: (actor) => this.adultPhysical.closure(actor),
@@ -439,11 +476,31 @@ export class PhysicalSimulation {
         },
         routeEvidence: (actor, subject, cells, status, at) =>
           this.evidence.route(actor, subject, cells, status, at),
-        record: (kind, actor, detail) =>
-          this.kernel.record(kind, actor, detail),
+        record: (kind, actor, detail) => {
+          this.kernel.record(kind, actor, detail);
+          if (kind === "task-complete") this.requestReview(actor, "completion");
+          if (kind === "task-repair-required")
+            this.requestReview(actor, "failure");
+        },
       },
       this.counters,
       saved?.runtime,
+    );
+    this.mind = new Mind(seed, this.counters, saved?.mind);
+  }
+  private publishOwnStocks(actor: Key, container: Key): void {
+    if (!this.epistemicActors.has(actor)) return;
+    const c = this.ledger.get(container),
+      subject = this.evidence.subjectFor(actor, container);
+    if (c.custodian !== actor || !subject) return;
+    this.evidence.fact(
+      actor,
+      subject,
+      c.location.kind === "carrier" ? "stocks" : "own-local-stocks",
+      { ...c.stocks },
+      this.kernel.state.now,
+      "own paid goods receipt",
+      "self",
     );
   }
   private actor(key: Key): PersonShell {
@@ -657,6 +714,79 @@ export class PhysicalSimulation {
       { kind: "representative-closure", actor },
     );
   }
+  enableAutonomous(actor: Key, dispositions?: Dispositions): void {
+    if (!this.adultPhysical.body(actor)) this.diagnosticFoundAdult(actor);
+    const state = this.mind.found(actor, this.kernel.state.now, dispositions);
+    this.kernel.schedule(
+      digest(["mind-periodic", actor]),
+      state.periodicAt,
+      PHASE.observe,
+      { kind: "mind-periodic", actor },
+    );
+    this.refreshMindThresholds(actor);
+  }
+  decisionPanel(actor: Key): Readonly<MindState> | null {
+    const state = this.mind.person(actor);
+    return state ? freezeProjection(clone(state)) : null;
+  }
+  requestReview(actor: Key, cause: WakeCause): void {
+    if (!this.mind?.person(actor)) return;
+    const at =
+      this.kernel.state.now +
+      (this.kernel.state.phase === PHASE.decide ||
+      this.kernel.state.phase === -1
+        ? 1
+        : 0);
+    if (this.mind.request(actor, cause, at)) this.scheduleReview(actor, at);
+  }
+  private scheduleReview(actor: Key, at: number): void {
+    const scope = digest(["mind-review", actor]);
+    this.kernel.invalidate(scope);
+    this.kernel.schedule(scope, at, PHASE.decide, {
+      kind: "mind-review",
+      actor,
+    });
+  }
+  private refreshMindThresholds(
+    actor: Key,
+    step?: import("../runtime/types").Operation,
+  ): void {
+    const state = this.mind?.person(actor);
+    if (!state) return;
+    const review = this.personalReview(actor);
+    for (const cause of this.mind.thresholds(review))
+      this.requestReview(actor, cause);
+    const scope = digest(["mind-food-crossing", actor]);
+    this.kernel.invalidate(scope);
+    const current =
+      step ??
+      this.runtime.currentExecution(actor).task?.steps[
+        this.runtime.task(actor)!.cursor
+      ];
+    if (
+      !state.foodArmed ||
+      current?.family !== "Transfer" ||
+      current.use !== "consume"
+    )
+      return;
+    const b = bodySignals(review),
+      quantity = ownedLots(review, "food").reduce(
+        (sum, l) => sum + l.quantity,
+        0,
+      );
+    const rate = current.quantity / (current.duration / QUANTA);
+    const until =
+      Math.ceil(Math.max(0, (quantity - 0.25 * b.quiet) / rate) * QUANTA) + 1;
+    const remaining =
+      current.duration - (this.runtime.task(actor)?.paidForStep ?? 0);
+    if (until > 0 && until < remaining)
+      this.kernel.schedule(
+        scope,
+        this.kernel.state.now + until,
+        PHASE.observe,
+        { kind: "mind-food-crossing", actor },
+      );
+  }
   personalView(actor: Key): PersonalView {
     if (!this.epistemicActors.has(actor))
       throw Error("No personal evidence fixture");
@@ -715,9 +845,10 @@ export class PhysicalSimulation {
     actor: Key,
     class_: "M" | "F" = "M",
     profile?: {
-      capability: import("./body").AdultCapability;
-      mastery: import("./body").Masteries;
+      capability: import("../world/body").AdultCapability;
+      mastery: import("../world/body").Masteries;
       wound?: number;
+      initial?: { condition: number; fatigue: number; enjoyment: number };
     },
   ) {
     this.enablePersonal(actor);
@@ -746,12 +877,18 @@ export class PhysicalSimulation {
     return {
       personal: this.personalView(actor),
       execution: this.runtime.projection(actor),
+      decision: this.decisionPanel(actor),
     };
   }
   diagnosticSelect(input: SelectedIntention): Task {
     if (!this.epistemicActors.has(input.actor))
       throw Error("Enable personal fixture first");
-    return this.runtime.select(input);
+    if (input.source !== "diagnostic-selected-intention")
+      throw Error("Diagnostic adapter requires diagnostic source");
+    return this.runtime.select(input, () => {
+      if (!this.runtime.state.currentEffort[input.actor])
+        this.runtime.authorizeEffort(input.actor, "review");
+    });
   }
   diagnosticInstallRepair(
     actor: Key,
@@ -1242,6 +1379,48 @@ export class PhysicalSimulation {
   }
   private execute(e: Event<PhysicalEvent>): void {
     const p = e.payload;
+    if (p.kind === "mind-periodic") {
+      const state = this.mind.person(p.actor)!;
+      this.requestReview(p.actor, "periodic");
+      state.periodicAt = e.at + 2 * QUANTA;
+      this.kernel.schedule(e.subject, state.periodicAt, PHASE.observe, p);
+    }
+    if (p.kind === "mind-food-crossing") {
+      this.runtime.reviewBoundary(p.actor);
+      this.refreshMindThresholds(p.actor);
+    }
+    if (p.kind === "mind-review") {
+      const state = this.mind.person(p.actor)!;
+      const admission = this.mind.admit(
+        this.personalReview(p.actor),
+        this.runtime.currentExecution(p.actor),
+      );
+      if (!admission) {
+        if (state.nextWake !== null)
+          this.scheduleReview(p.actor, state.nextWake);
+        return;
+      }
+      this.runtime.reviewBoundary(p.actor);
+      this.adultPhysical.experience(p.actor);
+      const review = this.personalReview(p.actor),
+        body = this.adultPhysical.body(p.actor)!;
+      const trace = this.mind.deliberate(
+        review,
+        this.runtime.currentExecution(p.actor),
+        admission,
+        {
+          denominator: () =>
+            math.sqrt(body.capability.C * competence(body, "Organise")),
+        },
+      );
+      this.runtime.admitEffort(trace.effort, trace.selected);
+      if (trace.selected) {
+        if (this.runtime.task(p.actor)) this.runtime.abandon(p.actor);
+        this.runtime.select(trace.selected);
+        this.counters.autonomousIntentionsCommitted++;
+      }
+      this.refreshMindThresholds(p.actor);
+    }
     if (p.kind === "perceive") {
       const m = this.actor(p.actor).motion;
       if (m?.key === p.motion && m.generation === p.generation)
@@ -1265,6 +1444,7 @@ export class PhysicalSimulation {
           !!this.adultPhysical.body(p.actor) && a.motion?.status === "moving";
       if (moving) this.movement.settle(a, this.kernel.state.now);
       this.runtime.closure(p.actor);
+      this.refreshMindThresholds(p.actor);
       if (moving && a.motion?.status === "moving") {
         this.kernel.invalidate(motionScope(p.actor));
         a.motion.inputs = this.inputs(p.actor);
@@ -1492,11 +1672,13 @@ export class PhysicalSimulation {
       seed: this.seed,
       hash: this.causalHash(),
       eventHash: this.kernel.state.historyHash,
-      fixture: this.adultPhysical.state.bodies.length
-        ? "Pack 0C1 diagnostic body/work/recovery fixture — no autonomous choice"
-        : this.epistemicActors.size
-          ? "Pack 0B diagnostic selected-intention fixture — no autonomous choice"
-          : "Diagnostic physical execution fixture — no autonomous choice",
+      fixture: this.mind.state.length
+        ? "Pack 0C2 autonomous personal review"
+        : this.adultPhysical.state.bodies.length
+          ? "Pack 0C1 diagnostic body/work/recovery fixture — no autonomous choice"
+          : this.epistemicActors.size
+            ? "Pack 0B diagnostic selected-intention fixture — no autonomous choice"
+            : "Diagnostic physical execution fixture — no autonomous choice",
       actors,
       containers,
       reservations: this.ledger.state.reservations.map((r) => ({ ...r })),
@@ -1539,6 +1721,7 @@ export class PhysicalSimulation {
       evidence: this.evidence.persisted(),
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
+      mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
         compareKey(a.actor, b.actor),
@@ -1573,6 +1756,7 @@ export class PhysicalSimulation {
       evidence: this.evidence.persisted(),
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
+      mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
         compareKey(a.actor, b.actor),
@@ -1703,12 +1887,19 @@ function validateSaved(s: Save): void {
     !Array.isArray(s.runtime.terminal) ||
     !Array.isArray(s.runtime.paidArchive) ||
     !s.runtime.effort ||
+    !s.runtime.reviewAuthorizations ||
     !Array.isArray(s.evidence.pinnedGeography) ||
     !Array.isArray(s.runtime.activity) ||
     !Array.isArray(s.epistemicActors)
   )
     throw Error("Checkpoint lacks Pack0B causal records");
   const owners = new Set(s.actors.map((a) => a.key));
+  if (
+    !Array.isArray(s.mind) ||
+    new Set(s.mind.map((m) => m.actor)).size !== s.mind.length ||
+    s.mind.some((m) => !s.epistemicActors.includes(m.actor))
+  )
+    throw Error("Invalid cognitive owners");
   if (
     new Set(s.epistemicActors).size !== s.epistemicActors.length ||
     s.epistemicActors.some((k) => !owners.has(k))
@@ -1915,6 +2106,30 @@ function validateSaved(s: Save): void {
   for (const [actor, key] of Object.entries(s.runtime.currentEffort))
     if (s.runtime.effort[key]?.actor !== actor)
       throw Error("Missing actor effort backing");
+  for (const m of s.mind) {
+    if (m.periodicAt <= s.time || (m.nextWake !== null && m.nextWake <= s.time))
+      throw Error("Invalid cognitive wake schedule");
+    for (const trace of m.traces) {
+      const backing = s.runtime.effort[trace.effort.key];
+      if (
+        trace.actor !== m.actor ||
+        trace.at > s.time ||
+        !backing ||
+        backing.actor !== m.actor ||
+        backing.spent < trace.effort.spent ||
+        (trace.selected &&
+          s.runtime.reviewAuthorizations[trace.effort.key] !==
+            digest(trace.selected))
+      )
+        throw Error("Missing cognitive trace/admission backing");
+    }
+  }
+  for (const key of Object.keys(s.runtime.reviewAuthorizations))
+    if (
+      !s.runtime.effort[key] ||
+      !/^[a-f0-9]{32}$/.test(s.runtime.reviewAuthorizations[key]!)
+    )
+      throw Error("Missing review authorization backing");
   const taskIds = new Set<string>();
   for (const t of [...s.runtime.tasks, ...s.runtime.terminal]) {
     const budget = s.runtime.budgets[t.actor + ":" + t.semanticKey];
@@ -1930,7 +2145,12 @@ function validateSaved(s: Save): void {
       !Number.isSafeInteger(t.bindingRevision) ||
       t.bindingRevision < 0 ||
       !budget ||
-      t.source !== "diagnostic-selected-intention" ||
+      !t.source ||
+      (t.envelope &&
+        (!t.effortAccount ||
+          !s.runtime.reviewAuthorizations[t.effortAccount] ||
+          t.envelope.reviewAccount !== t.effortAccount ||
+          s.runtime.effort[t.effortAccount]?.actor !== t.actor)) ||
       t.steps.length > s.config.evidence.maxTaskSteps ||
       t.cursor < 0 ||
       t.cursor > t.steps.length

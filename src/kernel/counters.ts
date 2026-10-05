@@ -1,5 +1,34 @@
 // Measurement only: never serialized into causal state or used by a law.
 export interface Counters {
+  reviewWakesRequested: number;
+  reviewWakesExecuted: number;
+  reviewWakesCoalesced: number;
+  wakeSameStateDrops: number;
+  wakeCapDeferrals: number;
+  periodicWakes: number;
+  thresholdWakes: number;
+  completionWakes: number;
+  failureWakes: number;
+  reviewEuTotal: number;
+  descriptorEu: number;
+  retrievalEu: number;
+  bindingEu: number;
+  forecastEu: number;
+  routeEu: number;
+  agendaAdmitted: number;
+  agendaDeferred: number;
+  drivesConsidered: number;
+  bindingNodes: number;
+  methodsConsidered: number;
+  targetsVisited: number;
+  forecastOptions: number;
+  forecastBlocks: number;
+  feasibilityRejected: number;
+  severeRiskRejected: number;
+  incumbentRetained: number;
+  alternativeSelected: number;
+  autonomousIntentionsCommitted: number;
+
   workSettlements: number;
   extractionBoundaries: number;
   conditionSegments: number;
@@ -66,6 +95,35 @@ export interface Counters {
 }
 export function counters(): Counters {
   return {
+    reviewWakesRequested: 0,
+    reviewWakesExecuted: 0,
+    reviewWakesCoalesced: 0,
+    wakeSameStateDrops: 0,
+    wakeCapDeferrals: 0,
+    periodicWakes: 0,
+    thresholdWakes: 0,
+    completionWakes: 0,
+    failureWakes: 0,
+    reviewEuTotal: 0,
+    descriptorEu: 0,
+    retrievalEu: 0,
+    bindingEu: 0,
+    forecastEu: 0,
+    routeEu: 0,
+    agendaAdmitted: 0,
+    agendaDeferred: 0,
+    drivesConsidered: 0,
+    bindingNodes: 0,
+    methodsConsidered: 0,
+    targetsVisited: 0,
+    forecastOptions: 0,
+    forecastBlocks: 0,
+    feasibilityRejected: 0,
+    severeRiskRejected: 0,
+    incumbentRetained: 0,
+    alternativeSelected: 0,
+    autonomousIntentionsCommitted: 0,
+
     workSettlements: 0,
     extractionBoundaries: 0,
     conditionSegments: 0,

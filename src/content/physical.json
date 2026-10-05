@@ -121,7 +121,10 @@
       "wood",
       "stone",
       "fibre",
-      "recover"
+      "recover",
+      "consume",
+      "rest",
+      "leisure"
     ],
     "stockLogSd": 0.35,
     "places": 32,
@@ -144,8 +147,21 @@
     },
     {
       "id": "gather",
-      "effects": ["extract:food"],
-      "inputs": ["site:food-patch"]
+      "effects": ["extract:food", "have:food"],
+      "inputs": ["site:food-patch"],
+      "schema": {
+        "target": "site",
+        "targetProperty": "resource-kind",
+        "targetValue": "food-patch",
+        "prerequisites": [],
+        "operation": "extract",
+        "law": "gather",
+        "good": "food",
+        "durationSd": 0.25,
+        "rateContext": "food-patch",
+        "cheapCost": 0.25,
+        "locality": "known-local-or-route"
+      }
     },
     {
       "id": "wood",
@@ -166,6 +182,57 @@
       "id": "recover",
       "effects": ["recover"],
       "inputs": []
+    },
+    {
+      "id": "consume",
+      "effects": ["service:nourishment"],
+      "inputs": [],
+      "schema": {
+        "target": "owned",
+        "prerequisites": [
+          {
+            "effect": "have:food",
+            "good": "food",
+            "consumes": true
+          }
+        ],
+        "operation": "consume",
+        "law": "consume",
+        "durationSd": 1,
+        "cheapCost": 1,
+        "locality": "known-local-or-route",
+        "good": "food"
+      }
+    },
+    {
+      "id": "rest",
+      "effects": ["recovered"],
+      "inputs": [],
+      "schema": {
+        "target": "self",
+        "prerequisites": [],
+        "operation": "recover",
+        "law": "rest",
+        "durationSd": 0.3,
+        "cheapCost": 0.3,
+        "locality": "known-local-or-route",
+        "mode": "rest"
+      }
+    },
+    {
+      "id": "leisure",
+      "effects": ["enjoyed"],
+      "inputs": [],
+      "schema": {
+        "target": "self",
+        "prerequisites": [],
+        "operation": "recover",
+        "law": "leisure",
+        "durationSd": 0.12,
+        "cheapCost": 0.12,
+        "locality": "known-local-or-route",
+        "mode": "leisure"
+      }
     }
   ],
   "cognitiveEffort": {

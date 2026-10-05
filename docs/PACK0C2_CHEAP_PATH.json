@@ -1,0 +1,35 @@
+{
+  "profile": "Runtime source-neutral Continue regression: explicit stable three-step execution fixture with an autonomous cognitive owner. No diagnostic selection occurs after founding. Case A is two valid step transitions; Case B is real task completion.",
+  "before": {
+    "autonomousDeliberations": 0,
+    "agendaAdmitted": 0,
+    "methodsConsidered": 0,
+    "forecastBlocks": 0,
+    "reviewEuTotal": 0,
+    "runtimeStepCompletions": 0,
+    "continueTransitions": 0,
+    "completionWakes": 0
+  },
+  "stable": {
+    "autonomousDeliberations": 0,
+    "agendaAdmitted": 0,
+    "methodsConsidered": 0,
+    "forecastBlocks": 0,
+    "reviewEuTotal": 0,
+    "runtimeStepCompletions": 2,
+    "continueTransitions": 2,
+    "completionWakes": 0
+  },
+  "completed": {
+    "autonomousDeliberations": 1,
+    "agendaAdmitted": 3,
+    "methodsConsidered": 4,
+    "forecastBlocks": 20,
+    "reviewEuTotal": 49,
+    "runtimeStepCompletions": 3,
+    "continueTransitions": 2,
+    "completionWakes": 1
+  },
+  "stableFullReviewEuDelta": 0,
+  "completionFullReviewEuDelta": 49
+}

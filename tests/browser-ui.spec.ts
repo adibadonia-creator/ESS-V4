@@ -70,3 +70,37 @@ test("body execution fixture exposes an inert analyst card and personal body evi
     fullPage: true,
   });
 });
+
+test("autonomous adults expose personal decisions separately from analyst truth and inspection stays inert", async ({
+  page,
+}, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await expect(page.locator("#meta")).toContainText("conservation verified");
+  await page
+    .getByRole("button", { name: "Autonomous adults", exact: true })
+    .click();
+  await expect(page.locator("#fixture-label")).toContainText(
+    "autonomous personal review",
+  );
+  await page.getByRole("button", { name: "+0.01 SD", exact: true }).click();
+  await expect(page.locator("#task-state")).toContainText(
+    "AUTONOMOUS INTENTION",
+  );
+  const hash = await page.locator("#hash").textContent();
+  await page.locator("#decision-panel summary").click();
+  await expect(page.locator("#decision-summary")).toContainText("/600 EU");
+  await expect(page.locator("#decision-summary")).toContainText("severe risk");
+  await expect(page.locator("#decision-summary")).not.toContainText(
+    "capability",
+  );
+  await expect(page.locator("#hash")).toHaveText(hash!);
+  await page.screenshot({
+    path: testInfo.outputPath("autonomous-decision.png"),
+    fullPage: true,
+  });
+  await page.locator("#decision-panel summary").click();
+  await expect(page.locator("#hash")).toHaveText(hash!);
+  expect(errors).toEqual([]);
+});

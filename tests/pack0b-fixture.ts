@@ -1,4 +1,4 @@
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import { resolveConfig } from "../src/content/profile";
 import { digest, canonical } from "../src/kernel/canonical";
 import { QUANTA, time } from "../src/kernel/time";

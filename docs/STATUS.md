@@ -1,4 +1,20 @@
-# Pack 0C1 — body, physical work and recovery
+# Pack 0C2 — autonomous personal review and choice
+
+Branch `pack0c2-autonomous-review-choice` extends merged PR #4 / main `b520527854564414a234957751640070983f73c0`. This is the first autonomous-choice slice: one personal mind handles nourishment, recovery and enjoyment through indexed known methods, bounded binding/forecasting, typed consequences, separate severe-risk policy and sealed runtime intentions. Revision 4.0 is unchanged. The implementation remains one draft PR, unmerged; Pack-0 proof and Stage-III execution remain incomplete.
+
+[Implementation receipt and Computational/state contract](PACK0C2_AUTONOMOUS_REVIEW.md) records dispositions, own quiet-requirement learning, wake discipline, shared 600-EU account, fair method/target/input admission, personal routing, held error, continuation/reference and exact authority handoff. Schema 7 / ESS-4.0-pack0c2 persists causal cognitive state and rejects incompatible prerelease saves. The visible autonomous fixture supplies founding inputs and legitimate observations, with no selected task. The separate paused personal decision panel exposes bounded forensic traces.
+
+Local boundary lint, typecheck, **153 Vitest tests**, pure-core compilation and production build pass. **Four production browser tests pass**, including actual Worker/Node parity, pending/active save, altered partitions and observer inertness; the open decision screenshot was inspected automatically. Paired hidden worlds, unknown/irrelevant content, fair caches/methods, effort exhaustion, wake coalescing/drop/cap, risk/margin/error and autonomous execution regressions pass. Final-head GitHub CI is reported in the draft PR.
+
+[Eight-SD 8/32 autonomous panel](PACK0C2_AUTONOMOUS_PANEL.json), [complete food-choice trace](PACK0C2_DECISION_TRACE.json), [cheap Continue probe](PACK0C2_CHEAP_PATH.json), [body rerun](PACK0C2_BODY_REGRESSION.json), [structural rerun](PACK0C2_STRUCTURAL_REGRESSION.json) and [8](PACK0C2_RETROFIT_8.json)/[32](PACK0C2_RETROFIT_32.json) accepted retrofit reruns keep workloads separate. Every panel review was captured; restore/conservation pass. Natural nourishment plans include paid gather/consumption and reference continuation. Rest/leisure are represented and compared but lose the optional-return backing gate in this two-FU-endowment panel; funded fixtures show both winning through the same arbiter. No action quota or science tuning was used. Valid step continuation spends zero full-review EU; real task completion reopens cognition.
+
+Explicit 0C3 deferrals and remaining resident archive/export/performance obligations are listed in the receipt. No Pack 0C3 implementation began and no Revision-4 falsifier fired in this gate. This is not a survival, emergence, constant-memory or final performance certificate.
+
+Reproduce with `npm run check`, `npm run test:browser`, `node --import tsx scripts/autonomous-probe.ts`, `node --import tsx scripts/continuation-probe.ts` and the separately named structural commands in the receipt.
+
+---
+
+# Historical Pack 0C1 — body, physical work and recovery
 
 Branch `pack0c1-body-physical-affordances` extends merged PR #3 / main `8337ed130041960331201c495196a9cdafd34357`. This is an internal Stage-I/I.1 execution slice. Revision 4.0 is unchanged. **No autonomous cognition, Pack 0C2 or Stage-III life-course execution exists; the Pack-0 architectural proof remains incomplete.** The implementation is submitted as one draft PR and must remain unmerged.
 
@@ -26,14 +42,14 @@ The engineering total route cutoff is removed. Host yield is non-causal; diagnos
 
 Structural receipts: [growth](pre0c-growth.json), [comparable baseline/after](pre0c-benchmark.json), [CPU profile](pre0c-profile.json).
 
-| Controlled axis | Observed result |
-| --- | --- |
+| Controlled axis                             | Observed result                                                                                                                                                                                                 |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 8/32/96/256/512 independent completed tasks | After active tasks/prefixes=0 throughout, zero terminal rows visited; hot bytes 156/157/159/159/189 versus baseline 5,577/22,012/65,949/176,337/353,202. Exact 512 retry records and full audit survive restore |
-| 8→12,008 remembered cells | Same local result and five index visits; zero map page visits/full inspector calls |
-| 8/32/100 journeys over two paths | Two current canonical routes, all journey facts retained |
-| 0/100/1,000 closed leases, fixed active one | Two relevant reservation visits and one goods lookup; same stock/load |
-| +128 irrelevant methods and goods | Same relevant ordinary posting/backing visits; startup compile growth separate |
-| Host slices 1/65,536 | Same 23 cell expansions, frontier/result/task/spend/time/history; 23/1 host resumes, zero heap rebuilds |
+| 8→12,008 remembered cells                   | Same local result and five index visits; zero map page visits/full inspector calls                                                                                                                              |
+| 8/32/100 journeys over two paths            | Two current canonical routes, all journey facts retained                                                                                                                                                        |
+| 0/100/1,000 closed leases, fixed active one | Two relevant reservation visits and one goods lookup; same stock/load                                                                                                                                           |
+| +128 irrelevant methods and goods           | Same relevant ordinary posting/backing visits; startup compile growth separate                                                                                                                                  |
+| Host slices 1/65,536                        | Same 23 cell expansions, frontier/result/task/spend/time/history; 23/1 host resumes, zero heap rebuilds                                                                                                         |
 
 Full boundary lint/typecheck, **99 tests**, pure-core compilation and production build pass locally; **two production browser tests pass** with actual Worker/Node active-save/replay parity and Pixi/WebGL observer inertness. Automated screenshot inspected by Codex; no human review or scientific experiment claimed. GitHub CI is recorded separately at final head in the draft PR. Readiness §13's ten criteria and this task's twelve checks pass at the bounded interface gate; first future Bayesian/report/occupancy consumer still owes distinct-original/overlap/contradiction tests, and actual 0C reviews owe full P5 assertions.
 
@@ -115,20 +131,20 @@ Reproduce: `npm ci && npm run check`; `npx playwright install --with-deps chromi
 
 [Raw before/after receipt](pack0b-benchmark.json): five deterministic repetitions per population, same seed `spine`, canonical raster, 24 sites and diagnostic task until 1 SD, AMD EPYC 9V74/Linux x64. Before timings are the published baseline at `1f992d9…`; missing before retained-place/state counts were obtained from a read-only archive of that commit, without another branch. After each population's five runs have one unique causal hash and counter set. Measurements are machine-specific, not the Pack-0 performance gate. Map cells/route expansions/physical events remain unchanged; reduced evidence counts remove verbose map-cell objects, rather than skipped perception.
 
-| Metric | 8 before | 8 after | 32 before | 32 after |
-| --- | ---: | ---: | ---: | ---: |
-| Advancement median, ms | 38.06 | 44.18 | 155.08 | 162.99 |
-| Checkpoint median, ms | 196.57 | 187.65 | 338.21 | 223.97 |
-| Checkpoint bytes | 5,608,888 | 5,064,290 | 8,825,974 | 6,442,538 |
-| Evidence updates | 1,207 | 501 | 5,271 | 2,028 |
-| Retained Evidence objects | 1,207 | 104 | 5,271 | 426 |
-| Personal-state bytes | 787,906 | 231,828 | 3,469,145 | 1,031,501 |
-| Total remembered places | 9 | 9 | 38 | 38 |
-| Places/person, range | 1–2 | 1–2 | 1–2 | 1–2 |
-| Seen cells / map updates | 714 | 714 | 3,275 | 3,275 |
-| Personal-route expansions | 149 | 149 | 494 | 494 |
-| Personal-view projection median, ms | 10.46 | 4.50 | 44.12 | 17.18 |
-| Processed events | 540 | 540 | 2,206 | 2,206 |
+| Metric                              |  8 before |   8 after | 32 before |  32 after |
+| ----------------------------------- | --------: | --------: | --------: | --------: |
+| Advancement median, ms              |     38.06 |     44.18 |    155.08 |    162.99 |
+| Checkpoint median, ms               |    196.57 |    187.65 |    338.21 |    223.97 |
+| Checkpoint bytes                    | 5,608,888 | 5,064,290 | 8,825,974 | 6,442,538 |
+| Evidence updates                    |     1,207 |       501 |     5,271 |     2,028 |
+| Retained Evidence objects           |     1,207 |       104 |     5,271 |       426 |
+| Personal-state bytes                |   787,906 |   231,828 | 3,469,145 | 1,031,501 |
+| Total remembered places             |         9 |         9 |        38 |        38 |
+| Places/person, range                |       1–2 |       1–2 |       1–2 |       1–2 |
+| Seen cells / map updates            |       714 |       714 |     3,275 |     3,275 |
+| Personal-route expansions           |       149 |       149 |       494 |       494 |
+| Personal-view projection median, ms |     10.46 |      4.50 |     44.12 |     17.18 |
+| Processed events                    |       540 |       540 |     2,206 |     2,206 |
 
 After: every person retains one intrinsic pinned own cache; discretionary places are 0–1/person here. The limit is exercised with **80 real physical sites** in the regression, since the canonical small fixture does not itself encounter 32 places. Current map provenance has 56 / 233 shared records. Continue/repair counts stay 12/4 and 50/14; routine acceptance stays 96 and 373. Projection measurement covers all personal lenses without causal hashing; before/after counters include the extra measured inspection calls and remain non-causal. Full JSON terrain still dominates complete checkpoints.
 

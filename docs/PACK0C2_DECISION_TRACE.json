@@ -1,0 +1,1636 @@
+{
+  "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+  "at": 1,
+  "epoch": 0,
+  "causes": [
+    "rest"
+  ],
+  "signature": "edbcce8bfceb213835ca9a684b475454",
+  "effort": {
+    "key": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+    "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+    "kind": "review",
+    "openedAt": 1,
+    "allowance": 600,
+    "spent": 63,
+    "routeExpansions": 0,
+    "prepaidExpansions": 0,
+    "expansionsPerEu": 64
+  },
+  "drives": [
+    {
+      "objective": {
+        "kind": "service",
+        "service": "nourishment",
+        "quantity": 3
+      },
+      "urgency": 1,
+      "admitted": true
+    },
+    {
+      "objective": {
+        "kind": "recovered",
+        "quantity": 0.3
+      },
+      "urgency": 0.6,
+      "admitted": true
+    },
+    {
+      "objective": {
+        "kind": "enjoyed",
+        "quantity": 0.12
+      },
+      "urgency": 0.6400000000000001,
+      "admitted": true
+    }
+  ],
+  "agenda": [
+    {
+      "kind": "service",
+      "service": "nourishment",
+      "quantity": 3
+    },
+    {
+      "kind": "enjoyed",
+      "quantity": 0.12
+    },
+    {
+      "kind": "recovered",
+      "quantity": 0.3
+    }
+  ],
+  "methods": [
+    "consume",
+    "gather",
+    "leisure",
+    "rest"
+  ],
+  "bindings": [
+    {
+      "key": "a44a5f7a1a7841738ddc8ca6d0582e99",
+      "objective": {
+        "kind": "service",
+        "service": "nourishment",
+        "quantity": 3
+      },
+      "method": "consume",
+      "steps": [
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:1",
+          "property": "stocks",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "input:0": "seen:2",
+        "target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "bound from personal methods and backing",
+      "prerequisites": [
+        {
+          "effect": "have:food",
+          "status": "executable"
+        }
+      ],
+      "routes": {},
+      "duration": 3034516,
+      "goods": {
+        "food": 3
+      },
+      "reference": false
+    },
+    {
+      "key": "28bebd67f97e1ca28ee01b1e2098365a",
+      "objective": {
+        "kind": "enjoyed",
+        "quantity": 0.12
+      },
+      "method": "leisure",
+      "steps": [
+        {
+          "family": "Recover",
+          "law": "leisure",
+          "mode": "leisure",
+          "duration": 125830
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:leisure",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:1",
+          "property": "stocks",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "continuation:input:0": "seen:2",
+        "continuation:target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "bound from personal methods and backing",
+      "prerequisites": [],
+      "routes": {},
+      "duration": 3160346,
+      "goods": {
+        "food": 3
+      },
+      "reference": false
+    },
+    {
+      "key": "41605e96c5fc143ab8d4f0aea58a49bb",
+      "objective": {
+        "kind": "recovered",
+        "quantity": 0.3
+      },
+      "method": "rest",
+      "steps": [
+        {
+          "family": "Recover",
+          "law": "rest",
+          "mode": "rest",
+          "duration": 314573
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:rest",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:1",
+          "property": "stocks",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "continuation:input:0": "seen:2",
+        "continuation:target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "bound from personal methods and backing",
+      "prerequisites": [],
+      "routes": {},
+      "duration": 3349089,
+      "goods": {
+        "food": 3
+      },
+      "reference": false
+    }
+  ],
+  "dependencies": [
+    {
+      "subject": "method:consume",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "seen:1",
+      "property": "stocks",
+      "version": 1
+    },
+    {
+      "subject": "seen:2",
+      "property": "own-local-stocks",
+      "version": 2
+    },
+    {
+      "subject": "method:gather",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "seen:3",
+      "property": "location",
+      "version": 1
+    },
+    {
+      "subject": "seen:3",
+      "property": "stock:food",
+      "version": 1
+    },
+    {
+      "subject": "self",
+      "property": "rate:gather:food-patch",
+      "version": 1
+    },
+    {
+      "subject": "method:leisure",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "method:rest",
+      "property": "known",
+      "version": 1
+    }
+  ],
+  "premises": {
+    "self": {
+      "identity": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+      "location": {
+        "x": 4.05,
+        "y": 1.25
+      },
+      "currentLeg": null,
+      "carried": {
+        "subject": "seen:1",
+        "stocks": {}
+      },
+      "reservations": []
+    },
+    "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+    "quietEstimate": 1,
+    "ownedInputs": [
+      {
+        "subject": "seen:1",
+        "quantity": 0,
+        "at": 1
+      },
+      {
+        "subject": "seen:2",
+        "quantity": 2,
+        "at": 0
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "subject": "method:consume",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "seen:1",
+      "property": "stocks",
+      "version": 1,
+      "observedAt": 0,
+      "value": {}
+    },
+    {
+      "subject": "seen:2",
+      "property": "own-local-stocks",
+      "version": 2,
+      "observedAt": 0,
+      "value": {
+        "food": 2
+      }
+    },
+    {
+      "subject": "method:gather",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "seen:3",
+      "property": "location",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "x": 4.05,
+        "y": 1.25
+      }
+    },
+    {
+      "subject": "seen:3",
+      "property": "stock:food",
+      "version": 1,
+      "observedAt": 0,
+      "value": 27.025904469686928
+    },
+    {
+      "subject": "self",
+      "property": "rate:gather:food-patch",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "rate": 6,
+        "logVariance": 0.12249999999999998,
+        "samples": 0,
+        "weight": 0,
+        "logSum": 0,
+        "anchorAt": 0,
+        "priorRate": 6,
+        "priorWeight": 8.163265306122451
+      }
+    },
+    {
+      "subject": "method:leisure",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "method:rest",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "self",
+      "property": "body-experience",
+      "version": 2,
+      "observedAt": 1,
+      "value": {
+        "class": "M",
+        "ageSd": 300.0000009536743,
+        "condition": 1,
+        "wounds": 0,
+        "fatigue": 0.6,
+        "enjoyment": 0.2,
+        "intake": 0,
+        "activityLoad": 0,
+        "intervalStart": 0,
+        "effortSd": 0,
+        "restSd": 0,
+        "pleasantSd": 0,
+        "compulsorySd": 0,
+        "leisureSd": 0,
+        "satiation": 0,
+        "familiarity": {},
+        "practice": {
+          "Field": 0,
+          "Fight": 0,
+          "Make": 0,
+          "Organise": 0,
+          "Social": 0
+        }
+      }
+    },
+    {
+      "subject": "self",
+      "property": "quiet-requirement",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "sum": 1,
+        "count": 1,
+        "estimate": 1
+      }
+    }
+  ],
+  "compared": [
+    {
+      "option": {
+        "key": "b041b10ef78868080c5f0251591e7a44",
+        "objective": {
+          "kind": "service",
+          "service": "ordinary-continuation",
+          "quantity": 0
+        },
+        "method": "ordinary-continuation",
+        "steps": [],
+        "dependencies": [],
+        "bindings": {},
+        "status": "executable",
+        "reason": "explicit no-new-intention continuation; no free intake or recovery",
+        "prerequisites": [],
+        "routes": {},
+        "duration": 0,
+        "goods": {},
+        "reference": true
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0.01927092142110043,
+            "condition": 0.23965103644177577,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6480795460382301,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0.8515904541020369,
+            "condition": 0.05743261926761734,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 2
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6599251586732185,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.6684154193274998,
+            "condition": 0.013763786733050397,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 2
+          },
+          {
+            "start": 1.5,
+            "end": 2,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.669514005422735,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.9172981046688862,
+            "condition": 0.003298505755939091,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 2
+          },
+          {
+            "start": 2,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.9799944780532812,
+            "condition": 0.0007904903231199663,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 2
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.692573882793256,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.995194977655451,
+            "condition": 0.00018944182523289416,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": 2
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 8.431764355228255,
+        "severeProbability": 0.9997821631903806,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": 0,
+          "error": 0,
+          "reason": "no remaining finite service after completion; no terminal liquidation"
+        }
+      },
+      "feasible": true,
+      "gate": null,
+      "riskPass": false,
+      "value": 0,
+      "error": 0,
+      "errors": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "option": {
+        "key": "a44a5f7a1a7841738ddc8ca6d0582e99",
+        "objective": {
+          "kind": "service",
+          "service": "nourishment",
+          "quantity": 3
+        },
+        "method": "consume",
+        "steps": [
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:1",
+            "property": "stocks",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "input:0": "seen:2",
+          "target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "bound from personal methods and backing",
+        "prerequisites": [
+          {
+            "effect": "have:food",
+            "status": "executable"
+          }
+        ],
+        "routes": {},
+        "duration": 3034516,
+        "goods": {
+          "food": 3
+        },
+        "reference": false
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9999999274874756,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.4500000524520824
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6480795460382301,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.999999910109774,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 0.9000001049041648
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6599251586732185,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9999999059451897,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 0.35000015735624723
+          },
+          {
+            "start": 1.5,
+            "end": 1.8181819915771484,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6614806266412664,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9999999051614132,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 4.85722573273506e-17
+          },
+          {
+            "start": 1.8181819915771484,
+            "end": 1.984848976135254,
+            "materialService": 5.54495607967837,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6211445345451527,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.9241611093071279
+          },
+          {
+            "start": 1.984848976135254,
+            "end": 2,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586993,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6292564957088185,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.9074949846453128
+          },
+          {
+            "start": 2,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.818505560958236,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.35749503709739516
+          },
+          {
+            "start": 2.5,
+            "end": 2.893939971923828,
+            "materialService": 0,
+            "materialLoss": 0.907486070406991,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6890208074937272,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7275164219866243,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": -3.469446951953614e-18
+          },
+          {
+            "start": 2.893939971923828,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.7057711109019873,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.5373275763338413,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": -3.469446951953614e-18
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": 0,
+          "error": 0,
+          "reason": "no remaining finite service after completion; no terminal liquidation"
+        }
+      },
+      "feasible": true,
+      "gate": null,
+      "riskPass": true,
+      "value": -1.9527794828643483,
+      "error": -0.02038081472603848,
+      "errors": [
+        0.020600263985173634,
+        -0.002080952917102235,
+        -0.02033271934238213,
+        -0.007434219723803134,
+        -0.015562756003876375,
+        0.0025702750627618716,
+        0.023611317064836206,
+        -0.019121667330480378,
+        -0.0026303555211659425
+      ]
+    },
+    {
+      "option": {
+        "key": "28bebd67f97e1ca28ee01b1e2098365a",
+        "objective": {
+          "kind": "enjoyed",
+          "quantity": 0.12
+        },
+        "method": "leisure",
+        "steps": [
+          {
+            "family": "Recover",
+            "law": "leisure",
+            "mode": "leisure",
+            "duration": 125830
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:leisure",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:1",
+            "property": "stocks",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "continuation:input:0": "seen:2",
+          "continuation:target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "bound from personal methods and backing",
+        "prerequisites": [],
+        "routes": {},
+        "duration": 3160346,
+        "goods": {
+          "food": 3
+        },
+        "reference": false
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.12000083923339844,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7097378938706718,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.12000083923339844,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8313326179633903,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.5820009630202327
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.4085878324771216,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9174302412035729,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 1.0320010154723152
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.06930900634896746,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9595786145684811,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 0.48200106792439756
+          },
+          {
+            "start": 1.5,
+            "end": 1.9381828308105469,
+            "materialService": 0,
+            "materialLoss": 1.099999895095835,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.07993310622580324,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9783850421632071,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0
+          },
+          {
+            "start": 1.9381828308105469,
+            "end": 2,
+            "materialService": 5.460784050834021,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829226,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8199823476732143,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.33757021157747386
+          },
+          {
+            "start": 2,
+            "end": 2.1048498153686523,
+            "materialService": 5.460784050834021,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829227,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6077185792555763,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.9101324110755025
+          },
+          {
+            "start": 2.1048498153686523,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829226,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7769313853973028,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.47546724943392016
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 0.9509344988678403,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.11701600610907624,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7248678332165287,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.6278032705108126,
+            "foodRemaining": 0
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": -0.015334890810500067,
+          "error": 0.10328328334939886,
+          "reason": "finite remaining authorised material flows"
+        }
+      },
+      "feasible": false,
+      "gate": "optional return reserve lacks existing backing",
+      "riskPass": true,
+      "value": 0,
+      "error": 0.1700324972869618,
+      "errors": [
+        0,
+        0.01273398948431566,
+        0.02022656431758428,
+        0.017741276878156045,
+        0.002707504099017652,
+        -0.003293850431159105,
+        0.00420705867987605,
+        -0.015093111281508928,
+        0.027519782191281258
+      ]
+    },
+    {
+      "option": {
+        "key": "41605e96c5fc143ab8d4f0aea58a49bb",
+        "objective": {
+          "kind": "recovered",
+          "quantity": 0.3
+        },
+        "method": "rest",
+        "steps": [
+          {
+            "family": "Recover",
+            "law": "rest",
+            "mode": "rest",
+            "duration": 314573
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:rest",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:1",
+            "property": "stocks",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "continuation:input:0": "seen:2",
+          "continuation:target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "bound from personal methods and backing",
+        "prerequisites": [],
+        "routes": {},
+        "duration": 3349089,
+        "goods": {
+          "food": 3
+        },
+        "reference": false
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.3000001907348633,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.42437261441216517,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.3000001907348633,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.5674289488912634,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.7800002307891625
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6480795460382301,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7882384010828349,
+            "fatigue": 0.12180512576038614,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 1.2300002832412449
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6599251586732185,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8963338267545585,
+            "fatigue": 0.12180512576038614,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 0.6800003356933273
+          },
+          {
+            "start": 1.5,
+            "end": 2,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.669514005422735,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9492510408284094,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.1300003881454097
+          },
+          {
+            "start": 2,
+            "end": 2.1181821823120117,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958347,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.957134823256375,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0
+          },
+          {
+            "start": 2.1181821823120117,
+            "end": 2.284849166870117,
+            "materialService": 5.717050226991711,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.5945191206718913,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.9528435218999409
+          },
+          {
+            "start": 2.284849166870117,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7018145910524208,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.7161776280272882
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.692573882793256,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8540257713670347,
+            "fatigue": 0.8811492479578403,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": 0.16617768047937065
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": -0.21333415857942975,
+          "error": -0.023955191698051048,
+          "reason": "finite remaining authorised material flows"
+        }
+      },
+      "feasible": false,
+      "gate": "optional return reserve lacks existing backing",
+      "riskPass": true,
+      "value": 0,
+      "error": -0.09176914468282953,
+      "errors": [
+        0,
+        0.005714594220216238,
+        -0.002080952917102235,
+        -0.02033271934238213,
+        -0.043697407315035824,
+        0.0036528470096770784,
+        -0.0156704486376137,
+        0.011053085526053507,
+        -0.006452951528591421
+      ]
+    }
+  ],
+  "winner": "a44a5f7a1a7841738ddc8ca6d0582e99",
+  "rejected": "b041b10ef78868080c5f0251591e7a44",
+  "rule": "safe-response",
+  "margin": -1.9527794828643483,
+  "selected": {
+    "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+    "intentionId": "intention:d3cff55047bb25ef6679e94fe0be07b6",
+    "taskId": "task:d3cff55047bb25ef6679e94fe0be07b6",
+    "semanticKey": "d3cff55047bb25ef6679e94fe0be07b6",
+    "objective": "[{\"kind\":\"service\",\"quantity\":3,\"service\":\"nourishment\"},\"[\\\"7fa1bb6c26b9c1155115e3d1be7cc18d\\\",\\\"review\\\",1]\"]",
+    "method": "consume",
+    "bindings": {
+      "input:0": "seen:2",
+      "target:1": "seen:3"
+    },
+    "steps": [
+      {
+        "family": "Transfer",
+        "from": "seen:2",
+        "to": "seen:2",
+        "good": "food",
+        "quantity": 2,
+        "basis": "own-custody",
+        "use": "consume",
+        "duration": 1906502
+      },
+      {
+        "family": "Work",
+        "law": "gather",
+        "site": "seen:3",
+        "duration": 174763
+      },
+      {
+        "family": "Transfer",
+        "from": "seen:1",
+        "to": "seen:1",
+        "good": "food",
+        "quantity": 1,
+        "basis": "own-custody",
+        "use": "consume",
+        "duration": 953251
+      }
+    ],
+    "dependsOn": [
+      {
+        "key": "[\"method:consume\",\"known\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"seen:1\",\"stocks\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"seen:2\",\"own-local-stocks\"]",
+        "version": 2
+      },
+      {
+        "key": "[\"method:gather\",\"known\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"seen:3\",\"location\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"seen:3\",\"stock:food\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"self\",\"rate:gather:food-patch\"]",
+        "version": 1
+      }
+    ],
+    "authorised": {
+      "time": 3793145,
+      "goods": {
+        "food": 3.3000000000000003
+      }
+    },
+    "reserve": [],
+    "source": "bounded-personal-review",
+    "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+    "preparedRoutes": {},
+    "repairScope": {
+      "moveTargets": [],
+      "bindings": {}
+    },
+    "envelope": {
+      "purpose": "[{\"kind\":\"service\",\"quantity\":3,\"service\":\"nourishment\"},\"[\\\"7fa1bb6c26b9c1155115e3d1be7cc18d\\\",\\\"review\\\",1]\"]",
+      "end": {
+        "kind": "service",
+        "service": "nourishment",
+        "quantity": 3
+      },
+      "targets": [
+        "seen:2",
+        "seen:3"
+      ],
+      "quantity": {
+        "estimate": 3,
+        "low": 2.25,
+        "high": 3.75
+      },
+      "riskCeiling": 0.17268784206826238,
+      "locationBasis": "dated personal locations and established personal route prefixes",
+      "rightsBasis": "own-custody-and-public-extraction",
+      "stop": [
+        "desired end reached",
+        "finite authorised time or goods exhausted"
+      ],
+      "escalation": [
+        "required personal assumption invalidated",
+        "operation fails outside permitted repair",
+        "risk or spending ceiling exceeded"
+      ],
+      "reviewAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]"
+    }
+  },
+  "deferrals": []
+}

@@ -1,4 +1,9 @@
-import { chargeRoute, routeAllowance, type EffortKind } from "../kernel/effort";
+import {
+  chargeRoute,
+  routeAllowance,
+  type EffortKind,
+  type EffortAccount,
+} from "../kernel/effort";
 import { canonical, digest } from "../kernel/canonical";
 import { EVIDENCE_PROFILE, EFFORT_PROFILE } from "../content/profile";
 import { checkTime, QUANTA } from "../kernel/time";
@@ -34,6 +39,7 @@ export class TaskRuntime {
       activityArchive: [],
       effort: {},
       currentEffort: {},
+      reviewAuthorizations: {},
       budgets: {},
       activity: [],
     },
@@ -51,13 +57,38 @@ export class TaskRuntime {
     this.counts.currentTaskLookups++;
     return this.current.get(actor) ?? null;
   }
+  admitEffort(
+    account: EffortAccount,
+    selected: SelectedIntention | null = null,
+  ): void {
+    const existing = this.state.effort[account.key];
+    if (existing && canonical(existing) !== canonical(account))
+      throw Error("Review admission cannot rewrite an account");
+    if (
+      account.key !==
+        canonical([account.actor, account.kind, account.openedAt]) ||
+      account.openedAt !== this.port.now()
+    )
+      throw Error("Invalid review admission");
+    this.state.effort[account.key] = clone(account);
+    this.state.currentEffort[account.actor] = account.key;
+    if (selected) {
+      if (
+        selected.actor !== account.actor ||
+        selected.effortAccount !== account.key ||
+        selected.envelope?.reviewAccount !== account.key
+      )
+        throw Error("Mismatched review envelope");
+      this.state.reviewAuthorizations[account.key] = digest(selected);
+    }
+  }
   private budget(t: Task) {
     return this.state.budgets[t.actor + ":" + t.semanticKey]!;
   }
-  select(input: SelectedIntention): Task {
+  select(input: SelectedIntention, diagnosticAdmission?: () => void): Task {
     input = clone(input);
     if (
-      input.source !== "diagnostic-selected-intention" ||
+      !input.source ||
       !input.semanticKey ||
       input.steps.length < 1 ||
       input.steps.length > EVIDENCE_PROFILE.maxTaskSteps
@@ -79,6 +110,18 @@ export class TaskRuntime {
     )
       throw Error("Operations require positive paid duration");
     const view = this.port.personal(input.actor);
+    if (
+      input.envelope &&
+      (!input.effortAccount ||
+        input.envelope.reviewAccount !== input.effortAccount ||
+        this.state.effort[input.effortAccount]?.actor !== input.actor)
+    )
+      throw Error("Intention lacks its admitted review authority");
+    if (
+      input.envelope &&
+      this.state.reviewAuthorizations[input.effortAccount!] !== digest(input)
+    )
+      throw Error("Selection differs from the admitted review envelope");
     // Reject malformed bindings before committing budgets, reservations or history.
     for (const step of input.steps) {
       if (
@@ -167,6 +210,13 @@ export class TaskRuntime {
       )
         throw Error("Reservation lacks local backing");
     }
+    if (diagnosticAdmission) {
+      if (input.source !== "diagnostic-selected-intention" || input.envelope)
+        throw Error("Diagnostic admission cannot authorize autonomous choice");
+      diagnosticAdmission();
+    }
+    if (!input.effortAccount && !this.state.currentEffort[input.actor])
+      throw Error("Selected intention lacks explicit cognitive admission");
     this.state.budgets[key] ??= {
       authorised: clone(input.authorised),
       spent: { time: 0, goods: {} },
@@ -218,12 +268,11 @@ export class TaskRuntime {
     this.byId.set(t.taskId, t);
     this.state.issuedTaskIds[t.taskId] = true;
     this.state.purpose[purposeKey] = t.semanticKey;
-    if (!this.state.currentEffort[t.actor])
-      this.authorizeEffort(t.actor, "review");
     this.port.pin(t);
-    this.port.record("diagnostic-intention-selected", t.actor, {
+    this.port.record("intention-selected", t.actor, {
       semanticKey: t.semanticKey,
       objective: t.objective,
+      source: t.source,
     });
     if (prior && t.cursor < t.steps.length) {
       t.status = "suspended";
@@ -260,6 +309,7 @@ export class TaskRuntime {
     ) {
       t.status = "failed";
       t.failure = `not-yet-implemented law: ${step.family}`;
+      this.port.record("task-repair-required", t.actor, { reason: t.failure });
       this.release(t);
       this.archive(t);
       return;
@@ -274,6 +324,30 @@ export class TaskRuntime {
         p = view.profile;
       const k = (pt: { x: number; y: number }) =>
         Math.floor(pt.x / p.cellKm) + p.width * Math.floor(pt.y / p.cellKm);
+      const prepared = t.preparedRoutes?.[t.cursor];
+      if (prepared) {
+        if (
+          prepared.status !== "found" ||
+          prepared.start !== k(view.self.location) ||
+          prepared.goal !== k(step.target)
+        )
+          throw Error("Invalid prepared personal route");
+        t.route = clone(prepared);
+        if (prepared.geographyId)
+          this.port.pinGeographyVersion(prepared.geographyId, t.taskId);
+        t.routeCursor = 1;
+        t.status = "running";
+        t.active = {
+          family: "Move",
+          start: this.port.now(),
+          paidThrough: this.port.now(),
+          end: null,
+        };
+        const physical = this.port.beginPhysical(t, step, this.remaining(t));
+        if (!physical.ok) this.block(t, physical.observed);
+        else this.movePrefix(t);
+        return;
+      }
       t.route = beginPersonalSearch(
         p,
         [],
@@ -285,7 +359,8 @@ export class TaskRuntime {
         [],
         this.port.pinGeography(t.actor, t.taskId),
       );
-      t.route!.effortAccount = this.state.currentEffort[t.actor]!;
+      t.route!.effortAccount =
+        t.effortAccount ?? this.state.currentEffort[t.actor]!;
       t.routeCursor = 1;
       t.status = "routing";
       this.routing.set(t.actor, t);
@@ -547,6 +622,14 @@ export class TaskRuntime {
   private settlePhysical(t: Task, final: boolean) {
     const result = this.port.endPhysical(t, final),
       step = t.steps[t.cursor];
+    // Only evidence written by settlement of this paid operation can advance
+    // its own dependencies. External revisions still invalidate the intention.
+    for (const write of result.ownWrites ?? []) {
+      const d = t.dependsOn.find(
+        (d) => d.key === write.key && d.version === write.before,
+      );
+      if (d) d.version = write.after;
+    }
     if (step?.family === "Work") t.physicalStepOutput += result.quantity;
     if (
       step?.family === "Transfer" &&
@@ -639,6 +722,30 @@ export class TaskRuntime {
     t.paidForStep += now - start;
     b.spent.time += now - start;
     op.paidThrough = now;
+  }
+  reviewBoundary(actor: string): void {
+    const t = this.task(actor);
+    if (!t || t.status !== "running" || !t.active) return;
+    this.pay(t);
+    const result = this.settlePhysical(t, false);
+    if (result.reason) {
+      this.block(t, result.reason);
+      return;
+    }
+    const step = t.steps[t.cursor]!;
+    const begun = this.port.beginPhysical(
+      t,
+      step,
+      step.family === "Move"
+        ? this.remaining(t)
+        : step.duration - t.paidForStep,
+    );
+    if (!begun.ok) this.block(t, begun.observed);
+    else if (step.family !== "Move") {
+      this.port.cancel(t);
+      t.active.end = begun.end;
+      this.port.schedule(t, begun.end, "operation");
+    }
   }
   closure(actor: string): void {
     const t = this.task(actor);

@@ -51,6 +51,19 @@ export class PersonalReview {
   get geographyId(): string {
     return this.geographyVersion.id;
   }
+  // Immutable delivered geography, for the existing personal route service.
+  geography(): GeographyVersion {
+    return this.geographyVersion;
+  }
+  quietRequirement(): number {
+    const e = this.belief("self", "quiet-requirement");
+    if (!e || typeof e.value !== "object" || e.value === null)
+      throw Error("Missing experienced quiet requirement");
+    return (e.value as Record<string, number>).estimate!;
+  }
+  bestMethod(effect: string) {
+    return this.places(`method-cheap:${effect}`, 1).entries[0] ?? null;
+  }
   private visit = () => {
     this.counts.personalReadEntriesVisited++;
   };

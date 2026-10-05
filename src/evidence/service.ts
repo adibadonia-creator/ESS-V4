@@ -117,6 +117,7 @@ export class EvidenceService {
     ) => void = () => {},
     private regionKm = PUBLIC_MAP_PROFILE.regionCells *
       PUBLIC_MAP_PROFILE.cellKm,
+    private methods = METHOD_INDEX,
   ) {
     this.state = state;
     for (let i = 0; i < state.pinnedGeography.length; i++) {
@@ -480,6 +481,8 @@ export class EvidenceService {
     volatilityClass: Evidence["volatilityClass"] = "fixed",
     footprint?: Evidence["footprint"],
   ): void {
+    if (subject === "self" && property === "body-experience")
+      this.estimateRequirement(owner, value as Record<string, number>, at);
     this.deliver({
       owner,
       subject,
@@ -497,6 +500,50 @@ export class EvidenceService {
       pinned: modality === "self",
       ...(footprint ? { footprint } : {}),
     });
+  }
+  private estimateRequirement(
+    owner: string,
+    v: Record<string, number>,
+    at: number,
+  ): void {
+    const old = this.latest(owner, "self", "body-experience");
+    const prior = (v as unknown as { class: string }).class === "F" ? 0.85 : 1;
+    const existing = this.latest(owner, "self", "quiet-requirement");
+    const stat = existing?.value as Record<string, number> | undefined;
+    let sum = stat?.sum ?? prior,
+      count = stat?.count ?? 1;
+    if (old && at > old.observedAt) {
+      const p = old.value as Record<string, number>,
+        dt = (at - old.observedAt) / QUANTA;
+      if (p.intake! > 0 && p.condition !== v.condition) {
+        const tau = v.condition! < p.condition! ? 0.35 : 0.7;
+        const e = math.exp(-dt / tau),
+          target = (v.condition! - p.condition! * e) / (1 - e);
+        if (target > 0 && target < 1.2) {
+          const coverage =
+            target <= 1
+              ? math.sqrt(target / (2 - target))
+              : 0.2 / (1.2 - target);
+          const estimate =
+            p.intake! / coverage -
+            prior * ((p.activityLoad ?? 0) + 0.3 * (p.wounds ?? 0));
+          if (Number.isFinite(estimate) && estimate > 0) {
+            sum += estimate;
+            count++;
+          }
+        }
+      }
+    }
+    if (!existing || sum !== stat?.sum)
+      this.fact(
+        owner,
+        "self",
+        "quiet-requirement",
+        { sum, count, estimate: sum / count },
+        at,
+        "ordinary cultural prior and inverse experienced condition segments",
+        "self",
+      );
   }
   observePerformance(
     owner: string,
@@ -860,12 +907,28 @@ export class EvidenceService {
     ix.beliefs = put(ix.beliefs, readKey(e.subject, e.property), e);
     ix.beliefs = put(ix.beliefs, readKey(e.subject, e.property, e.context), e);
     const tags: string[] = [];
-    const add = (property: string, region?: string) => {
+    const add = (property: string, region?: string, rowKey = key) => {
       const tag = postingKey(property, region);
       tags.push(tag);
-      ix.postings = put(ix.postings, tag, put(get(ix.postings, tag), key, e));
+      ix.postings = put(
+        ix.postings,
+        tag,
+        put(get(ix.postings, tag), rowKey, e),
+      );
     };
     add(e.property);
+    if (
+      e.property === "own-local-stocks" &&
+      e.value &&
+      typeof e.value === "object"
+    )
+      for (const [good, q] of Object.entries(e.value))
+        if (typeof q === "number" && q > 0) add(`owned-good:${good}`);
+    if (
+      typeof e.value === "string" &&
+      this.methods.isTargetProperty(e.property)
+    )
+      add(`class:${e.property}:${JSON.stringify(e.value)}`);
     const region = this.region(p, e.subject);
     if (region) add(e.property, region);
     if (
@@ -874,9 +937,12 @@ export class EvidenceService {
       e.value === true
     ) {
       // Declared effect vocabulary for the two existing diagnostic methods.
-      const method = METHOD_INDEX.get(e.subject.slice(7));
-      for (const effect of method?.effects ?? ["known"])
+      const method = this.methods.get(e.subject.slice(7));
+      for (const effect of method?.effects ?? ["known"]) {
         add(`method-effect:${effect}`);
+        if (method?.schema)
+          add(`method-cheap:${effect}`, undefined, this.cheapKey(e));
+      }
       for (const input of method?.inputs ?? []) add(`method-input:${input}`);
     }
     this.membership.get(p.owner)!.set(key, tags);
@@ -889,13 +955,20 @@ export class EvidenceService {
       for (const other of [...records.values()])
         if (other.property !== "location") this.indexBelief(p, other);
   }
+  private cheapKey(e: Evidence): string {
+    const cost = this.methods.get(e.subject.slice(7))?.schema?.cheapCost ?? 0;
+    return cost.toFixed(9).padStart(24, "0") + beliefKey(e.subject, e.property);
+  }
   private removeBelief(p: PersonEvidence, e: Evidence): void {
     const ix = this.readIndexes.get(p.owner)!;
     ix.beliefs = drop(ix.beliefs, readKey(e.subject, e.property));
     ix.beliefs = drop(ix.beliefs, readKey(e.subject, e.property, e.context));
     const key = beliefKey(e.subject, e.property);
     for (const tag of this.membership.get(p.owner)!.get(key) ?? []) {
-      const root = drop(get(ix.postings, tag), key);
+      const root = drop(
+        get(ix.postings, tag),
+        tag.startsWith('["method-cheap:') ? this.cheapKey(e) : key,
+      );
       ix.postings = root ? put(ix.postings, tag, root) : drop(ix.postings, tag);
     }
     this.membership.get(p.owner)!.delete(key);

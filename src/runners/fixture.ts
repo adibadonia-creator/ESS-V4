@@ -1,4 +1,4 @@
-import type { PhysicalSimulation } from "../world/simulation";
+import type { PhysicalSimulation } from "../runners/simulation";
 // Preselected physical operations. Never described as deliberation/emergence.
 export function launchPhysicalFixture(sim: PhysicalSimulation): void {
   const snapshot = sim.snapshot();

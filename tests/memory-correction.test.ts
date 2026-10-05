@@ -9,7 +9,7 @@ import {
   time,
   beliefKey,
 } from "./pack0b-fixture";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import { EvidenceService } from "../src/evidence/service";
 import { counters } from "../src/kernel/counters";
 import {

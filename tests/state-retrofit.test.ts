@@ -4,7 +4,7 @@ import { counters } from "../src/kernel/counters";
 import { chargeRoute, routeAllowance } from "../src/kernel/effort";
 import { EvidenceService, clone } from "../src/evidence/service";
 import { GoodsLedger } from "../src/world/goods";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import { MethodIndex } from "../src/content/methods";
 import { resolveConfig } from "../src/content/profile";
 import {

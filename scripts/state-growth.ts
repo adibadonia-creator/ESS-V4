@@ -8,7 +8,7 @@ import { GoodsLedger } from "../src/world/goods";
 import { resolveConfig } from "../src/content/profile";
 import { MethodIndex } from "../src/content/methods";
 import { versions } from "../src/kernel/versions";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 const sim = flatWorld("episode-growth"),
   actor = sim.actorKeys()[0]!;
 const episodes = [];
@@ -267,7 +267,7 @@ const receipt = {
   host,
 };
 fs.writeFileSync(
-  "docs/pre0c-growth.json",
+  process.argv[2] ?? "docs/pre0c-growth.json",
   JSON.stringify(receipt, null, 2) + "\n",
 );
 console.log(

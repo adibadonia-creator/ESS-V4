@@ -1,5 +1,5 @@
 import { it, expect, describe } from "vitest";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import { resolveConfig } from "../src/content/profile";
 import { launchPhysicalFixture } from "../src/runners/fixture";
 import { time } from "../src/kernel/time";

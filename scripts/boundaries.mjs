@@ -16,16 +16,18 @@ for (const p of files("src").filter((p) => p.endsWith(".ts"))) {
     true,
   );
   const organ = p.split("/")[1];
-  const pure = [
-    "kernel",
-    "world",
-    "evidence",
-    "runtime",
-    "mind",
-    "content",
-    "projection",
-    "measurement",
-  ].includes(organ);
+  const pure =
+    [
+      "kernel",
+      "laws",
+      "world",
+      "evidence",
+      "runtime",
+      "mind",
+      "content",
+      "projection",
+      "measurement",
+    ].includes(organ) || p === "src/runners/simulation.ts";
   function visit(node) {
     if (
       ts.isImportDeclaration(node) ||
@@ -60,15 +62,23 @@ for (const p of files("src").filter((p) => p.endsWith(".ts"))) {
         !target.startsWith("src/kernel")
       )
         errors.push(`${p}: substrate depends on ${spec}`);
-      if (organ === "world" && /\/mind(\/|$)/.test(target))
+      if (["world", "laws"].includes(organ) && /\/mind(\/|$)/.test(target))
         errors.push(`${p}: law imports mind`);
       if (
         ["mind", "evidence", "runtime"].includes(organ) &&
-        /\/(world|runners|presentation|measurement)(\/|$)/.test(target)
+        /\/(world|runners|presentation|measurement|projection)(\/|$)/.test(
+          target,
+        )
       )
         errors.push(
           `${p}: personal organ imports authoritative/read-side surface`,
         );
+      if (
+        organ === "laws" &&
+        !target.startsWith("src/laws") &&
+        !target.startsWith("src/kernel")
+      )
+        errors.push(`${p}: public law depends on state owner ${spec}`);
       if (organ === "mind" && /\/evidence\/service$/.test(target))
         errors.push(`${p}: mind imports evidence writer`);
       if (
