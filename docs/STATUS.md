@@ -1,4 +1,18 @@
-# Pack 0C2 — autonomous personal review and choice
+# Pack 0C3A — exploration and repertoire growth
+
+PR #5 / Pack 0C2 is merged. Main `4b4c0720c6a3bae09cefe1a202b02d4121223479` includes that merge and the Vercel deployment fix. Branch `pack0c3a-exploration-discovery` is published as [draft PR #6](https://github.com/adibadonia-creator/ESS-V4/pull/6), unmerged.
+
+The existing single mind now compares bounded personal frontier inquiry and uncertain unfamiliar-material T1 trials through its ordinary agenda/arbiter. Actual paid execution decides edge-flaking; observed outcomes update contextual priors and can install a confidence-0.4 provisional method in the ordinary personal method index. Occupancy, coverage, attempt/spend/frustration, fair cursors, family familiarity/satiation and repertoire state persist in schema 8 / ESS-4.0-pack0c3a. Older incompatible prerelease saves are rejected. Revision 4.0 remains unchanged.
+
+[Implementation receipt and Computational/state contract](PACK0C3A_EXPLORATION_DISCOVERY.md), [8/32 autonomous panel](PACK0C3A_AUTONOMOUS_PANEL.json) and [structural growth receipt](PACK0C3A_STRUCTURAL_GROWTH.json) report paired worlds, directional positive/negative cases, real paid empty inquiry, genuine autonomous discovery, ordinary subsequent binding/use, persistence, work bounds and limitations. Local validation passes 178 Vitest tests and five production browser tests, boundary/type/core/build checks, Worker/Node replay, invariance and conservation. Final-head CI is reported in the draft PR. The existing browser has a labelled Exploration proof fixture; presentation remains inert.
+
+**Stage I remains incomplete.** If this slice passes review, **0C3B projects/material production** is next. Capital, generic production projects, long strategic chains, social transmission, proposals/institutions, animals/safety and autonomous repair remain deferred. No controller, separate cognitive budget or discovery quota was introduced; no Revision-4 falsifier fired.
+
+---
+
+# Historical Pack 0C2 — autonomous personal review and choice
+
+The following preserves its draft-stage receipt; PR #5 is now merged, as recorded above.
 
 Branch `pack0c2-autonomous-review-choice` extends merged PR #4 / main `b520527854564414a234957751640070983f73c0`. This is the first autonomous-choice slice: one personal mind handles nourishment, recovery and enjoyment through indexed known methods, bounded binding/forecasting, typed consequences, separate severe-risk policy and sealed runtime intentions. Revision 4.0 is unchanged. The implementation remains one draft PR, unmerged; Pack-0 proof and Stage-III execution remain incomplete.
 

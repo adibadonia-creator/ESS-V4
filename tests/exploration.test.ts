@@ -302,7 +302,7 @@ describe("Pack 0C3A personal exploration", () => {
       h.actor,
       {
         ...work.experiment!,
-        paid: time(0.03),
+        paid: time(0.25),
         completed: true,
         success: false,
       },
@@ -627,6 +627,168 @@ describe("Pack 0C3A personal exploration", () => {
     expect(
       restored.personalReview(actor).belief("method:edge-flaking", "known"),
     ).toBeNull();
+  });
+  it("a newly learned method supports freshly authorised ordinary physical use", () => {
+    const { sim, actor } = trialWorld("paired-schema", true);
+    sim.advanceTo(time(0.05));
+    sim.diagnosticTaskAbandon(actor);
+    const r = sim.personalReview(actor),
+      state = clone(sim.decisionPanel(actor)!);
+    const binder = new Binder(
+      r,
+      state,
+      new ReviewEffort(openReview(actor, time(0.05)), counters()),
+    );
+    const method = binder.admission("have:edged-flake")[0]!;
+    const bound = binder.bind(
+      { kind: "have", good: "edged-flake", place: "own", quantity: 1 },
+      method,
+    );
+    expect(bound.status).toBe("executable");
+    expect(bound.steps.every((s) => !("experiment" in s && s.experiment))).toBe(
+      true,
+    );
+    sim.diagnosticSelect({
+      actor,
+      intentionId: "fresh-ordinary-use",
+      taskId: "fresh-ordinary-use",
+      semanticKey: bound.key,
+      objective: "have edged-flake",
+      method: method.id,
+      bindings: bound.bindings,
+      steps: bound.steps,
+      dependsOn: [],
+      authorised: { time: time(0.03), goods: { stone: 1 } },
+      reserve: [],
+      source: "diagnostic-selected-intention",
+    });
+    sim.advanceTo(time(0.085));
+    expect(
+      sim.personalReview(actor).self.carried.stocks["edged-flake"],
+    ).toBeCloseTo(0.5 + 0.7 + 0.3 * 0.4);
+    expect(
+      sim.personalReview(actor).belief("method:edge-flaking", "confidence")!
+        .value,
+    ).toBeCloseTo(0.64);
+    expect(sim.snapshot().reconciliation.ok).toBe(true);
+  });
+  it("a retained inquiry frontier is explicitly computationally deferred on shared effort exhaustion", () => {
+    const h = cognition({ trial: false }),
+      account = openReview(h.actor, 0);
+    account.spent = 595;
+    const options = explorationOptions(
+      h.review(),
+      h.state,
+      new ReviewEffort(account, h.counts),
+    );
+    expect(options.some((o) => o.status === "computationally-deferred")).toBe(
+      true,
+    );
+    expect(
+      options.some((o) => o.status === "impossible-under-personal-assumptions"),
+    ).toBe(false);
+    expect(account.spent).toBe(600);
+  });
+  it("forgetting and reobserving a target cannot reset its trial precedent or occupancy count", () => {
+    const h = cognition({ inquiry: false });
+    const packet = (refs: string[]): PerceptionPacket => ({
+      terrain: [],
+      resourceClasses: ["stone-deposit"],
+      facts: refs.map((reference) => ({
+        reference,
+        kind: "site",
+        position: h.self.location,
+        detection: 1,
+        properties: [
+          {
+            property: "resource-kind",
+            value: "stone-deposit",
+            uncertainty: 0,
+            volatility: "slow",
+          },
+          {
+            property: "material-kind",
+            value: "glassy-stone",
+            uncertainty: 0,
+            volatility: "fixed",
+          },
+          {
+            property: "perceptible-properties",
+            value: "hard,glassy",
+            uncertainty: 0,
+            volatility: "fixed",
+          },
+          {
+            property: "stock:stone",
+            value: 12,
+            uncertainty: 0,
+            volatility: "slow",
+          },
+        ],
+      })),
+      footprint: { duration: 1, cells: [] },
+    });
+    h.e.observe(
+      h.actor,
+      packet(["original-material"]),
+      0,
+      "first direct observation",
+      true,
+    );
+    const first = h.e.subjectFor(h.actor, "original-material")!;
+    const descriptor = `T1:strike:${first}:glassy-stone`;
+    h.e.observeExploration(
+      h.actor,
+      {
+        ...experiment,
+        descriptor,
+        paid: time(0.03),
+        evidenceVersion: parseInt(
+          digest(["glassy-stone", ["hard", "glassy"], "strike"]).slice(0, 8),
+          16,
+        ),
+      },
+      0,
+      "failed paid original attempt",
+    );
+    h.e.observe(
+      h.actor,
+      packet(Array.from({ length: 40 }, (_, i) => `new-site-${i}`)),
+      1,
+      "later dense observations",
+      true,
+    );
+    expect(h.e.subjectFor(h.actor, "original-material")).toBeNull();
+    const before = h.e
+      .review(h.actor, 1, profile, h.self)
+      .belief("occupancy", "stone-deposit:0")!.value;
+    h.e.observe(
+      h.actor,
+      packet(["original-material"]),
+      2,
+      "direct reobservation",
+      true,
+    );
+    const second = h.e.subjectFor(h.actor, "original-material")!;
+    expect(second).not.toBe(first);
+    const r = h.e.review(h.actor, 2, profile, h.self);
+    expect(r.belief(second, "attempt-identity")!.value).toBe(first);
+    expect(r.belief("occupancy", "stone-deposit:0")!.value).toEqual(before);
+    const copy = clone(h.e.state);
+    const restored = new EvidenceService(
+      "exploration-proof",
+      counters(),
+      copy,
+      undefined,
+      0.8,
+      METHOD_INDEX,
+      profile,
+    );
+    expect(
+      restored
+        .review(h.actor, 2, profile, h.self)
+        .belief("exploration", descriptor)!.value,
+    ).toEqual(r.belief("exploration", descriptor)!.value);
   });
   it("irrelevant successful global methods do not change personal nomination or choice", () => {
     const added = Array.from({ length: 10000 }, (_, i) => ({

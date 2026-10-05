@@ -58,7 +58,7 @@ export interface PersonEvidence {
   frontiers: Record<string, Evidence>;
   occupancy: Record<string, { alpha: number; beta: number }>;
   occupancyCoverage: Record<string, Record<number, number>>;
-  discoveredSites: Record<string, boolean>;
+  discoveredSites: Record<string, string>;
   exploration: Record<
     string,
     {
@@ -163,6 +163,12 @@ export class EvidenceService {
         !p.explorationProvenance
       )
         throw Error("Missing rate continuation state");
+      if (
+        Object.values(p.discoveredSites).some(
+          (identity) => typeof identity !== "string" || !identity,
+        )
+      )
+        throw Error("Invalid personal attempt identity backing");
       for (const posterior of Object.values(p.occupancy))
         if (
           ![posterior.alpha, posterior.beta].every(
@@ -713,6 +719,8 @@ export class EvidenceService {
       );
       s.at = at;
       s.paid += outcome.paid * weight;
+      if (s.evidenceVersion !== outcome.evidenceVersion) s.completed = false;
+      s.evidenceVersion = outcome.evidenceVersion;
       if (outcome.completed) {
         s.attempts += weight;
         if (outcome.success) s.alpha += weight;
@@ -847,8 +855,22 @@ export class EvidenceService {
   ): void {
     const p = this.person(owner);
     const original = p.links[subject] ?? subject;
-    if (p.discoveredSites[original]) return;
-    p.discoveredSites[original] = true;
+    const previous = p.discoveredSites[original];
+    // Remembered attempt identity is a personal opaque token. It confers no
+    // forgotten location, resource backing, or execution capability.
+    const identity = previous ?? subject;
+    if (this.latest(owner, subject, "attempt-identity")?.value !== identity)
+      this.fact(
+        owner,
+        subject,
+        "attempt-identity",
+        identity,
+        at,
+        "personal attempt precedent",
+        "inference",
+      );
+    if (previous) return;
+    p.discoveredSites[original] = identity;
     const position =
       point ??
       (this.latest(owner, subject, "location")?.value as Point | undefined);

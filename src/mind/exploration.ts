@@ -235,7 +235,8 @@ function unchanged(
     Record<string, number> | undefined;
   return (
     !!summary &&
-    (summary.paid! >= P.optionalTimeSd * QUANTA ||
+    ((summary.paid! >= P.optionalTimeSd * QUANTA &&
+      summary.evidenceVersion === version) ||
       (summary.completed === 1 &&
         summary.evidenceVersion === version &&
         review.time - summary.at! < P.frustrationDecaySd * QUANTA))
@@ -405,7 +406,11 @@ export function explorationOptions(
         true
       )
         continue;
-      const descriptor = `T1:${operation.id}:${source.subject}:${kind}`;
+      const identity = String(
+        review.belief(source.subject, "attempt-identity")?.value ??
+          source.subject,
+      );
+      const descriptor = `T1:${operation.id}:${identity}:${kind}`;
       const premiseVersion = parseInt(
         digest([kind, properties, operation.id]).slice(0, 8),
         16,

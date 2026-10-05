@@ -668,17 +668,22 @@ function inspectPersonal() {
           .map((e) => `Attempt ${e.property}: ${JSON.stringify(e.value)}`),
       ].join("\n")
     : `Waiting for a personal wake. Next periodic review ${((lens.decision?.periodicAt ?? 0) / 2 ** 20).toFixed(4)} SD`;
+  const inspectionEvidence = [...p.evidence]
+    .sort((a, b) => a.receivedAt - b.receivedAt)
+    .slice(-9)
+    .reverse();
+  const bodyEvidence = p.evidence.find(
+    (e) => e.subject === "self" && e.property === "body-experience",
+  );
+  if (bodyEvidence && !inspectionEvidence.includes(bodyEvidence))
+    inspectionEvidence.push(bodyEvidence);
   element("evidence-records").replaceChildren(
-    ...[...p.evidence]
-      .sort((a, b) => a.receivedAt - b.receivedAt)
-      .slice(-10)
-      .reverse()
-      .map((e) => {
-        const div = document.createElement("div");
-        div.className = "event";
-        div.textContent = `${(e.observedAt / 2 ** 20).toFixed(5)} SD observed · ${(e.receivedAt / 2 ** 20).toFixed(5)} received · ${e.modality} · ${e.subject}/${e.property} v${e.version} · provenance ${e.provenance.slice(0, 10)}`;
-        return div;
-      }),
+    ...inspectionEvidence.map((e) => {
+      const div = document.createElement("div");
+      div.className = "event";
+      div.textContent = `${(e.observedAt / 2 ** 20).toFixed(5)} SD observed · ${(e.receivedAt / 2 ** 20).toFixed(5)} received · ${e.modality} · ${e.subject}/${e.property} v${e.version} · provenance ${e.provenance.slice(0, 10)}`;
+      return div;
+    }),
   );
   for (const id of ["move", "transfer", "consume", "reserve", "release"])
     element<HTMLButtonElement>(id).disabled = true;
