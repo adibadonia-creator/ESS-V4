@@ -3,8 +3,8 @@ import { RNG_VERSION, NORMAL_SAMPLER } from "./random";
 import { MATH_PROFILE } from "./numerics";
 import { SOURCE_HASH, SPEC_HASH } from "./buildStamp";
 export const versions = Object.freeze({
-  model: "ESS-4.0-pack0c1",
-  schema: 6,
+  model: "ESS-4.0-pack0c2",
+  schema: 7,
   source: SOURCE_HASH,
   spec: SPEC_HASH,
   rng: RNG_VERSION,

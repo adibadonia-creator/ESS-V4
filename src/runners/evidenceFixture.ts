@@ -1,4 +1,4 @@
-import type { PhysicalSimulation } from "../world/simulation";
+import type { PhysicalSimulation } from "../runners/simulation";
 import { time } from "../kernel/time";
 // Diagnostic selected intentions prove execution, never autonomous deliberation.
 // Destinations depend on public raster geometry and own position only.

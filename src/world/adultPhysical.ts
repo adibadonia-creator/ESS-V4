@@ -187,6 +187,7 @@ export class AdultPhysical {
       capability: AdultCapability;
       mastery: Masteries;
       wound?: number;
+      initial?: { condition: number; fatigue: number; enjoyment: number };
     },
   ) {
     if (this.port.now() !== 0 || this.bodies.has(actor))
@@ -196,6 +197,11 @@ export class AdultPhysical {
       b.capability = { ...profile.capability };
       b.mastery = { ...profile.mastery };
       b.anchor.w = profile.wound ?? 0;
+      if (profile.initial) {
+        b.anchor.c = profile.initial.condition;
+        b.d = profile.initial.fatigue;
+        b.f = profile.initial.enjoyment;
+      }
       reanchorBody(b, 0, 0, 0);
       validateBodyAt(b, this.port.now());
     }
@@ -644,6 +650,13 @@ export class AdultPhysical {
         fatigue: b.d,
         enjoyment: b.f,
         intake: v.intake,
+        activityLoad: this.active.get(actor)?.load ?? 0,
+        intervalStart: b.interval.start,
+        effortSd: b.interval.effort / QUANTA,
+        restSd: b.interval.rest / QUANTA,
+        pleasantSd: b.interval.pleasant / QUANTA,
+        compulsorySd: b.interval.compulsory / QUANTA,
+        leisureSd: b.interval.leisure / QUANTA,
         satiation: b.satiation,
         familiarity: b.exposures,
         practice: b.practice,

@@ -10,7 +10,7 @@ import {
   QUANTA,
   beliefKey,
 } from "./pack0b-fixture";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import { canonical, digest } from "../src/kernel/canonical";
 import { EvidenceService } from "../src/evidence/service";
 import { counters } from "../src/kernel/counters";

@@ -9,6 +9,8 @@
   "include": [
     "src/kernel",
     "src/world",
+    "src/laws",
+    "src/mind",
     "src/content",
     "src/projection",
     "src/measurement",

@@ -1,5 +1,11 @@
 import { math } from "../kernel/numerics";
 import { QUANTA } from "../kernel/time";
+import {
+  conditionTarget,
+  fatigueClosure,
+  enjoymentClosure,
+} from "../laws/physiology";
+export { conditionTarget } from "../laws/physiology";
 
 export const DOMAINS = [
   "Field",
@@ -86,9 +92,6 @@ export function requirement(
       (b.capability.efficiency ** 2 * load + 0.3 * wound) +
     exposure
   );
-}
-export function conditionTarget(n: number) {
-  return n <= 1 ? (2 * n * n) / (1 + n * n) : 1 + (0.2 * (n - 1)) / n;
 }
 export function materialiseBody(b: Body, at: number) {
   if (at < b.anchor.at) throw Error("Body anchor regression");
@@ -226,15 +229,9 @@ export function closeBody(b: Body, at: number) {
   const i = b.interval,
     duration = at - i.start;
   if (duration <= 0) throw Error("Duplicate representative closure");
-  const dt = duration / QUANTA,
-    L = i.effort / duration,
-    target = clip((0.3 + 0.12 * L - i.rest / duration) / 0.2);
-  b.d = target + (b.d - target) * math.exp(-dt / (target > b.d ? 1 : 0.5));
-  const v = Math.min(1, i.pleasant / duration / 0.12),
-    rho = 0.08 + (0.12 * i.compulsory) / duration,
-    speed = 1.5 * v + rho,
-    fTarget = (1.5 * v) / speed;
-  b.f = fTarget + (b.f - fTarget) * math.exp(-speed * dt);
+  const dt = duration / QUANTA;
+  b.d = fatigueClosure(b.d, dt, i.effort / QUANTA, i.rest / QUANTA);
+  b.f = enjoymentClosure(b.f, dt, i.pleasant / QUANTA, i.compulsory / QUANTA);
   const decay = math.exp(-dt / 3);
   b.satiation =
     b.satiation * decay + (i.leisure / duration / 0.12) * (1 - decay);

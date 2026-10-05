@@ -1,4 +1,4 @@
-import type { PhysicalSimulation } from "../world/simulation";
+import type { PhysicalSimulation } from "../runners/simulation";
 import { time } from "../kernel/time";
 // An explicit Stage-I execution scenario. Every step is selected at founding;
 // later body signals neither choose nor insert operations.

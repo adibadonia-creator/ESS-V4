@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import { performance } from "node:perf_hooks";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import { resolveConfig } from "../src/content/profile";
 import { launchBodyFixture } from "../src/runners/bodyFixture";
 import { versions } from "../src/kernel/versions";
@@ -145,7 +145,7 @@ const report = {
   workGrowth,
 };
 fs.writeFileSync(
-  "docs/PACK0C1_BODY_BENCHMARK.json",
+  process.argv[2] ?? "docs/PACK0C1_BODY_BENCHMARK.json",
   JSON.stringify(report, null, 2) + "\n",
 );
 console.log(JSON.stringify(report, null, 2));

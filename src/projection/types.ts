@@ -93,7 +93,11 @@ export interface Snapshot {
 }
 export type Command =
   | { id: number; kind: "create"; seed: string }
-  | { id: number; kind: "create-evidence" | "create-body"; seed: string }
+  | {
+      id: number;
+      kind: "create-evidence" | "create-body" | "create-autonomous";
+      seed: string;
+    }
   | {
       id: number;
       kind: "task-interrupt" | "task-resume" | "task-abandon";

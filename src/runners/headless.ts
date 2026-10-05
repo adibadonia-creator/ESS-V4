@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { PhysicalSimulation } from "../world/simulation";
+import { PhysicalSimulation } from "../runners/simulation";
 import { launchEvidenceFixture } from "./evidenceFixture";
 import { launchPhysicalFixture } from "./fixture";
 import { time } from "../kernel/time";

@@ -221,3 +221,9 @@ footer {
   padding: 10px;
   margin: 12px 0;
 }
+
+#decision-summary {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}

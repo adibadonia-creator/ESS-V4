@@ -57,7 +57,27 @@ export interface SelectedIntention {
     quantity: number;
     expires: number;
   }[];
-  source: "diagnostic-selected-intention";
+  source: string;
+  effortAccount?: string;
+  preparedRoutes?: Record<number, PersonalSearch>;
+  envelope?: {
+    purpose: string;
+    end: {
+      kind: string;
+      quantity: number;
+      service?: string;
+      good?: string;
+      place?: string;
+    };
+    targets: string[];
+    quantity: { estimate: number; low: number; high: number };
+    riskCeiling: number;
+    locationBasis: string;
+    rightsBasis: "own-custody-and-public-extraction";
+    stop: string[];
+    escalation: string[];
+    reviewAccount: string;
+  };
 }
 export interface ActiveOperation {
   family: Operation["family"];
@@ -122,6 +142,7 @@ export interface RuntimeState {
   }[];
   effort: Record<string, EffortAccount>;
   currentEffort: Record<string, string>;
+  reviewAuthorizations: Record<string, string>;
   budgets: Record<
     string,
     { authorised: Budget; spent: Budget; descriptor: string }
@@ -138,7 +159,12 @@ export interface RuntimePort {
   endPhysical(
     task: Task,
     final: boolean,
-  ): { quantity: number; good?: string; reason?: string };
+  ): {
+    quantity: number;
+    good?: string;
+    reason?: string;
+    ownWrites?: { key: string; before: number; after: number }[];
+  };
   paidPhysical(task: Task, start: number, end: number): void;
   physicalClosure(actor: string): void;
   pin(task: Task): void;

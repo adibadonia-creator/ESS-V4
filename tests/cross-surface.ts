@@ -150,6 +150,34 @@ export async function crossSurface(
     digest(bodyChunked.personalLenses) !== digest(bodyEnd.personalLenses)
   )
     throw Error("Body/work partition mismatch");
+  const autonomous = (await call({ kind: "create-autonomous", seed: "spine" }))
+    .snapshot!;
+  stage("pack0c2-pending-founding-wakes", autonomous);
+  await call({ kind: "advance", time: Math.ceil(0.07 * 2 ** 20) });
+  const autoSave = (await call({ kind: "checkpoint" })).checkpoint!;
+  const autoEnd = (await call({ kind: "advance", time: 6 * 2 ** 20 }))
+    .snapshot!;
+  stage("pack0c2-autonomous", autoEnd);
+  if (!(autoEnd.counters.autonomousIntentionsCommitted! > 0))
+    throw Error("No autonomous intentions");
+  await call({ kind: "restore", checkpoint: autoSave });
+  for (
+    let q = Math.ceil(0.07 * 2 ** 20) + 217319;
+    q < 6 * 2 ** 20;
+    q += 217319
+  ) {
+    await call({ kind: "advance", time: q });
+    await call({ kind: "snapshot" });
+    await frame();
+  }
+  const autoChunked = (await call({ kind: "advance", time: 6 * 2 ** 20 }))
+    .snapshot!;
+  stage("pack0c2-restored-partitioned", autoChunked);
+  if (
+    autoChunked.hash !== autoEnd.hash ||
+    digest(autoChunked.personalLenses) !== digest(autoEnd.personalLenses)
+  )
+    throw Error("Autonomous choice/runtime partition mismatch");
   return {
     math: [
       math.exp(-0.2),

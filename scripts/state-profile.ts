@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import { Session } from "node:inspector/promises";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import { resolveConfig } from "../src/content/profile";
 import { launchEvidenceFixture } from "../src/runners/evidenceFixture";
 import { time } from "../src/kernel/time";

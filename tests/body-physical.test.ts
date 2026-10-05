@@ -7,7 +7,7 @@ import {
   execution,
   QUANTA,
 } from "./pack0b-fixture";
-import { PhysicalSimulation } from "../src/world/simulation";
+import { PhysicalSimulation } from "../src/runners/simulation";
 import {
   adultBody,
   materialiseBody,

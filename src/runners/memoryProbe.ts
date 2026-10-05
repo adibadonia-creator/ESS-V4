@@ -1,7 +1,7 @@
 import { EvidenceService } from "../evidence/service";
 import { counters } from "../kernel/counters";
 import { time } from "../kernel/time";
-import { PhysicalSimulation } from "../world/simulation";
+import { PhysicalSimulation } from "../runners/simulation";
 import { launchEvidenceFixture } from "./evidenceFixture";
 // Diagnostic observations and preselected paid attention, never an autonomous review.
 export function memoryProbe(days = 12) {
