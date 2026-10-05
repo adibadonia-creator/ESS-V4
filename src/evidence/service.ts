@@ -1,3 +1,5 @@
+import { EXPLORATION } from "../content/exploration";
+import type { Point, ExplorationOutcome } from "./types";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { METHOD_INDEX } from "../content/methods";
 import {
@@ -53,6 +55,24 @@ interface RateSample {
   logRate: number;
 }
 export interface PersonEvidence {
+  frontiers: Record<string, Evidence>;
+  occupancy: Record<string, { alpha: number; beta: number }>;
+  occupancyCoverage: Record<string, Record<number, number>>;
+  discoveredSites: Record<string, string>;
+  exploration: Record<
+    string,
+    {
+      alpha: number;
+      beta: number;
+      failures: number;
+      at: number;
+      attempts: number;
+      paid: number;
+      evidenceVersion: number;
+      completed: boolean;
+    }
+  >;
+  explorationProvenance: Record<string, boolean>;
   rateStatistics: Record<string, RateStatistic>;
   // Exact provenance backing is historical, never enumerated by a current estimate.
   rateProvenance: Record<string, RateSample>;
@@ -118,6 +138,7 @@ export class EvidenceService {
     private regionKm = PUBLIC_MAP_PROFILE.regionCells *
       PUBLIC_MAP_PROFILE.cellKm,
     private methods = METHOD_INDEX,
+    private profile: import("./types").MapProfile = PUBLIC_MAP_PROFILE,
   ) {
     this.state = state;
     for (let i = 0; i < state.pinnedGeography.length; i++) {
@@ -131,8 +152,46 @@ export class EvidenceService {
         (this.geographyPinCounts.get(id) ?? 0) + 1,
       );
     for (const p of state.people) {
-      if (!p.rateStatistics || !p.rateProvenance)
+      if (
+        !p.rateStatistics ||
+        !p.rateProvenance ||
+        !p.frontiers ||
+        !p.occupancy ||
+        !p.occupancyCoverage ||
+        !p.discoveredSites ||
+        !p.exploration ||
+        !p.explorationProvenance
+      )
         throw Error("Missing rate continuation state");
+      if (
+        Object.values(p.discoveredSites).some(
+          (identity) => typeof identity !== "string" || !identity,
+        )
+      )
+        throw Error("Invalid personal attempt identity backing");
+      for (const posterior of Object.values(p.occupancy))
+        if (
+          ![posterior.alpha, posterior.beta].every(
+            (n) => Number.isFinite(n) && n > 0,
+          )
+        )
+          throw Error("Invalid occupancy posterior");
+      for (const coverage of Object.values(p.occupancyCoverage))
+        for (const detection of Object.values(coverage))
+          if (!Number.isFinite(detection) || detection < 0 || detection > 1)
+            throw Error("Invalid occupancy coverage");
+      for (const summary of Object.values(p.exploration))
+        if (
+          ![summary.alpha, summary.beta].every(
+            (n) => Number.isFinite(n) && n > 0,
+          ) ||
+          ![summary.failures, summary.paid, summary.attempts].every(
+            (n) => Number.isFinite(n) && n >= 0,
+          ) ||
+          !Number.isSafeInteger(summary.at) ||
+          typeof summary.completed !== "boolean"
+        )
+          throw Error("Invalid exploration continuation");
       for (const stat of Object.values(p.rateStatistics))
         if (
           !Number.isSafeInteger(stat.at) ||
@@ -160,10 +219,17 @@ export class EvidenceService {
         beliefs: null,
         postings: null,
         routes: null,
+        frontiers: null,
       });
       this.membership.set(p.owner, new Map());
       this.subjectRecords.set(p.owner, new Map());
       for (const e of p.records) this.indexBelief(p, immutable(e));
+      for (const [key, e] of Object.entries(p.frontiers))
+        this.readIndexes.get(p.owner)!.frontiers = put(
+          this.readIndexes.get(p.owner)!.frontiers,
+          key,
+          immutable(e),
+        );
       const indexes = this.readIndexes.get(p.owner)!;
       for (const route of p.routes)
         indexes.routes = put(indexes.routes, route.subject, immutable(route));
@@ -196,6 +262,12 @@ export class EvidenceService {
     if (this.people.has(owner)) return;
     const p: PersonEvidence = {
       owner,
+      frontiers: {},
+      occupancy: {},
+      occupancyCoverage: {},
+      discoveredSites: {},
+      exploration: {},
+      explorationProvenance: {},
       rateStatistics: {},
       rateProvenance: {},
       geographyRevision: 0,
@@ -223,6 +295,7 @@ export class EvidenceService {
       beliefs: null,
       postings: null,
       routes: null,
+      frontiers: null,
     });
     this.membership.set(owner, new Map());
     this.subjectRecords.set(owner, new Map());
@@ -616,8 +689,152 @@ export class EvidenceService {
       "slow",
     );
   }
+  observeExploration(
+    owner: string,
+    outcome: ExplorationOutcome,
+    at: number,
+    provenance: string,
+  ): void {
+    const p = this.person(owner);
+    if (p.explorationProvenance[provenance]) return;
+    p.explorationProvenance[provenance] = true;
+    const context = `${outcome.form}:${outcome.operation}:${outcome.targetKind}`;
+    for (const [key, weight] of [
+      [context, 1],
+      [`${outcome.form}:${outcome.operation}:*`, EXPLORATION.generalisation],
+      [outcome.descriptor, 1],
+    ] as const) {
+      const s = (p.exploration[key] ??= {
+        alpha: EXPLORATION.alpha,
+        beta: EXPLORATION.beta,
+        failures: 0,
+        at,
+        attempts: 0,
+        paid: 0,
+        evidenceVersion: 0,
+        completed: false,
+      });
+      s.failures *= math.exp(
+        -(at - s.at) / QUANTA / EXPLORATION.frustrationDecaySd,
+      );
+      s.at = at;
+      s.paid += outcome.paid * weight;
+      if (s.evidenceVersion !== outcome.evidenceVersion) s.completed = false;
+      s.evidenceVersion = outcome.evidenceVersion;
+      if (outcome.completed) {
+        s.attempts += weight;
+        if (outcome.success) s.alpha += weight;
+        else {
+          s.beta += weight;
+          s.failures += weight;
+        }
+        s.completed = true;
+        s.evidenceVersion = outcome.evidenceVersion;
+      }
+      this.fact(
+        owner,
+        "exploration",
+        key,
+        { ...s, completed: s.completed ? 1 : 0 },
+        at,
+        provenance,
+        "inference",
+      );
+    }
+    if (outcome.completed)
+      this.fact(
+        owner,
+        outcome.descriptor,
+        "outcome",
+        outcome,
+        at,
+        provenance,
+        "trial",
+      );
+    if (
+      outcome.completed &&
+      !outcome.success &&
+      outcome.method &&
+      this.latest(owner, `method:${outcome.method}`, "known")?.value === true
+    ) {
+      const subject = `method:${outcome.method}`,
+        property = `confidence:${context}`;
+      const old = Number(
+        this.latest(owner, subject, property)?.value ??
+          this.latest(owner, subject, "confidence")?.value ??
+          EXPLORATION.trialConfidence,
+      );
+      this.fact(owner, subject, property, old * 0.6, at, provenance, "trial");
+    }
+    if (outcome.completed && outcome.success && outcome.method) {
+      if (outcome.target)
+        this.fact(
+          owner,
+          outcome.target,
+          `revealed-property:${outcome.operation}`,
+          outcome,
+          at,
+          provenance,
+          "trial",
+        );
+      this.fact(
+        owner,
+        `affordance:${outcome.operation}:${outcome.targetKind}`,
+        "known",
+        true,
+        at,
+        provenance,
+        "trial",
+      );
+      const subject = `method:${outcome.method}`;
+      const previous = this.latest(owner, subject, "confidence")?.value;
+      const confidence =
+        typeof previous === "number"
+          ? 1 - (1 - previous) * 0.6
+          : EXPLORATION.trialConfidence;
+      this.fact(
+        owner,
+        subject,
+        "observed-yield",
+        { yield: outcome.yield ?? 0, paid: outcome.paid },
+        at,
+        provenance,
+        "trial",
+      );
+      this.fact(
+        owner,
+        subject,
+        "confidence",
+        confidence,
+        at,
+        provenance,
+        "trial",
+      );
+      this.fact(
+        owner,
+        subject,
+        "observed-context",
+        context,
+        at,
+        provenance,
+        "trial",
+      );
+      this.fact(owner, subject, "known", true, at, provenance, "trial");
+    }
+  }
   foundMethods(owner: string, methods: string[], at: number): void {
     this.foundPerformancePriors(owner, methods, at);
+    if (methods.includes("try-compatible"))
+      for (const operation of EVIDENCE_PROFILE.foundingOperations)
+        this.fact(
+          owner,
+          `operation:${operation}`,
+          "compatible-operation",
+          operation,
+          at,
+          "declared cultural compatibility",
+          "record",
+        );
     for (const method of methods)
       this.fact(
         owner,
@@ -629,6 +846,57 @@ export class EvidenceService {
         "record",
       );
   }
+  private recordDetectedSite(
+    owner: string,
+    subject: string,
+    resource: string,
+    at: number,
+    point?: Point,
+  ): void {
+    const p = this.person(owner);
+    const original = p.links[subject] ?? subject;
+    const previous = p.discoveredSites[original];
+    // Remembered attempt identity is a personal opaque token. It confers no
+    // forgotten location, resource backing, or execution capability.
+    const identity = previous ?? subject;
+    if (this.latest(owner, subject, "attempt-identity")?.value !== identity)
+      this.fact(
+        owner,
+        subject,
+        "attempt-identity",
+        identity,
+        at,
+        "personal attempt precedent",
+        "inference",
+      );
+    if (previous) return;
+    p.discoveredSites[original] = identity;
+    const position =
+      point ??
+      (this.latest(owner, subject, "location")?.value as Point | undefined);
+    if (!position) throw Error("Detected site has no personal location");
+    const k =
+      Math.floor(position.x / this.profile.cellKm) +
+      this.profile.width * Math.floor(position.y / this.profile.cellKm);
+    const scope = `${resource}:${p.cells[k]?.terrain ?? 0}`;
+    const posterior = (p.occupancy[scope] ??= {
+      alpha:
+        resource === "food-patch"
+          ? EXPLORATION.foodDensityKm2
+          : EXPLORATION.rawDensityKm2,
+      beta: EXPLORATION.occupancyStrengthKm2,
+    });
+    posterior.alpha++;
+    this.fact(
+      owner,
+      "occupancy",
+      scope,
+      { ...posterior },
+      at,
+      "independent personally detected site",
+      "inference",
+    );
+  }
   observeResourceStock(
     owner: string,
     subject: string,
@@ -639,6 +907,7 @@ export class EvidenceService {
     cognitive: number,
     field: number,
   ): void {
+    this.recordDetectedSite(owner, subject, kind, at);
     const logSd = 0.35 / Math.max(0.25, math.sqrt(cognitive * field));
     const value =
       stock > 0
@@ -725,6 +994,7 @@ export class EvidenceService {
         c.detection > (p.coverage[c.cell] ?? 0)
       );
     });
+    let deliveredSurvey = false;
     if (cells.length && accept()) {
       const delivered = this.deliver({
         owner,
@@ -744,6 +1014,7 @@ export class EvidenceService {
         footprint: packet.footprint,
       });
       if (delivered) {
+        deliveredSurvey = true;
         const event = this.latestIndex
           .get(owner)!
           .get(beliefKey("local-survey", "terrain"))!;
@@ -799,6 +1070,107 @@ export class EvidenceService {
           this.geographyVersions.delete(previous.id);
       }
     }
+    if (packet.resourceClasses && (deliveredSurvey || directed)) {
+      const changed = new Set<string>();
+      for (const resource of packet.resourceClasses) {
+        const coverage = (p.occupancyCoverage[resource] ??= {});
+        for (const c of packet.terrain) {
+          const scope = `${resource}:${c.terrain}`;
+          const posterior = (p.occupancy[scope] ??= {
+            alpha:
+              resource === "food-patch"
+                ? EXPLORATION.foodDensityKm2
+                : EXPLORATION.rawDensityKm2,
+            beta: EXPLORATION.occupancyStrengthKm2,
+          });
+          const detection = directed ? 1 : c.detection;
+          posterior.beta +=
+            this.profile.cellKm ** 2 *
+            Math.max(0, detection - (coverage[c.cell] ?? 0));
+          coverage[c.cell] = Math.max(coverage[c.cell] ?? 0, detection);
+          changed.add(scope);
+        }
+      }
+      for (const scope of changed)
+        this.fact(
+          owner,
+          "occupancy",
+          scope,
+          { ...p.occupancy[scope]! },
+          at,
+          "qualified personal coverage",
+          "inference",
+        );
+    }
+    // Incremental personally represented frontier: only affected geometry and
+    // its immediate neighbours. No unseen terrain or whole-map enumeration.
+    if (deliveredSurvey) {
+      const affected = new Set<number>();
+      const width = this.profile.width,
+        height = this.profile.height;
+      for (const c of cells)
+        for (const [dx, dy] of [
+          [0, 0],
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ]) {
+          const x = (c.cell % width) + dx!,
+            y = Math.floor(c.cell / width) + dy!;
+          if (x >= 0 && x < width && y >= 0 && y < height)
+            affected.add(x + y * width);
+        }
+      for (const k of affected) {
+        const x = k % width,
+          y = Math.floor(k / width);
+        const adjacent = [
+          [x - 1, y],
+          [x + 1, y],
+          [x, y - 1],
+          [x, y + 1],
+        ].some(
+          ([a, b]) =>
+            a! >= 0 &&
+            b! >= 0 &&
+            a! < width &&
+            b! < height &&
+            p.cells[a! + b! * width]?.passable,
+        );
+        const key = `frontier:${k}`,
+          ix = this.readIndexes.get(owner)!;
+        if (!p.cells[k] && adjacent) {
+          if (!p.frontiers[key]) {
+            const e: Evidence = {
+              owner,
+              subject: key,
+              property: "frontier",
+              value: {
+                x: (x + 0.5) * this.profile.cellKm,
+                y: (y + 0.5) * this.profile.cellKm,
+              },
+              observedAt: at,
+              receivedAt: at,
+              modality: "inference",
+              provenance: digest([owner, key, at]),
+              context: "personal coverage frontier",
+              reliability: 1,
+              uncertainty: 1,
+              volatilityClass: "slow",
+              expiry: null,
+              pinned: false,
+              version: 1,
+            };
+            p.frontiers[key] = e;
+            ix.frontiers = put(ix.frontiers, key, immutable(e));
+          }
+        } else if (p.frontiers[key]) {
+          delete p.frontiers[key];
+          ix.frontiers = drop(ix.frontiers, key);
+        }
+      }
+    }
+    const detected: Record<string, number> = {};
     // Packet order is geometric and independent of hidden allocation/keys.
     for (const f of packet.facts) {
       if (
@@ -811,6 +1183,13 @@ export class EvidenceService {
         continue;
       if (!accept()) break;
       const subject = this.handle(owner, f.reference);
+      const resource = f.properties.find(
+        (item) => item.property === "resource-kind",
+      )?.value;
+      if (typeof resource === "string") {
+        this.recordDetectedSite(owner, subject, resource, at, f.position);
+        detected[resource] = (detected[resource] ?? 0) + 1;
+      }
       this.fact(owner, subject, "existence", true, at, context);
       this.fact(owner, subject, "location", f.position, at, context);
       this.fact(owner, subject, "kind", f.kind, at, context);
@@ -847,7 +1226,7 @@ export class EvidenceService {
         owner,
         "local-survey",
         "site-detection-count",
-        packet.facts.filter((f) => f.kind === "site").length,
+        Object.values(detected).reduce((a, b) => a + b, 0),
         at,
         context,
         "direct",
@@ -855,6 +1234,20 @@ export class EvidenceService {
         "fast",
         packet.footprint,
       );
+    if (directed && packet.footprint.duration > 0)
+      for (const resource of packet.resourceClasses ?? [])
+        this.fact(
+          owner,
+          "local-survey",
+          `site-detection-count:${resource}`,
+          detected[resource] ?? 0,
+          at,
+          context,
+          "direct",
+          0,
+          "fast",
+          packet.footprint,
+        );
     this.enforceMemory(owner);
   }
   route(
@@ -917,6 +1310,15 @@ export class EvidenceService {
       );
     };
     add(e.property);
+    if (
+      e.property === "frontier" &&
+      typeof e.value === "object" &&
+      e.value !== null
+    )
+      add("eligible-frontier");
+    if (e.property === "perceptible-properties" && typeof e.value === "string")
+      for (const property of e.value.split(","))
+        add(`material-property:${property}`);
     if (
       e.property === "own-local-stocks" &&
       e.value &&

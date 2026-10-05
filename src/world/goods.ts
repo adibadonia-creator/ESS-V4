@@ -25,8 +25,9 @@ export interface Reservation {
   expires: Time;
   status: "active" | "released" | "spent" | "expired";
 }
-export type Sink = "consumption" | "destruction";
-export type Source = "diagnostic-source" | "initial-endowment" | "extraction";
+export type Sink = "consumption" | "destruction" | "recipe-input";
+export type Source =
+  "diagnostic-source" | "initial-endowment" | "extraction" | "production";
 export type GoodsRequest =
   | { kind: "source"; source: Source; to: Key; good: string; quantity: number }
   | {
@@ -286,9 +287,12 @@ export class GoodsLedger {
         throw new Error("Invalid physical quantity");
       if (request.kind === "source") {
         if (
-          !["diagnostic-source", "initial-endowment", "extraction"].includes(
-            request.source,
-          )
+          ![
+            "diagnostic-source",
+            "initial-endowment",
+            "extraction",
+            "production",
+          ].includes(request.source)
         )
           throw new Error("Undeclared source");
         this.get(request.to);
@@ -361,7 +365,11 @@ export class GoodsLedger {
             )
               throw new Error("Remote transfer");
             deltas.set(to.key, (deltas.get(to.key) ?? 0) + quantity);
-          } else if (!["consumption", "destruction"].includes(request.sink))
+          } else if (
+            !["consumption", "destruction", "recipe-input"].includes(
+              request.sink,
+            )
+          )
             throw new Error("Undeclared sink");
         }
       }

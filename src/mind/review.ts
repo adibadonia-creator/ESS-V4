@@ -14,6 +14,7 @@ import { METHOD_INDEX, type MethodIndex } from "../content/methods";
 import { openReview, ReviewEffort } from "./effort";
 import { Binder, optionKey } from "./binder";
 import { bodySignals, drives, ownedLots, ownedLotsPage } from "./signals";
+import { explorationOptions, explorationWeight } from "./exploration";
 import { forecast } from "./forecast";
 import {
   heldErrors,
@@ -78,6 +79,7 @@ export class Mind {
       capCount: 0,
       epoch: 0,
       signatures: {},
+      trialCursor: null,
       agendaCursor: 0,
       comparisonCursor: 0,
       methodCursors: {},
@@ -220,7 +222,28 @@ export class Mind {
     const refForecast = forecast(review, reference, meter, 3, page.lots);
     if (!refForecast)
       throw Error("Mandatory reference forecast was not reserved");
-    const allDrives = drives(review, page.lots);
+    const opportunities = explorationOptions(review, s, meter);
+    const allDrives = [
+      ...drives(review, page.lots),
+      ...opportunities.map((o) => {
+        const experiment = o.steps.find(
+          (step) =>
+            (step.family === "Work" || step.family === "Attend") &&
+            step.experiment,
+        );
+        const process =
+          experiment &&
+          (experiment.family === "Work" || experiment.family === "Attend")
+            ? explorationWeight(review, experiment.experiment!)
+            : 0;
+        return {
+          objective: o.objective,
+          urgency:
+            (o.informationValue ?? 0) +
+            process * (1 - bodySignals(review).enjoyment) ** 2,
+        };
+      }),
+    ];
     this.counts.drivesConsidered += allDrives.length;
     const ordered = [...allDrives].sort(
       (a, b) =>
@@ -242,9 +265,16 @@ export class Mind {
     this.counts.agendaDeferred += allDrives.length - admitted.length;
     const bound: BoundOption[] = [],
       deferrals: string[] = [];
-    for (const item of admitted)
-      for (const method of binder.admission(effectOf(item.objective))) {
-        const o = binder.bind(item.objective, method);
+    for (const item of admitted) {
+      const opportunity = opportunities.find(
+        (o) => effectOf(o.objective) === effectOf(item.objective),
+      );
+      const choices = opportunity
+        ? [opportunity]
+        : binder
+            .admission(effectOf(item.objective))
+            .map((method) => binder.bind(item.objective, method));
+      for (const o of choices) {
         // A short alternative may resume the already authorised remaining plan.
         // Both prefix and continuation are explicit paid operations in the new
         // envelope. No no-new-intention reference gets free maintenance.
@@ -258,6 +288,7 @@ export class Mind {
         bound.push(o);
         if (o.status === "computationally-deferred") deferrals.push(o.reason);
       }
+    }
     // Generic agenda composition: when there is no incumbent, a short end may
     // be followed by the highest urgency different executable end already bound
     // in this review. This represents an explicit serial plan, not future funds.
@@ -274,6 +305,34 @@ export class Mind {
         );
         if (suffix) append(o, copy(suffix));
       }
+    if (opportunities.length) {
+      const shorts = primitives
+        .filter((o) => o.status === "executable" && o.duration < QUANTA)
+        .sort((a, b) => a.duration - b.duration || compareKey(a.key, b.key));
+      // Spend descriptor work for at most two serial alternatives. A known
+      // discretionary end may follow another already-bound short end. Their
+      // entire paid schedule (including upkeep) competes with each primitive.
+      for (const prefix of shorts.slice(0, 2)) {
+        const suffix = shorts.find(
+          (o) => effectOf(o.objective) !== effectOf(prefix.objective),
+        );
+        const upkeep = primitives.find(
+          (o) =>
+            o.status === "executable" &&
+            o.duration >= QUANTA &&
+            effectOf(o.objective) !== effectOf(prefix.objective) &&
+            effectOf(o.objective) !==
+              effectOf(suffix?.objective ?? prefix.objective),
+        );
+        if (!suffix || !upkeep || !meter.spend("descriptor")) continue;
+        const combined = copy(prefix);
+        append(combined, copy(suffix));
+        append(combined, copy(upkeep));
+        combined.reason =
+          "explicit serial alternatives from this admitted agenda; all prefixes paid";
+        bound.push(combined);
+      }
+    }
     const executable = bound.filter((o) => o.status === "executable");
     const first = [
       ...new Map(executable.map((o) => [effectOf(o.objective), o])).keys(),
@@ -284,7 +343,21 @@ export class Mind {
     const start = extras.length ? s.comparisonCursor % extras.length : 0;
     const fairExtras = [...extras.slice(start), ...extras.slice(0, start)];
     s.comparisonCursor++;
-    const candidates = [reference, ...first, ...fairExtras].slice(0, 6);
+    // The ordinary comparison cursor also reaches alternative bindings when
+    // many distinct ends fill the panel; no source has a protected action slot.
+    const remaining = [...first.slice(2), ...extras];
+    const rotating = remaining.length
+      ? remaining[(s.comparisonCursor - 1) % remaining.length]
+      : undefined;
+    const candidates = [
+      reference,
+      ...new Set([
+        ...first.slice(0, 2),
+        ...(rotating ? [rotating] : []),
+        ...first.slice(2),
+        ...fairExtras,
+      ]),
+    ].slice(0, 6);
     for (const o of bound.filter(
       (o) => o.status === "executable" && !candidates.includes(o),
     )) {
@@ -402,7 +475,13 @@ export class Mind {
     s.deferred = copy(
       bound.filter((o) => o.status === "computationally-deferred").slice(0, 5),
     );
-    s.consulted = copy(binder.dependencies);
+    s.consulted = copy([
+      ...binder.dependencies,
+      ...opportunities.flatMap((o) => [
+        ...o.dependencies,
+        ...(o.valuationDependencies ?? []),
+      ]),
+    ]);
     const trace: DecisionTrace = {
       actor: review.owner,
       at: review.time,
@@ -414,7 +493,7 @@ export class Mind {
       agenda: admitted.map((d) => d.objective),
       methods: [...binder.methods],
       bindings: copy(bound),
-      dependencies: copy(binder.dependencies),
+      dependencies: copy(s.consulted),
       premises: {
         self: copy(review.self),
         geographyId: review.geographyId,
@@ -422,7 +501,7 @@ export class Mind {
         ownedInputs: copy(page.lots),
       },
       evidence: [
-        ...binder.dependencies,
+        ...s.consulted,
         { subject: "self", property: "body-experience" },
         { subject: "self", property: "quiet-requirement" },
       ]
@@ -464,6 +543,12 @@ function append(prefix: BoundOption, suffix: BoundOption) {
     ).values(),
   ];
   prefix.duration += suffix.duration;
+  if (suffix.optionalDuration)
+    prefix.optionalDuration =
+      (prefix.optionalDuration ?? 0) + suffix.optionalDuration;
+  if (suffix.informationValue)
+    prefix.informationValue =
+      (prefix.informationValue ?? 0) + suffix.informationValue;
   for (const [good, q] of Object.entries(suffix.goods))
     prefix.goods[good] = (prefix.goods[good] ?? 0) + q;
   prefix.key = optionKey(prefix);
@@ -584,6 +669,13 @@ function authorization(
     dependsOn: o.dependencies.map((d) => ({
       key: canonical([d.subject, d.property]),
       version: d.version,
+      ...(["stocks", "own-local-stocks"].includes(d.property)
+        ? {
+            valueFingerprint: digest(
+              review.belief(d.subject, d.property)?.value,
+            ),
+          }
+        : {}),
     })),
     authorised: {
       time: Math.ceil(o.duration * 1.25),
@@ -644,6 +736,7 @@ export function validateMind(s: MindState): void {
     !Array.isArray(s.consulted) ||
     !s.methodCursors ||
     !s.targetCursors ||
+    (s.trialCursor !== null && typeof s.trialCursor !== "string") ||
     !s.signatures ||
     !Array.isArray(s.pending) ||
     s.pending.some((c) => !wakeCauses.includes(c)) ||

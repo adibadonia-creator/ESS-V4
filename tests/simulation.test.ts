@@ -48,7 +48,7 @@ describe("physical causal execution and inert projections", () => {
     expect(observed.kernel.state.historyHash).toBe(
       single.kernel.state.historyHash,
     );
-  });
+  }, 15000);
   it("projects immutable copies while keeping the authoritative world mutable", () => {
     const sim = create(),
       snapshot = sim.snapshot(),

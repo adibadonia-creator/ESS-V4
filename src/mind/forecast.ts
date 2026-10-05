@@ -1,3 +1,4 @@
+import { OPERATION_INDEX } from "../content/exploration";
 import { math } from "../kernel/numerics";
 import { QUANTA } from "../kernel/time";
 import type { PersonalReview } from "../evidence/read";
@@ -9,6 +10,7 @@ import {
   enjoymentClosure,
 } from "../laws/physiology";
 import type { Operation } from "../runtime/types";
+import { explorationWeight } from "./exploration";
 import { bodySignals, ownedLots } from "./signals";
 import { ReviewEffort } from "./effort";
 import type { BoundOption, Consequences, ConsequenceBlock } from "./types";
@@ -59,8 +61,19 @@ function activity(
       a.effort = law.effort;
       a.rate = review.rateEstimate(step.law, law.siteKind)?.rate ?? 0;
     }
+    const compatible = OPERATION_INDEX.get(step.law);
+    if (compatible) {
+      a.load = compatible.load;
+      a.effort = compatible.effort;
+    }
+    if (step.experiment) {
+      a.pleasant = explorationWeight(review, step.experiment);
+    }
     a.compulsory = step.compulsory ?? false;
+    if (a.compulsory) a.pleasant = 0;
   }
+  if ((step.family === "Attend" || step.family === "Move") && step.experiment)
+    a.pleasant = explorationWeight(review, step.experiment);
   if (step.family === "Recover") {
     a.rest = (step.mode ?? step.law) === "rest";
     if ((step.mode ?? step.law) === "leisure") {
@@ -263,7 +276,7 @@ export function forecast(
   return {
     horizon,
     blocks,
-    oneOff: 0,
+    oneOff: -(option.informationValue ?? 0),
     severeHazard,
     severeProbability: -math.expm1((-severeHazard * 3) / horizon),
     commitments: [],

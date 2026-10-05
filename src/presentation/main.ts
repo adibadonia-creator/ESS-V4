@@ -9,7 +9,7 @@ import type {
 import "./style.css";
 const root = document.querySelector<HTMLDivElement>("#app")!;
 root.innerHTML = `<header><div><strong>ESS <span>V4</span></strong><small>Personal knowledge, choice & execution</small></div><div id="clock">0.000 SD</div></header>
-<section class="controls"><label>Seed <input id="seed" value="spine"></label><button id="new">New world</button><button id="body-fixture">Body fixture</button><button id="autonomous-fixture">Autonomous adults</button><button id="play">Play</button><button id="step">+0.01 SD</button><label>Speed <select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="max">Max</option></select></label><button id="save">Save</button><button id="load">Load</button><input id="file" type="file" accept=".json" hidden></section>
+<section class="controls"><label>Seed <input id="seed" value="spine"></label><button id="new">New world</button><button id="body-fixture">Body fixture</button><button id="autonomous-fixture">Autonomous adults</button><button id="exploration-fixture">Exploration proof</button><button id="play">Play</button><button id="step">+0.01 SD</button><label>Speed <select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="max">Max</option></select></label><button id="save">Save</button><button id="load">Load</button><input id="file" type="file" accept=".json" hidden></section>
 <main><section class="map-wrap"><div id="map"></div><div class="caption"><span id="fixture-label">DIAGNOSTIC EXECUTION FIXTURE · No autonomous decisions</span><br>Click a shell to inspect its Personal Lens. Wheel to zoom; drag to pan.</div></section><aside><h2>Analyst truth</h2><p id="meta"></p><label>Inspect entity <select id="actor"></select></label><div id="inspect"></div><details id="personal-lens" open><summary>Personal Lens · remembered evidence</summary><canvas id="personal-map" width="384" height="288"></canvas><p id="lens-summary"></p><div id="task-state"></div><div class="row"><button id="interrupt-task">Interrupt task</button><button id="resume-task">Resume task</button><button id="abandon-task">Abandon task</button></div><h3>Dated evidence</h3><div id="evidence-records"></div></details><details id="decision-panel"><summary>Personal decision</summary><pre id="decision-summary"></pre></details><h3>Diagnostic operations</h3><button id="move">Move selected shell</button><label>Source <select id="from"></select></label><label>Destination <select id="to"></select></label><label>Good <select id="good"><option>food</option><option>wood</option><option>stone</option><option>fibre</option></select></label><label>Quantity <input id="quantity" type="number" min="0.01" value="0.5" step="0.1"></label><div class="row"><button id="transfer">Transfer</button><button id="consume">Consume</button><button id="reserve">Reserve 0.5 SD</button><button id="release">Release</button></div><p id="message" role="status"></p><h3>Consequential record</h3><div id="history"></div><details><summary>Measurement counters</summary><pre id="counters"></pre></details></aside></main><footer>Pack 0 is not yet complete. Diagnostic selected intentions prove knowing and executing. The first autonomous-choice slice is available; the remaining Pack-0 proof is incomplete. <span id="hash"></span></footer>`;
 const element = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
@@ -329,6 +329,20 @@ element("autonomous-fixture").onclick = () => {
     seed: element<HTMLInputElement>("seed").value,
   });
 };
+element("exploration-fixture").onclick = () => {
+  playing = false;
+  element("play").textContent = "Play";
+  for (const g of actors.values()) g.destroy();
+  for (const g of sites.values()) g.destroy();
+  actors.clear();
+  sites.clear();
+  snapshot = null;
+  fit = false;
+  send({
+    kind: "create-exploration",
+    seed: element<HTMLInputElement>("seed").value,
+  });
+};
 element("move").onclick = () => {
   moveMode = true;
   element("message").textContent =
@@ -527,7 +541,12 @@ interface LensDTO {
       rule: string;
       agenda: unknown[];
       compared: {
-        option: { key: string; method: string; reference: boolean };
+        option: {
+          key: string;
+          method: string;
+          reference: boolean;
+          reason: string;
+        };
         value: number;
         error: number;
         feasible: boolean;
@@ -626,23 +645,45 @@ function inspectPersonal() {
         `Objectives: ${JSON.stringify(trace.agenda)}`,
         ...trace.compared.map(
           (x) =>
-            `${x.option.key === trace.winner ? "Chosen" : "Compared"} ${x.option.reference ? "continuation" : x.option.method}: value ${x.value.toFixed(3)}, held error ${x.error.toFixed(3)}, severe risk ${x.consequences.severeProbability.toFixed(3)}, ${x.feasible ? "feasible" : x.gate}`,
+            `${x.option.key === trace.winner ? "Chosen" : "Compared"} ${x.option.reference ? "continuation" : x.option.method}: value ${x.value.toFixed(3)}, held error ${x.error.toFixed(3)}, severe risk ${x.consequences.severeProbability.toFixed(3)}, ${x.feasible ? "feasible" : x.gate} · ${x.option.reason}`,
         ),
         `Rule: ${trace.rule} · deferred ${trace.deferrals.length}`,
         `Envelope: ${JSON.stringify(trace.selected)}`,
+        ...p.evidence
+          .filter((e) => e.property === "outcome")
+          .slice(-3)
+          .map((e) => `Observed ${e.subject}: ${JSON.stringify(e.value)}`),
+        ...p.evidence
+          .filter(
+            (e) => e.subject.startsWith("method:") && e.modality === "trial",
+          )
+          .slice(-8)
+          .map(
+            (e) =>
+              `Provisional ${e.subject}/${e.property}: ${JSON.stringify(e.value)} · v${e.version} · provenance ${e.provenance}`,
+          ),
+        ...p.evidence
+          .filter((e) => e.subject === "exploration")
+          .slice(-3)
+          .map((e) => `Attempt ${e.property}: ${JSON.stringify(e.value)}`),
       ].join("\n")
     : `Waiting for a personal wake. Next periodic review ${((lens.decision?.periodicAt ?? 0) / 2 ** 20).toFixed(4)} SD`;
+  const inspectionEvidence = [...p.evidence]
+    .sort((a, b) => a.receivedAt - b.receivedAt)
+    .slice(-9)
+    .reverse();
+  const bodyEvidence = p.evidence.find(
+    (e) => e.subject === "self" && e.property === "body-experience",
+  );
+  if (bodyEvidence && !inspectionEvidence.includes(bodyEvidence))
+    inspectionEvidence.push(bodyEvidence);
   element("evidence-records").replaceChildren(
-    ...[...p.evidence]
-      .sort((a, b) => a.receivedAt - b.receivedAt)
-      .slice(-10)
-      .reverse()
-      .map((e) => {
-        const div = document.createElement("div");
-        div.className = "event";
-        div.textContent = `${(e.observedAt / 2 ** 20).toFixed(5)} SD observed · ${(e.receivedAt / 2 ** 20).toFixed(5)} received · ${e.modality} · ${e.subject}/${e.property} v${e.version} · provenance ${e.provenance.slice(0, 10)}`;
-        return div;
-      }),
+    ...inspectionEvidence.map((e) => {
+      const div = document.createElement("div");
+      div.className = "event";
+      div.textContent = `${(e.observedAt / 2 ** 20).toFixed(5)} SD observed · ${(e.receivedAt / 2 ** 20).toFixed(5)} received · ${e.modality} · ${e.subject}/${e.property} v${e.version} · provenance ${e.provenance.slice(0, 10)}`;
+      return div;
+    }),
   );
   for (const id of ["move", "transfer", "consume", "reserve", "release"])
     element<HTMLButtonElement>(id).disabled = true;

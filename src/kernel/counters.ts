@@ -10,6 +10,10 @@ export interface Counters {
   completionWakes: number;
   failureWakes: number;
   reviewEuTotal: number;
+  trialEu: number;
+  informationEu: number;
+  trialCandidates: number;
+  inquiryClasses: number;
   descriptorEu: number;
   retrievalEu: number;
   bindingEu: number;
@@ -105,6 +109,10 @@ export function counters(): Counters {
     completionWakes: 0,
     failureWakes: 0,
     reviewEuTotal: 0,
+    trialEu: 0,
+    informationEu: 0,
+    trialCandidates: 0,
+    inquiryClasses: 0,
     descriptorEu: 0,
     retrievalEu: 0,
     bindingEu: 0,

@@ -8,8 +8,14 @@ export type Operation =
       family: "Move";
       target: Point;
       exploratory: boolean;
+      experiment?: import("../evidence/types").ExplorationOutcome;
     }
-  | { family: "Attend"; duration: number; scope: "local-survey" }
+  | {
+      family: "Attend";
+      duration: number;
+      scope: "local-survey";
+      experiment?: import("../evidence/types").ExplorationOutcome;
+    }
   | {
       family: "Transfer";
       duration: number;
@@ -26,6 +32,7 @@ export type Operation =
       duration: number;
       site?: string;
       compulsory?: boolean;
+      experiment?: import("../evidence/types").ExplorationOutcome;
     }
   | {
       family: "Recover";
@@ -47,7 +54,7 @@ export interface SelectedIntention {
   method: string;
   bindings: Record<string, string>;
   steps: Operation[];
-  dependsOn: { key: string; version: number }[];
+  dependsOn: { key: string; version: number; valueFingerprint?: string }[];
   // Only explicitly preauthorised, personally known substitutions may be installed.
   repairScope?: { moveTargets: Point[]; bindings: Record<string, string[]> };
   authorised: Budget;
@@ -68,6 +75,8 @@ export interface SelectedIntention {
       service?: string;
       good?: string;
       place?: string;
+      question?: string;
+      context?: string;
     };
     targets: string[];
     quantity: { estimate: number; low: number; high: number };
@@ -163,6 +172,7 @@ export interface RuntimePort {
     quantity: number;
     good?: string;
     reason?: string;
+    costs?: Record<string, number>;
     ownWrites?: { key: string; before: number; after: number }[];
   };
   paidPhysical(task: Task, start: number, end: number): void;

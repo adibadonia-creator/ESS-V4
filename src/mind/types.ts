@@ -7,13 +7,19 @@ export type Objective =
   | { kind: "service"; service: string; quantity: number }
   | { kind: "have"; good: string; quantity: number; place: string }
   | { kind: "recovered"; quantity: number }
-  | { kind: "enjoyed"; quantity: number };
+  | { kind: "enjoyed"; quantity: number }
+  | { kind: "knows"; question: string; quantity: number }
+  | { kind: "tried"; context: string; quantity: number };
 export const effectOf = (o: Objective) =>
   o.kind === "service"
     ? `service:${o.service}`
     : o.kind === "have"
       ? `have:${o.good}`
-      : o.kind;
+      : o.kind === "knows"
+        ? `knows:${o.question}`
+        : o.kind === "tried"
+          ? `tried:${o.context}`
+          : o.kind;
 export type WakeCause = "periodic" | "food" | "rest" | "completion" | "failure";
 export interface Dispositions {
   p: number;
@@ -46,6 +52,9 @@ export interface BoundOption {
   duration: number;
   goods: Record<string, number>;
   reference: boolean;
+  informationValue?: number;
+  optionalDuration?: number;
+  valuationDependencies?: Dependency[];
 }
 export interface ConsequenceBlock {
   start: number;
@@ -128,6 +137,7 @@ export interface MindState {
   capCount: number;
   epoch: number;
   signatures: Partial<Record<WakeCause, string>>;
+  trialCursor: string | null;
   agendaCursor: number;
   comparisonCursor: number;
   methodCursors: Record<string, string | null>;

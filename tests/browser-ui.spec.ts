@@ -104,3 +104,36 @@ test("autonomous adults expose personal decisions separately from analyst truth 
   await expect(page.locator("#hash")).toHaveText(hash!);
   expect(errors).toEqual([]);
 });
+
+test("exploration proof exposes an autonomous paid trial and provisional knowledge without observer effects", async ({
+  page,
+}, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await expect(page.locator("#meta")).toContainText("conservation verified");
+  await page
+    .getByRole("button", { name: "Exploration proof", exact: true })
+    .click();
+  await expect(page.locator("#fixture-label")).toContainText(
+    "exploration proof",
+  );
+  for (let i = 0; i < 5; i++) {
+    const before = await page.locator("#clock").textContent();
+    await page.getByRole("button", { name: "+0.01 SD", exact: true }).click();
+    await expect(page.locator("#clock")).not.toHaveText(before!);
+  }
+  await page.locator("#decision-panel summary").click();
+  await expect(page.locator("#decision-summary")).toContainText("edge-flaking");
+  await expect(page.locator("#decision-summary")).toContainText("0.4");
+  const hash = await page.locator("#hash").textContent();
+  await page.locator("#personal-lens summary").click();
+  await page.locator("#decision-panel summary").click();
+  await page.locator("#decision-panel summary").click();
+  await expect(page.locator("#hash")).toHaveText(hash!);
+  await page.screenshot({
+    path: testInfo.outputPath("exploration-proof.png"),
+    fullPage: true,
+  });
+  expect(errors).toEqual([]);
+});

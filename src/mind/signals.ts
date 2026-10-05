@@ -25,6 +25,7 @@ export function bodySignals(review: PersonalReview) {
     quiet,
     classFactor,
     satiation: Number(b.satiation),
+    familySatiation: (b.familySatiation ?? {}) as Record<string, number>,
     familiarity: b.familiarity as Record<string, { at: number; count: number }>,
     intervalStart: Number(b.intervalStart),
     effortSd: Number(b.effortSd ?? 0),

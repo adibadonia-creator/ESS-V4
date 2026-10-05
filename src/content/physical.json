@@ -20,6 +20,11 @@
       "id": "fibre",
       "bulk": 0.1,
       "divisible": true
+    },
+    {
+      "id": "edged-flake",
+      "bulk": 0.4,
+      "divisible": true
     }
   ],
   "terrain": [
@@ -124,7 +129,9 @@
       "recover",
       "consume",
       "rest",
-      "leisure"
+      "leisure",
+      "inquire",
+      "try-compatible"
     ],
     "stockLogSd": 0.35,
     "places": 32,
@@ -132,7 +139,8 @@
       "speedFactor": 1,
       "uncertainty": 1,
       "context": "declared founding cultural unseen-terrain expectation"
-    }
+    },
+    "foundingOperations": ["strike"]
   },
   "methods": [
     {
@@ -233,6 +241,34 @@
         "locality": "known-local-or-route",
         "mode": "leisure"
       }
+    },
+    {
+      "id": "inquire",
+      "effects": ["knows"],
+      "inputs": []
+    },
+    {
+      "id": "try-compatible",
+      "effects": ["tried"],
+      "inputs": []
+    },
+    {
+      "id": "edge-flaking",
+      "effects": ["have:edged-flake"],
+      "inputs": ["property:glassy", "hammer:stone"],
+      "schema": {
+        "target": "site",
+        "targetProperty": "material-kind",
+        "targetValue": "glassy-stone",
+        "prerequisites": [],
+        "operation": "material",
+        "law": "strike",
+        "good": "edged-flake",
+        "durationSd": 0.03,
+        "rateContext": "glassy-stone",
+        "cheapCost": 0.03,
+        "locality": "known-local-or-route"
+      }
     }
   ],
   "cognitiveEffort": {
@@ -240,5 +276,49 @@
     "safety": 80,
     "repair": 40,
     "routeExpansionsPerEu": 64
-  }
+  },
+  "materialEffects": ["edge-flaking"],
+  "exploration": {
+    "outcomeClasses": 3,
+    "candidatesPerReview": 2,
+    "alpha": 1,
+    "beta": 4,
+    "relativeGain": 0.2,
+    "generalisation": 0.25,
+    "trialConfidence": 0.4,
+    "reserveSd": 0.5,
+    "optionalTimeSd": 0.25,
+    "optionalFoodSd": 1,
+    "trialYield": 0.5,
+    "familiarityHalfCount": 3,
+    "familiarityDecaySd": 36,
+    "frustrationPriorCount": 2,
+    "frustrationDecaySd": 24,
+    "familyWeight": 0.3,
+    "unfamiliaritySensitivity": 1.5,
+    "occupancyStrengthKm2": 1,
+    "foodDensityKm2": 0.12,
+    "rawDensityKm2": 0.04,
+    "adoptionHorizonSd": 12,
+    "surveySd": 0.12,
+    "sightKm": 0.6
+  },
+  "compatibleOperations": [
+    {
+      "id": "strike",
+      "properties": ["hard", "glassy"],
+      "input": "stone",
+      "hammer": "stone",
+      "durationSd": 0.03,
+      "load": 0.2,
+      "effort": 0.4
+    }
+  ],
+  "materialKinds": [
+    {
+      "id": "glassy-stone",
+      "perceptible": ["hard", "glassy"],
+      "revealed": ["edge-flaking"]
+    }
+  ]
 }

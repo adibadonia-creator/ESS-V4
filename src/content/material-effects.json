@@ -1,0 +1,12 @@
+[
+  {
+    "id": "edge-flaking",
+    "operation": "strike",
+    "kind": "glassy-stone",
+    "input": "stone",
+    "quantity": 1,
+    "output": "edged-flake",
+    "yield": 1,
+    "durationSd": 0.03
+  }
+]

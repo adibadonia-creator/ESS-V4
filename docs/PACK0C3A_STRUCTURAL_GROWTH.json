@@ -1,0 +1,92 @@
+{
+  "versions": {
+    "model": "ESS-4.0-pack0c3a",
+    "schema": 8,
+    "source": "a7cb257c329e665015bf2e7f93121ea6c0885eafa436b4d89f44c4084574023b",
+    "spec": "d9c1c63060e9a2cbf56a1e4fe4ace994f21c24b74d21c5f24e27610322b59882",
+    "rng": "philox4x32-10-semantic-v1",
+    "sampler": "marsaglia-polar-binary64-v1",
+    "numerical": "binary64-polynomial-survival-v1-finite-guard",
+    "hash": "fnv4-avalanche-128-v1",
+    "runtime": "binary64-js-certified-v1",
+    "generator": "warped-fields-priority-flood-v1"
+  },
+  "profile": {
+    "width": 32,
+    "height": 18,
+    "cellKm": 0.1,
+    "regionCells": 8
+  },
+  "workload": "Controlled indexed cognition. Global unobserved successful schemas versus genuinely accumulated compatible personal sources. Startup/writer construction and state bytes are separate from review work.",
+  "unknown": {
+    "baseline": {
+      "eu": 183,
+      "selected": "inquire",
+      "counters": {
+        "personalReadEntriesVisited": 814,
+        "personalReadPagesVisited": 96,
+        "personalRouteCellsConsulted": 64,
+        "contentEntriesVisited": 0,
+        "trialCandidates": 1,
+        "inquiryClasses": 3
+      }
+    },
+    "added10000": {
+      "eu": 183,
+      "selected": "inquire",
+      "counters": {
+        "personalReadEntriesVisited": 814,
+        "personalReadPagesVisited": 96,
+        "personalRouteCellsConsulted": 64,
+        "contentEntriesVisited": 0,
+        "trialCandidates": 1,
+        "inquiryClasses": 3
+      }
+    }
+  },
+  "personal": [
+    {
+      "sources": 8,
+      "candidates": 2,
+      "eu": 16,
+      "counters": {
+        "personalReadEntriesVisited": 173,
+        "personalReadPagesVisited": 0,
+        "personalRouteCellsConsulted": 0,
+        "contentEntriesVisited": 0,
+        "trialCandidates": 2,
+        "inquiryClasses": 0
+      },
+      "causalEvidenceBytes": 25677
+    },
+    {
+      "sources": 128,
+      "candidates": 2,
+      "eu": 16,
+      "counters": {
+        "personalReadEntriesVisited": 306,
+        "personalReadPagesVisited": 0,
+        "personalRouteCellsConsulted": 0,
+        "contentEntriesVisited": 0,
+        "trialCandidates": 2,
+        "inquiryClasses": 0
+      },
+      "causalEvidenceBytes": 251829
+    },
+    {
+      "sources": 10000,
+      "candidates": 2,
+      "eu": 16,
+      "counters": {
+        "personalReadEntriesVisited": 501,
+        "personalReadPagesVisited": 0,
+        "personalRouteCellsConsulted": 0,
+        "contentEntriesVisited": 0,
+        "trialCandidates": 2,
+        "inquiryClasses": 0
+      },
+      "causalEvidenceBytes": 19057397
+    }
+  ],
+  "physicalGrowthProof": "tests/exploration.test.ts separately pairs 10,000 hidden physical materials/sites, goods, and material kinds; traces and review counters remain equal."
+}

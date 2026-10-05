@@ -3,6 +3,7 @@ import { normal } from "../kernel/random";
 import { canonical, compareKey } from "../kernel/canonical";
 import type { PersonalReview } from "../evidence/read";
 import { ownedLots } from "./signals";
+import { EXPLORATION, OPERATION_INDEX } from "../content/exploration";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { QUANTA } from "../kernel/time";
 import type { Compared, Consequences, Dispositions } from "./types";
@@ -107,7 +108,7 @@ export function feasibility(
   const spent: Record<string, number> = {};
   for (const [i, step] of o.steps.entries()) {
     if (step.family === "Move") {
-      if (!o.routes[i] || o.routes[i]!.status !== "found" || step.exploratory)
+      if (!o.routes[i] || o.routes[i]!.status !== "found")
         return "no personally established executable route";
       location = step.target;
     } else {
@@ -136,6 +137,26 @@ export function feasibility(
           return "unauthorised material spending";
       }
       if (step.family === "Work") {
+        if (OPERATION_INDEX.has(step.law)) {
+          const operation = OPERATION_INDEX.get(step.law)!;
+          const p = step.site
+            ? (review.belief(step.site, "location")?.value as
+                { x: number; y: number } | undefined)
+            : undefined;
+          if (
+            !p ||
+            (p.x - location.x) ** 2 + (p.y - location.y) ** 2 > 0.08 ** 2 ||
+            Number(
+              review.belief(step.site!, `stock:${operation.input}`)?.value ?? 0,
+            ) < 1 ||
+            Number(review.self.carried.stocks[operation.hammer] ?? 0) < 1 ||
+            review.belief(`method:${o.method}`, "known")?.value !== true
+          )
+            return "personally established trial backing unavailable";
+          if ((o.goods[operation.input] ?? 0) < 1)
+            return "trial input outside envelope";
+          continue;
+        }
         const law = EXTRACTION_INDEX.method(step.law),
           p = step.site
             ? (review.belief(step.site, "location")?.value as
@@ -162,7 +183,25 @@ export function feasibility(
       }
     }
   }
-  if (!o.reference && !reserveExempt) {
+  if (
+    !o.reference &&
+    (o.optionalDuration !== undefined ||
+      o.objective.kind === "knows" ||
+      o.objective.kind === "tried")
+  ) {
+    // This ceiling covers the optional experiment prefix. An explicitly bound
+    // ordinary continuation remains funded and assessed separately.
+    const duration = (o.optionalDuration ?? o.duration) / QUANTA;
+    if (duration > EXPLORATION.optionalTimeSd)
+      return "optional inquiry/trial prefix ceiling exceeded";
+    const experimentFoodCost = duration * review.quietRequirement();
+    if (
+      experimentFoodCost >
+      EXPLORATION.optionalFoodSd * review.quietRequirement()
+    )
+      return "optional food ceiling exceeded";
+  }
+  if (!o.reference && (!reserveExempt || o.optionalDuration !== undefined)) {
     const last = x.consequences.blocks.at(-1)!;
     // This reserve counts ONLY existing owned accessible backing after spending,
     // never hoped-for output appearing in the forecast.

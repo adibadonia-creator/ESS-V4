@@ -1,4 +1,5 @@
 import { PhysicalSimulation } from "../runners/simulation";
+import { createExplorationFixture } from "./explorationFixture";
 import { launchAutonomousFixture } from "./autonomousFixture";
 import { launchBodyFixture } from "./bodyFixture";
 import { launchEvidenceFixture } from "./evidenceFixture";
@@ -13,15 +14,20 @@ export class Session {
         command.kind === "create" ||
         command.kind === "create-evidence" ||
         command.kind === "create-body" ||
-        command.kind === "create-autonomous"
+        command.kind === "create-autonomous" ||
+        command.kind === "create-exploration"
       ) {
-        this.simulation = new PhysicalSimulation(command.seed);
+        this.simulation =
+          command.kind === "create-exploration"
+            ? createExplorationFixture(command.seed)
+            : new PhysicalSimulation(command.seed);
         if (command.kind === "create") launchPhysicalFixture(this.simulation);
         else if (command.kind === "create-autonomous")
           launchAutonomousFixture(this.simulation);
         else if (command.kind === "create-body")
           launchBodyFixture(this.simulation);
-        else launchEvidenceFixture(this.simulation);
+        else if (command.kind !== "create-exploration")
+          launchEvidenceFixture(this.simulation);
         return {
           id: command.id,
           ok: true,

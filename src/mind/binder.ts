@@ -1,3 +1,4 @@
+import { OPERATION_INDEX } from "../content/exploration";
 import { canonical, digest, compareKey } from "../kernel/canonical";
 import { QUANTA, time } from "../kernel/time";
 import { math } from "../kernel/numerics";
@@ -136,6 +137,56 @@ export class Binder {
       o.duration = duration;
       return finish();
     }
+    if (s.operation === "material") {
+      const operation = OPERATION_INDEX.get(s.law);
+      if (!operation)
+        return fail(
+          "epistemically-unresolved",
+          "unknown personally bound operation",
+        );
+      const sources = this.review.places(
+        `class:${s.targetProperty}:${JSON.stringify(s.targetValue)}`,
+        2,
+      );
+      const source = sources.entries.find((e) => {
+        const p = this.review.belief(e.subject, "location")?.value as
+          { x: number; y: number } | undefined;
+        return (
+          p &&
+          (p.x - this.review.self.location.x) ** 2 +
+            (p.y - this.review.self.location.y) ** 2 <=
+            0.08 ** 2 &&
+          Number(
+            this.review.belief(e.subject, `stock:${operation.input}`)?.value ??
+              0,
+          ) >= 1
+        );
+      });
+      if (
+        !source ||
+        Number(this.review.self.carried.stocks[operation.hammer] ?? 0) < 1
+      )
+        return fail(
+          "epistemically-unresolved",
+          "known material method lacks personally accessible input/hammer",
+        );
+      read(source.subject, "location");
+      read(source.subject, `stock:${operation.input}`);
+      read(source.subject, s.targetProperty!);
+      read(`method:${method.id}`, "confidence");
+      read(`method:${method.id}`, "observed-yield");
+      o.steps.push({
+        family: "Work",
+        law: s.law,
+        site: source.subject,
+        duration: time(s.durationSd),
+      });
+      o.bindings["target:0"] = source.subject;
+      o.goods[operation.input] = 1;
+      o.duration = time(s.durationSd);
+      o.reason = "ordinary binding from personally observed provisional method";
+      return finish();
+    }
     // Consumed/requiring input nodes are interpreted uniformly as typed have ends.
     if (s.operation === "consume") {
       for (const prerequisite of s.prerequisites) {
@@ -151,14 +202,14 @@ export class Binder {
               "owned input retrieval deferred",
             );
           this.meter.counts.targetsVisited++;
+          const q = Math.min(remaining, lot.quantity);
+          if (q <= 0) continue;
           read(
             lot.subject,
             lot.subject === this.review.self.carried.subject
               ? "stocks"
               : "own-local-stocks",
           );
-          const q = Math.min(remaining, lot.quantity);
-          if (q <= 0) continue;
           o.bindings[`input:${o.steps.length}`] = lot.subject;
           o.steps.push({
             family: "Transfer",

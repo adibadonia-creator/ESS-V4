@@ -1,3 +1,4 @@
+import { pleasantWeight } from "../laws/enjoyment";
 import { math } from "../kernel/numerics";
 import { QUANTA } from "../kernel/time";
 import {
@@ -54,6 +55,8 @@ export interface Body {
     compulsory: number;
     leisure: number;
   };
+  familySatiation: Record<string, number>;
+  familyTime: Record<string, number>;
   lastLeisure: string | null;
   satiation: number;
   exposures: Record<string, { at: number; count: number }>;
@@ -156,6 +159,8 @@ export function adultBody(actor: string, class_: "M" | "F" = "M"): Body {
       compulsory: 0,
       leisure: 0,
     },
+    familySatiation: {},
+    familyTime: {},
     lastLeisure: null,
     satiation: 0,
     exposures: {},
@@ -202,7 +207,7 @@ export function travelAbility(b: Body) {
 export function leisureWeight(b: Body, descriptor: string, at: number) {
   const e = b.exposures[descriptor],
     n = e ? e.count * math.exp(-(at - e.at) / QUANTA / 36) : 0;
-  return (1 + (0.2 * 3) / (n + 3)) / (1 + 0.5 * b.satiation);
+  return pleasantWeight(1, 0.2, n, b.satiation);
 }
 export function exposeLeisure(b: Body, descriptor: string, at: number) {
   const e = b.exposures[descriptor];
@@ -218,11 +223,15 @@ export function accumulateBody(
   rest: boolean,
   pleasant: number,
   compulsory: boolean,
+  family = "leisure",
 ) {
   b.interval.effort += effort * dt;
   if (rest) b.interval.rest += dt;
   b.interval.pleasant += pleasant * dt;
-  if (pleasant > 0) b.interval.leisure += dt;
+  if (pleasant > 0) {
+    if (family === "leisure") b.interval.leisure += dt;
+    else b.familyTime[family] = (b.familyTime[family] ?? 0) + dt;
+  }
   if (compulsory) b.interval.compulsory += dt;
 }
 export function closeBody(b: Body, at: number) {
@@ -235,6 +244,14 @@ export function closeBody(b: Body, at: number) {
   const decay = math.exp(-dt / 3);
   b.satiation =
     b.satiation * decay + (i.leisure / duration / 0.12) * (1 - decay);
+  for (const family of new Set([
+    ...Object.keys(b.familySatiation),
+    ...Object.keys(b.familyTime),
+  ]))
+    b.familySatiation[family] =
+      (b.familySatiation[family] ?? 0) * decay +
+      ((b.familyTime[family] ?? 0) / duration / 0.12) * (1 - decay);
+  b.familyTime = {};
   b.interval = {
     start: at,
     effort: 0,
@@ -304,6 +321,8 @@ export function validateBody(b: Body) {
     b.f,
     b.satiation,
     ...Object.values(b.interval),
+    ...Object.values(b.familySatiation),
+    ...Object.values(b.familyTime),
   ])
     if (!Number.isFinite(x) || x < 0) throw Error("Invalid body anchor");
 }

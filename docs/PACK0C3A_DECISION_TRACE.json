@@ -1,0 +1,5544 @@
+{
+  "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+  "at": 1,
+  "epoch": 0,
+  "causes": [
+    "rest"
+  ],
+  "signature": "edbcce8bfceb213835ca9a684b475454",
+  "effort": {
+    "key": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+    "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+    "kind": "review",
+    "openedAt": 1,
+    "allowance": 600,
+    "spent": 204,
+    "routeExpansions": 41,
+    "prepaidExpansions": 23,
+    "expansionsPerEu": 64
+  },
+  "drives": [
+    {
+      "objective": {
+        "kind": "service",
+        "service": "nourishment",
+        "quantity": 3
+      },
+      "urgency": 1,
+      "admitted": true
+    },
+    {
+      "objective": {
+        "kind": "recovered",
+        "quantity": 0.3
+      },
+      "urgency": 0.6,
+      "admitted": true
+    },
+    {
+      "objective": {
+        "kind": "enjoyed",
+        "quantity": 0.12
+      },
+      "urgency": 0.6400000000000001,
+      "admitted": true
+    },
+    {
+      "objective": {
+        "kind": "knows",
+        "question": "inquiry:frontier:1579",
+        "quantity": 1
+      },
+      "urgency": 0.4800000000000001,
+      "admitted": true
+    }
+  ],
+  "agenda": [
+    {
+      "kind": "service",
+      "service": "nourishment",
+      "quantity": 3
+    },
+    {
+      "kind": "enjoyed",
+      "quantity": 0.12
+    },
+    {
+      "kind": "recovered",
+      "quantity": 0.3
+    },
+    {
+      "kind": "knows",
+      "question": "inquiry:frontier:1579",
+      "quantity": 1
+    }
+  ],
+  "methods": [
+    "consume",
+    "gather",
+    "leisure",
+    "rest"
+  ],
+  "bindings": [
+    {
+      "key": "a44a5f7a1a7841738ddc8ca6d0582e99",
+      "objective": {
+        "kind": "service",
+        "service": "nourishment",
+        "quantity": 3
+      },
+      "method": "consume",
+      "steps": [
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "input:0": "seen:2",
+        "target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "bound from personal methods and backing",
+      "prerequisites": [
+        {
+          "effect": "have:food",
+          "status": "executable"
+        }
+      ],
+      "routes": {},
+      "duration": 3034516,
+      "goods": {
+        "food": 3
+      },
+      "reference": false
+    },
+    {
+      "key": "28bebd67f97e1ca28ee01b1e2098365a",
+      "objective": {
+        "kind": "enjoyed",
+        "quantity": 0.12
+      },
+      "method": "leisure",
+      "steps": [
+        {
+          "family": "Recover",
+          "law": "leisure",
+          "mode": "leisure",
+          "duration": 125830
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:leisure",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "continuation:input:0": "seen:2",
+        "continuation:target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "bound from personal methods and backing",
+      "prerequisites": [],
+      "routes": {},
+      "duration": 3160346,
+      "goods": {
+        "food": 3
+      },
+      "reference": false
+    },
+    {
+      "key": "41605e96c5fc143ab8d4f0aea58a49bb",
+      "objective": {
+        "kind": "recovered",
+        "quantity": 0.3
+      },
+      "method": "rest",
+      "steps": [
+        {
+          "family": "Recover",
+          "law": "rest",
+          "mode": "rest",
+          "duration": 314573
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:rest",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "continuation:input:0": "seen:2",
+        "continuation:target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "bound from personal methods and backing",
+      "prerequisites": [],
+      "routes": {},
+      "duration": 3349089,
+      "goods": {
+        "food": 3
+      },
+      "reference": false
+    },
+    {
+      "key": "9f5306b382db34404d3dbe47fbe547e5",
+      "objective": {
+        "kind": "knows",
+        "question": "inquiry:frontier:1579",
+        "quantity": 1
+      },
+      "method": "inquire",
+      "steps": [
+        {
+          "family": "Move",
+          "target": {
+            "x": 4.3500000000000005,
+            "y": 0.65
+          },
+          "exploratory": true,
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Attend",
+          "duration": 125830,
+          "scope": "local-survey",
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Move",
+          "target": {
+            "x": 4.05,
+            "y": 1.25
+          },
+          "exploratory": true,
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:inquire",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "continuation:input:0": "seen:2",
+        "continuation:target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "personal EVSI 0; absent/poor/useful [0.5478952513461165,0.22605237432694175,0.22605237432694175]",
+      "prerequisites": [],
+      "routes": {
+        "0": {
+          "regions": {},
+          "regionByCell": {},
+          "coarse": {
+            "open": [],
+            "nodes": {},
+            "goal": -1,
+            "done": true
+          },
+          "corridor": null,
+          "profile": {
+            "width": 256,
+            "height": 192,
+            "cellKm": 0.1,
+            "regionCells": 32,
+            "bucketKm": 0.6
+          },
+          "known": {},
+          "start": 3112,
+          "goal": 1579,
+          "exploratory": true,
+          "prior": {
+            "speedFactor": 1,
+            "uncertainty": 1,
+            "version": 1,
+            "provenance": "e7facc385ef67e66163f49040f159b20"
+          },
+          "nodes": {
+            "1575": {
+              "g": 0.6747546895706429,
+              "parent": 1832,
+              "closed": false
+            },
+            "1576": {
+              "g": 0.6333333333333333,
+              "parent": 1832,
+              "closed": false
+            },
+            "1579": {
+              "g": 0.9080880229039762,
+              "parent": 1835,
+              "closed": true
+            },
+            "1580": {
+              "g": 0.9495093791412857,
+              "parent": 1835,
+              "closed": false
+            },
+            "1831": {
+              "g": 0.5816582489435278,
+              "parent": 2088,
+              "closed": false
+            },
+            "1832": {
+              "g": 0.5333333333333333,
+              "parent": 2088,
+              "closed": true
+            },
+            "1835": {
+              "g": 0.8080880229039762,
+              "parent": 2091,
+              "closed": true
+            },
+            "1836": {
+              "g": 0.8495093791412858,
+              "parent": 2091,
+              "closed": false
+            },
+            "2086": {
+              "g": 0.4828427124746191,
+              "parent": 2343,
+              "closed": false
+            },
+            "2087": {
+              "g": 0.4414213562373095,
+              "parent": 2343,
+              "closed": false
+            },
+            "2088": {
+              "g": 0.4166666666666667,
+              "parent": 2344,
+              "closed": true
+            },
+            "2090": {
+              "g": 0.6666666666666666,
+              "parent": 2346,
+              "closed": true
+            },
+            "2091": {
+              "g": 0.7080880229039762,
+              "parent": 2346,
+              "closed": true
+            },
+            "2092": {
+              "g": 0.8080880229039762,
+              "parent": 2091,
+              "closed": false
+            },
+            "2342": {
+              "g": 0.4230796051808373,
+              "parent": 2599,
+              "closed": false
+            },
+            "2343": {
+              "g": 0.3414213562373095,
+              "parent": 2600,
+              "closed": true
+            },
+            "2344": {
+              "g": 0.30000000000000004,
+              "parent": 2600,
+              "closed": true
+            },
+            "2346": {
+              "g": 0.5666666666666667,
+              "parent": 2602,
+              "closed": true
+            },
+            "2347": {
+              "g": 0.6080880229039762,
+              "parent": 2602,
+              "closed": false
+            },
+            "2348": {
+              "g": 0.8495093791412858,
+              "parent": 2091,
+              "closed": false
+            },
+            "2598": {
+              "g": 0.3064129385141706,
+              "parent": 2855,
+              "closed": false
+            },
+            "2599": {
+              "g": 0.2580880229039762,
+              "parent": 2855,
+              "closed": true
+            },
+            "2600": {
+              "g": 0.2,
+              "parent": 2856,
+              "closed": true
+            },
+            "2602": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": true
+            },
+            "2603": {
+              "g": 0.5080880229039763,
+              "parent": 2858,
+              "closed": false
+            },
+            "2854": {
+              "g": 0.2580880229039762,
+              "parent": 2855,
+              "closed": false
+            },
+            "2855": {
+              "g": 0.14142135623730953,
+              "parent": 3112,
+              "closed": true
+            },
+            "2856": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": true
+            },
+            "2857": {
+              "g": 0.23333333333333336,
+              "parent": 2856,
+              "closed": true
+            },
+            "2858": {
+              "g": 0.3666666666666667,
+              "parent": 2857,
+              "closed": true
+            },
+            "2859": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": false
+            },
+            "3110": {
+              "g": 0.2,
+              "parent": 3111,
+              "closed": false
+            },
+            "3111": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": true
+            },
+            "3112": {
+              "g": 0,
+              "parent": -1,
+              "closed": true
+            },
+            "3114": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": false
+            },
+            "3115": {
+              "g": 0.5080880229039763,
+              "parent": 2858,
+              "closed": false
+            },
+            "3366": {
+              "g": 0.24142135623730954,
+              "parent": 3111,
+              "closed": false
+            },
+            "3367": {
+              "g": 0.14142135623730953,
+              "parent": 3112,
+              "closed": false
+            },
+            "3368": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": false
+            }
+          },
+          "open": [],
+          "path": [
+            3112,
+            2856,
+            2857,
+            2858,
+            2602,
+            2346,
+            2091,
+            1835,
+            1579
+          ],
+          "status": "found",
+          "expansions": 18,
+          "regionExpansions": 0,
+          "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+          "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+          "deferred": false
+        },
+        "2": {
+          "regions": {},
+          "regionByCell": {},
+          "coarse": {
+            "open": [],
+            "nodes": {},
+            "goal": -1,
+            "done": true
+          },
+          "corridor": null,
+          "profile": {
+            "width": 256,
+            "height": 192,
+            "cellKm": 0.1,
+            "regionCells": 32,
+            "bucketKm": 0.6
+          },
+          "known": {},
+          "start": 1579,
+          "goal": 3112,
+          "exploratory": true,
+          "prior": {
+            "speedFactor": 1,
+            "uncertainty": 1,
+            "version": 1,
+            "provenance": "e7facc385ef67e66163f49040f159b20"
+          },
+          "nodes": {
+            "1319": {
+              "g": 0.4414213562373096,
+              "parent": 1576,
+              "closed": false
+            },
+            "1320": {
+              "g": 0.3414213562373095,
+              "parent": 1577,
+              "closed": false
+            },
+            "1321": {
+              "g": 0.24142135623730954,
+              "parent": 1578,
+              "closed": false
+            },
+            "1322": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": false
+            },
+            "1323": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": false
+            },
+            "1324": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": false
+            },
+            "1325": {
+              "g": 0.24142135623730954,
+              "parent": 1580,
+              "closed": false
+            },
+            "1575": {
+              "g": 0.4,
+              "parent": 1576,
+              "closed": false
+            },
+            "1576": {
+              "g": 0.30000000000000004,
+              "parent": 1577,
+              "closed": true
+            },
+            "1577": {
+              "g": 0.2,
+              "parent": 1578,
+              "closed": true
+            },
+            "1578": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1579": {
+              "g": 0,
+              "parent": -1,
+              "closed": true
+            },
+            "1580": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1581": {
+              "g": 0.2,
+              "parent": 1580,
+              "closed": false
+            },
+            "1831": {
+              "g": 0.4414213562373096,
+              "parent": 1576,
+              "closed": false
+            },
+            "1832": {
+              "g": 0.4,
+              "parent": 1576,
+              "closed": true
+            },
+            "1835": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1836": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": true
+            },
+            "1837": {
+              "g": 0.24142135623730954,
+              "parent": 1836,
+              "closed": false
+            },
+            "2087": {
+              "g": 0.5414213562373096,
+              "parent": 1832,
+              "closed": false
+            },
+            "2088": {
+              "g": 0.5166666666666667,
+              "parent": 1832,
+              "closed": false
+            },
+            "2090": {
+              "g": 0.30000000000000004,
+              "parent": 2091,
+              "closed": true
+            },
+            "2091": {
+              "g": 0.2,
+              "parent": 1835,
+              "closed": true
+            },
+            "2092": {
+              "g": 0.24142135623730954,
+              "parent": 1835,
+              "closed": true
+            },
+            "2093": {
+              "g": 0.28284271247461906,
+              "parent": 1836,
+              "closed": false
+            },
+            "2346": {
+              "g": 0.3414213562373095,
+              "parent": 2091,
+              "closed": true
+            },
+            "2347": {
+              "g": 0.30000000000000004,
+              "parent": 2091,
+              "closed": true
+            },
+            "2348": {
+              "g": 0.3414213562373095,
+              "parent": 2091,
+              "closed": true
+            },
+            "2349": {
+              "g": 0.3828427124746191,
+              "parent": 2092,
+              "closed": false
+            },
+            "2599": {
+              "g": 0.9730796051808372,
+              "parent": 2856,
+              "closed": false
+            },
+            "2600": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": false
+            },
+            "2602": {
+              "g": 0.4414213562373095,
+              "parent": 2346,
+              "closed": true
+            },
+            "2603": {
+              "g": 0.4,
+              "parent": 2347,
+              "closed": true
+            },
+            "2604": {
+              "g": 0.4414213562373095,
+              "parent": 2348,
+              "closed": false
+            },
+            "2605": {
+              "g": 0.4828427124746191,
+              "parent": 2348,
+              "closed": false
+            },
+            "2855": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": false
+            },
+            "2856": {
+              "g": 0.8080880229039762,
+              "parent": 2857,
+              "closed": true
+            },
+            "2857": {
+              "g": 0.6747546895706429,
+              "parent": 2858,
+              "closed": true
+            },
+            "2858": {
+              "g": 0.5414213562373095,
+              "parent": 2602,
+              "closed": true
+            },
+            "2859": {
+              "g": 0.5,
+              "parent": 2603,
+              "closed": true
+            },
+            "2860": {
+              "g": 0.5414213562373096,
+              "parent": 2603,
+              "closed": false
+            },
+            "3111": {
+              "g": 0.9495093791412857,
+              "parent": 2856,
+              "closed": false
+            },
+            "3112": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": true
+            },
+            "3114": {
+              "g": 0.6414213562373094,
+              "parent": 2858,
+              "closed": true
+            },
+            "3115": {
+              "g": 0.6,
+              "parent": 2859,
+              "closed": true
+            },
+            "3116": {
+              "g": 0.6414213562373096,
+              "parent": 2859,
+              "closed": false
+            },
+            "3370": {
+              "g": 0.7414213562373094,
+              "parent": 3114,
+              "closed": false
+            },
+            "3371": {
+              "g": 0.7,
+              "parent": 3115,
+              "closed": false
+            },
+            "3372": {
+              "g": 0.7538997111994251,
+              "parent": 3115,
+              "closed": false
+            }
+          },
+          "open": [],
+          "path": [
+            1579,
+            1835,
+            2091,
+            2346,
+            2602,
+            2858,
+            2857,
+            2856,
+            3112
+          ],
+          "status": "found",
+          "expansions": 23,
+          "regionExpansions": 0,
+          "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+          "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+          "deferred": false
+        }
+      },
+      "duration": 3187398,
+      "goods": {
+        "food": 3
+      },
+      "reference": false,
+      "optionalDuration": 152882,
+      "informationValue": 0,
+      "valuationDependencies": [
+        {
+          "subject": "occupancy",
+          "property": "food-patch:0",
+          "version": 2
+        }
+      ]
+    },
+    {
+      "key": "54bbee751984df28c104ce341ce5b183",
+      "objective": {
+        "kind": "enjoyed",
+        "quantity": 0.12
+      },
+      "method": "leisure",
+      "steps": [
+        {
+          "family": "Recover",
+          "law": "leisure",
+          "mode": "leisure",
+          "duration": 125830
+        },
+        {
+          "family": "Move",
+          "target": {
+            "x": 4.3500000000000005,
+            "y": 0.65
+          },
+          "exploratory": true,
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Attend",
+          "duration": 125830,
+          "scope": "local-survey",
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Move",
+          "target": {
+            "x": 4.05,
+            "y": 1.25
+          },
+          "exploratory": true,
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:leisure",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:inquire",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "continuation:input:0": "seen:2",
+        "continuation:target:1": "seen:3"
+      },
+      "status": "executable",
+      "reason": "explicit serial alternatives from this admitted agenda; all prefixes paid",
+      "prerequisites": [],
+      "routes": {
+        "1": {
+          "regions": {},
+          "regionByCell": {},
+          "coarse": {
+            "open": [],
+            "nodes": {},
+            "goal": -1,
+            "done": true
+          },
+          "corridor": null,
+          "profile": {
+            "width": 256,
+            "height": 192,
+            "cellKm": 0.1,
+            "regionCells": 32,
+            "bucketKm": 0.6
+          },
+          "known": {},
+          "start": 3112,
+          "goal": 1579,
+          "exploratory": true,
+          "prior": {
+            "speedFactor": 1,
+            "uncertainty": 1,
+            "version": 1,
+            "provenance": "e7facc385ef67e66163f49040f159b20"
+          },
+          "nodes": {
+            "1575": {
+              "g": 0.6747546895706429,
+              "parent": 1832,
+              "closed": false
+            },
+            "1576": {
+              "g": 0.6333333333333333,
+              "parent": 1832,
+              "closed": false
+            },
+            "1579": {
+              "g": 0.9080880229039762,
+              "parent": 1835,
+              "closed": true
+            },
+            "1580": {
+              "g": 0.9495093791412857,
+              "parent": 1835,
+              "closed": false
+            },
+            "1831": {
+              "g": 0.5816582489435278,
+              "parent": 2088,
+              "closed": false
+            },
+            "1832": {
+              "g": 0.5333333333333333,
+              "parent": 2088,
+              "closed": true
+            },
+            "1835": {
+              "g": 0.8080880229039762,
+              "parent": 2091,
+              "closed": true
+            },
+            "1836": {
+              "g": 0.8495093791412858,
+              "parent": 2091,
+              "closed": false
+            },
+            "2086": {
+              "g": 0.4828427124746191,
+              "parent": 2343,
+              "closed": false
+            },
+            "2087": {
+              "g": 0.4414213562373095,
+              "parent": 2343,
+              "closed": false
+            },
+            "2088": {
+              "g": 0.4166666666666667,
+              "parent": 2344,
+              "closed": true
+            },
+            "2090": {
+              "g": 0.6666666666666666,
+              "parent": 2346,
+              "closed": true
+            },
+            "2091": {
+              "g": 0.7080880229039762,
+              "parent": 2346,
+              "closed": true
+            },
+            "2092": {
+              "g": 0.8080880229039762,
+              "parent": 2091,
+              "closed": false
+            },
+            "2342": {
+              "g": 0.4230796051808373,
+              "parent": 2599,
+              "closed": false
+            },
+            "2343": {
+              "g": 0.3414213562373095,
+              "parent": 2600,
+              "closed": true
+            },
+            "2344": {
+              "g": 0.30000000000000004,
+              "parent": 2600,
+              "closed": true
+            },
+            "2346": {
+              "g": 0.5666666666666667,
+              "parent": 2602,
+              "closed": true
+            },
+            "2347": {
+              "g": 0.6080880229039762,
+              "parent": 2602,
+              "closed": false
+            },
+            "2348": {
+              "g": 0.8495093791412858,
+              "parent": 2091,
+              "closed": false
+            },
+            "2598": {
+              "g": 0.3064129385141706,
+              "parent": 2855,
+              "closed": false
+            },
+            "2599": {
+              "g": 0.2580880229039762,
+              "parent": 2855,
+              "closed": true
+            },
+            "2600": {
+              "g": 0.2,
+              "parent": 2856,
+              "closed": true
+            },
+            "2602": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": true
+            },
+            "2603": {
+              "g": 0.5080880229039763,
+              "parent": 2858,
+              "closed": false
+            },
+            "2854": {
+              "g": 0.2580880229039762,
+              "parent": 2855,
+              "closed": false
+            },
+            "2855": {
+              "g": 0.14142135623730953,
+              "parent": 3112,
+              "closed": true
+            },
+            "2856": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": true
+            },
+            "2857": {
+              "g": 0.23333333333333336,
+              "parent": 2856,
+              "closed": true
+            },
+            "2858": {
+              "g": 0.3666666666666667,
+              "parent": 2857,
+              "closed": true
+            },
+            "2859": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": false
+            },
+            "3110": {
+              "g": 0.2,
+              "parent": 3111,
+              "closed": false
+            },
+            "3111": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": true
+            },
+            "3112": {
+              "g": 0,
+              "parent": -1,
+              "closed": true
+            },
+            "3114": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": false
+            },
+            "3115": {
+              "g": 0.5080880229039763,
+              "parent": 2858,
+              "closed": false
+            },
+            "3366": {
+              "g": 0.24142135623730954,
+              "parent": 3111,
+              "closed": false
+            },
+            "3367": {
+              "g": 0.14142135623730953,
+              "parent": 3112,
+              "closed": false
+            },
+            "3368": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": false
+            }
+          },
+          "open": [],
+          "path": [
+            3112,
+            2856,
+            2857,
+            2858,
+            2602,
+            2346,
+            2091,
+            1835,
+            1579
+          ],
+          "status": "found",
+          "expansions": 18,
+          "regionExpansions": 0,
+          "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+          "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+          "deferred": false
+        },
+        "3": {
+          "regions": {},
+          "regionByCell": {},
+          "coarse": {
+            "open": [],
+            "nodes": {},
+            "goal": -1,
+            "done": true
+          },
+          "corridor": null,
+          "profile": {
+            "width": 256,
+            "height": 192,
+            "cellKm": 0.1,
+            "regionCells": 32,
+            "bucketKm": 0.6
+          },
+          "known": {},
+          "start": 1579,
+          "goal": 3112,
+          "exploratory": true,
+          "prior": {
+            "speedFactor": 1,
+            "uncertainty": 1,
+            "version": 1,
+            "provenance": "e7facc385ef67e66163f49040f159b20"
+          },
+          "nodes": {
+            "1319": {
+              "g": 0.4414213562373096,
+              "parent": 1576,
+              "closed": false
+            },
+            "1320": {
+              "g": 0.3414213562373095,
+              "parent": 1577,
+              "closed": false
+            },
+            "1321": {
+              "g": 0.24142135623730954,
+              "parent": 1578,
+              "closed": false
+            },
+            "1322": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": false
+            },
+            "1323": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": false
+            },
+            "1324": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": false
+            },
+            "1325": {
+              "g": 0.24142135623730954,
+              "parent": 1580,
+              "closed": false
+            },
+            "1575": {
+              "g": 0.4,
+              "parent": 1576,
+              "closed": false
+            },
+            "1576": {
+              "g": 0.30000000000000004,
+              "parent": 1577,
+              "closed": true
+            },
+            "1577": {
+              "g": 0.2,
+              "parent": 1578,
+              "closed": true
+            },
+            "1578": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1579": {
+              "g": 0,
+              "parent": -1,
+              "closed": true
+            },
+            "1580": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1581": {
+              "g": 0.2,
+              "parent": 1580,
+              "closed": false
+            },
+            "1831": {
+              "g": 0.4414213562373096,
+              "parent": 1576,
+              "closed": false
+            },
+            "1832": {
+              "g": 0.4,
+              "parent": 1576,
+              "closed": true
+            },
+            "1835": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1836": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": true
+            },
+            "1837": {
+              "g": 0.24142135623730954,
+              "parent": 1836,
+              "closed": false
+            },
+            "2087": {
+              "g": 0.5414213562373096,
+              "parent": 1832,
+              "closed": false
+            },
+            "2088": {
+              "g": 0.5166666666666667,
+              "parent": 1832,
+              "closed": false
+            },
+            "2090": {
+              "g": 0.30000000000000004,
+              "parent": 2091,
+              "closed": true
+            },
+            "2091": {
+              "g": 0.2,
+              "parent": 1835,
+              "closed": true
+            },
+            "2092": {
+              "g": 0.24142135623730954,
+              "parent": 1835,
+              "closed": true
+            },
+            "2093": {
+              "g": 0.28284271247461906,
+              "parent": 1836,
+              "closed": false
+            },
+            "2346": {
+              "g": 0.3414213562373095,
+              "parent": 2091,
+              "closed": true
+            },
+            "2347": {
+              "g": 0.30000000000000004,
+              "parent": 2091,
+              "closed": true
+            },
+            "2348": {
+              "g": 0.3414213562373095,
+              "parent": 2091,
+              "closed": true
+            },
+            "2349": {
+              "g": 0.3828427124746191,
+              "parent": 2092,
+              "closed": false
+            },
+            "2599": {
+              "g": 0.9730796051808372,
+              "parent": 2856,
+              "closed": false
+            },
+            "2600": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": false
+            },
+            "2602": {
+              "g": 0.4414213562373095,
+              "parent": 2346,
+              "closed": true
+            },
+            "2603": {
+              "g": 0.4,
+              "parent": 2347,
+              "closed": true
+            },
+            "2604": {
+              "g": 0.4414213562373095,
+              "parent": 2348,
+              "closed": false
+            },
+            "2605": {
+              "g": 0.4828427124746191,
+              "parent": 2348,
+              "closed": false
+            },
+            "2855": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": false
+            },
+            "2856": {
+              "g": 0.8080880229039762,
+              "parent": 2857,
+              "closed": true
+            },
+            "2857": {
+              "g": 0.6747546895706429,
+              "parent": 2858,
+              "closed": true
+            },
+            "2858": {
+              "g": 0.5414213562373095,
+              "parent": 2602,
+              "closed": true
+            },
+            "2859": {
+              "g": 0.5,
+              "parent": 2603,
+              "closed": true
+            },
+            "2860": {
+              "g": 0.5414213562373096,
+              "parent": 2603,
+              "closed": false
+            },
+            "3111": {
+              "g": 0.9495093791412857,
+              "parent": 2856,
+              "closed": false
+            },
+            "3112": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": true
+            },
+            "3114": {
+              "g": 0.6414213562373094,
+              "parent": 2858,
+              "closed": true
+            },
+            "3115": {
+              "g": 0.6,
+              "parent": 2859,
+              "closed": true
+            },
+            "3116": {
+              "g": 0.6414213562373096,
+              "parent": 2859,
+              "closed": false
+            },
+            "3370": {
+              "g": 0.7414213562373094,
+              "parent": 3114,
+              "closed": false
+            },
+            "3371": {
+              "g": 0.7,
+              "parent": 3115,
+              "closed": false
+            },
+            "3372": {
+              "g": 0.7538997111994251,
+              "parent": 3115,
+              "closed": false
+            }
+          },
+          "open": [],
+          "path": [
+            1579,
+            1835,
+            2091,
+            2346,
+            2602,
+            2858,
+            2857,
+            2856,
+            3112
+          ],
+          "status": "found",
+          "expansions": 23,
+          "regionExpansions": 0,
+          "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+          "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+          "deferred": false
+        }
+      },
+      "duration": 3313228,
+      "goods": {
+        "food": 3
+      },
+      "reference": false,
+      "optionalDuration": 152882
+    },
+    {
+      "key": "8c254b3c74a8b63404ed2e36f4616aca",
+      "objective": {
+        "kind": "knows",
+        "question": "inquiry:frontier:1579",
+        "quantity": 1
+      },
+      "method": "inquire",
+      "steps": [
+        {
+          "family": "Move",
+          "target": {
+            "x": 4.3500000000000005,
+            "y": 0.65
+          },
+          "exploratory": true,
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Attend",
+          "duration": 125830,
+          "scope": "local-survey",
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Move",
+          "target": {
+            "x": 4.05,
+            "y": 1.25
+          },
+          "exploratory": true,
+          "experiment": {
+            "form": "inquiry",
+            "operation": "survey",
+            "targetKind": "food-patch:0",
+            "descriptor": "inquiry:frontier:1579",
+            "evidenceVersion": 1,
+            "paid": 0,
+            "completed": false,
+            "success": false
+          }
+        },
+        {
+          "family": "Recover",
+          "law": "leisure",
+          "mode": "leisure",
+          "duration": 125830
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:2",
+          "to": "seen:2",
+          "good": "food",
+          "quantity": 2,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 1906502
+        },
+        {
+          "family": "Work",
+          "law": "gather",
+          "site": "seen:3",
+          "duration": 174763
+        },
+        {
+          "family": "Transfer",
+          "from": "seen:1",
+          "to": "seen:1",
+          "good": "food",
+          "quantity": 1,
+          "basis": "own-custody",
+          "use": "consume",
+          "duration": 953251
+        }
+      ],
+      "dependencies": [
+        {
+          "subject": "method:inquire",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:leisure",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "method:consume",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:2",
+          "property": "own-local-stocks",
+          "version": 2
+        },
+        {
+          "subject": "method:gather",
+          "property": "known",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "location",
+          "version": 1
+        },
+        {
+          "subject": "seen:3",
+          "property": "stock:food",
+          "version": 1
+        },
+        {
+          "subject": "self",
+          "property": "rate:gather:food-patch",
+          "version": 1
+        }
+      ],
+      "bindings": {
+        "continuation:input:0": "seen:2",
+        "continuation:target:1": "seen:3"
+      },
+      "status": "computationally-deferred",
+      "reason": "full comparison admission cap",
+      "prerequisites": [],
+      "routes": {
+        "0": {
+          "regions": {},
+          "regionByCell": {},
+          "coarse": {
+            "open": [],
+            "nodes": {},
+            "goal": -1,
+            "done": true
+          },
+          "corridor": null,
+          "profile": {
+            "width": 256,
+            "height": 192,
+            "cellKm": 0.1,
+            "regionCells": 32,
+            "bucketKm": 0.6
+          },
+          "known": {},
+          "start": 3112,
+          "goal": 1579,
+          "exploratory": true,
+          "prior": {
+            "speedFactor": 1,
+            "uncertainty": 1,
+            "version": 1,
+            "provenance": "e7facc385ef67e66163f49040f159b20"
+          },
+          "nodes": {
+            "1575": {
+              "g": 0.6747546895706429,
+              "parent": 1832,
+              "closed": false
+            },
+            "1576": {
+              "g": 0.6333333333333333,
+              "parent": 1832,
+              "closed": false
+            },
+            "1579": {
+              "g": 0.9080880229039762,
+              "parent": 1835,
+              "closed": true
+            },
+            "1580": {
+              "g": 0.9495093791412857,
+              "parent": 1835,
+              "closed": false
+            },
+            "1831": {
+              "g": 0.5816582489435278,
+              "parent": 2088,
+              "closed": false
+            },
+            "1832": {
+              "g": 0.5333333333333333,
+              "parent": 2088,
+              "closed": true
+            },
+            "1835": {
+              "g": 0.8080880229039762,
+              "parent": 2091,
+              "closed": true
+            },
+            "1836": {
+              "g": 0.8495093791412858,
+              "parent": 2091,
+              "closed": false
+            },
+            "2086": {
+              "g": 0.4828427124746191,
+              "parent": 2343,
+              "closed": false
+            },
+            "2087": {
+              "g": 0.4414213562373095,
+              "parent": 2343,
+              "closed": false
+            },
+            "2088": {
+              "g": 0.4166666666666667,
+              "parent": 2344,
+              "closed": true
+            },
+            "2090": {
+              "g": 0.6666666666666666,
+              "parent": 2346,
+              "closed": true
+            },
+            "2091": {
+              "g": 0.7080880229039762,
+              "parent": 2346,
+              "closed": true
+            },
+            "2092": {
+              "g": 0.8080880229039762,
+              "parent": 2091,
+              "closed": false
+            },
+            "2342": {
+              "g": 0.4230796051808373,
+              "parent": 2599,
+              "closed": false
+            },
+            "2343": {
+              "g": 0.3414213562373095,
+              "parent": 2600,
+              "closed": true
+            },
+            "2344": {
+              "g": 0.30000000000000004,
+              "parent": 2600,
+              "closed": true
+            },
+            "2346": {
+              "g": 0.5666666666666667,
+              "parent": 2602,
+              "closed": true
+            },
+            "2347": {
+              "g": 0.6080880229039762,
+              "parent": 2602,
+              "closed": false
+            },
+            "2348": {
+              "g": 0.8495093791412858,
+              "parent": 2091,
+              "closed": false
+            },
+            "2598": {
+              "g": 0.3064129385141706,
+              "parent": 2855,
+              "closed": false
+            },
+            "2599": {
+              "g": 0.2580880229039762,
+              "parent": 2855,
+              "closed": true
+            },
+            "2600": {
+              "g": 0.2,
+              "parent": 2856,
+              "closed": true
+            },
+            "2602": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": true
+            },
+            "2603": {
+              "g": 0.5080880229039763,
+              "parent": 2858,
+              "closed": false
+            },
+            "2854": {
+              "g": 0.2580880229039762,
+              "parent": 2855,
+              "closed": false
+            },
+            "2855": {
+              "g": 0.14142135623730953,
+              "parent": 3112,
+              "closed": true
+            },
+            "2856": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": true
+            },
+            "2857": {
+              "g": 0.23333333333333336,
+              "parent": 2856,
+              "closed": true
+            },
+            "2858": {
+              "g": 0.3666666666666667,
+              "parent": 2857,
+              "closed": true
+            },
+            "2859": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": false
+            },
+            "3110": {
+              "g": 0.2,
+              "parent": 3111,
+              "closed": false
+            },
+            "3111": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": true
+            },
+            "3112": {
+              "g": 0,
+              "parent": -1,
+              "closed": true
+            },
+            "3114": {
+              "g": 0.4666666666666667,
+              "parent": 2858,
+              "closed": false
+            },
+            "3115": {
+              "g": 0.5080880229039763,
+              "parent": 2858,
+              "closed": false
+            },
+            "3366": {
+              "g": 0.24142135623730954,
+              "parent": 3111,
+              "closed": false
+            },
+            "3367": {
+              "g": 0.14142135623730953,
+              "parent": 3112,
+              "closed": false
+            },
+            "3368": {
+              "g": 0.1,
+              "parent": 3112,
+              "closed": false
+            }
+          },
+          "open": [],
+          "path": [
+            3112,
+            2856,
+            2857,
+            2858,
+            2602,
+            2346,
+            2091,
+            1835,
+            1579
+          ],
+          "status": "found",
+          "expansions": 18,
+          "regionExpansions": 0,
+          "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+          "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+          "deferred": false
+        },
+        "2": {
+          "regions": {},
+          "regionByCell": {},
+          "coarse": {
+            "open": [],
+            "nodes": {},
+            "goal": -1,
+            "done": true
+          },
+          "corridor": null,
+          "profile": {
+            "width": 256,
+            "height": 192,
+            "cellKm": 0.1,
+            "regionCells": 32,
+            "bucketKm": 0.6
+          },
+          "known": {},
+          "start": 1579,
+          "goal": 3112,
+          "exploratory": true,
+          "prior": {
+            "speedFactor": 1,
+            "uncertainty": 1,
+            "version": 1,
+            "provenance": "e7facc385ef67e66163f49040f159b20"
+          },
+          "nodes": {
+            "1319": {
+              "g": 0.4414213562373096,
+              "parent": 1576,
+              "closed": false
+            },
+            "1320": {
+              "g": 0.3414213562373095,
+              "parent": 1577,
+              "closed": false
+            },
+            "1321": {
+              "g": 0.24142135623730954,
+              "parent": 1578,
+              "closed": false
+            },
+            "1322": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": false
+            },
+            "1323": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": false
+            },
+            "1324": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": false
+            },
+            "1325": {
+              "g": 0.24142135623730954,
+              "parent": 1580,
+              "closed": false
+            },
+            "1575": {
+              "g": 0.4,
+              "parent": 1576,
+              "closed": false
+            },
+            "1576": {
+              "g": 0.30000000000000004,
+              "parent": 1577,
+              "closed": true
+            },
+            "1577": {
+              "g": 0.2,
+              "parent": 1578,
+              "closed": true
+            },
+            "1578": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1579": {
+              "g": 0,
+              "parent": -1,
+              "closed": true
+            },
+            "1580": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1581": {
+              "g": 0.2,
+              "parent": 1580,
+              "closed": false
+            },
+            "1831": {
+              "g": 0.4414213562373096,
+              "parent": 1576,
+              "closed": false
+            },
+            "1832": {
+              "g": 0.4,
+              "parent": 1576,
+              "closed": true
+            },
+            "1835": {
+              "g": 0.1,
+              "parent": 1579,
+              "closed": true
+            },
+            "1836": {
+              "g": 0.14142135623730953,
+              "parent": 1579,
+              "closed": true
+            },
+            "1837": {
+              "g": 0.24142135623730954,
+              "parent": 1836,
+              "closed": false
+            },
+            "2087": {
+              "g": 0.5414213562373096,
+              "parent": 1832,
+              "closed": false
+            },
+            "2088": {
+              "g": 0.5166666666666667,
+              "parent": 1832,
+              "closed": false
+            },
+            "2090": {
+              "g": 0.30000000000000004,
+              "parent": 2091,
+              "closed": true
+            },
+            "2091": {
+              "g": 0.2,
+              "parent": 1835,
+              "closed": true
+            },
+            "2092": {
+              "g": 0.24142135623730954,
+              "parent": 1835,
+              "closed": true
+            },
+            "2093": {
+              "g": 0.28284271247461906,
+              "parent": 1836,
+              "closed": false
+            },
+            "2346": {
+              "g": 0.3414213562373095,
+              "parent": 2091,
+              "closed": true
+            },
+            "2347": {
+              "g": 0.30000000000000004,
+              "parent": 2091,
+              "closed": true
+            },
+            "2348": {
+              "g": 0.3414213562373095,
+              "parent": 2091,
+              "closed": true
+            },
+            "2349": {
+              "g": 0.3828427124746191,
+              "parent": 2092,
+              "closed": false
+            },
+            "2599": {
+              "g": 0.9730796051808372,
+              "parent": 2856,
+              "closed": false
+            },
+            "2600": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": false
+            },
+            "2602": {
+              "g": 0.4414213562373095,
+              "parent": 2346,
+              "closed": true
+            },
+            "2603": {
+              "g": 0.4,
+              "parent": 2347,
+              "closed": true
+            },
+            "2604": {
+              "g": 0.4414213562373095,
+              "parent": 2348,
+              "closed": false
+            },
+            "2605": {
+              "g": 0.4828427124746191,
+              "parent": 2348,
+              "closed": false
+            },
+            "2855": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": false
+            },
+            "2856": {
+              "g": 0.8080880229039762,
+              "parent": 2857,
+              "closed": true
+            },
+            "2857": {
+              "g": 0.6747546895706429,
+              "parent": 2858,
+              "closed": true
+            },
+            "2858": {
+              "g": 0.5414213562373095,
+              "parent": 2602,
+              "closed": true
+            },
+            "2859": {
+              "g": 0.5,
+              "parent": 2603,
+              "closed": true
+            },
+            "2860": {
+              "g": 0.5414213562373096,
+              "parent": 2603,
+              "closed": false
+            },
+            "3111": {
+              "g": 0.9495093791412857,
+              "parent": 2856,
+              "closed": false
+            },
+            "3112": {
+              "g": 0.9080880229039762,
+              "parent": 2856,
+              "closed": true
+            },
+            "3114": {
+              "g": 0.6414213562373094,
+              "parent": 2858,
+              "closed": true
+            },
+            "3115": {
+              "g": 0.6,
+              "parent": 2859,
+              "closed": true
+            },
+            "3116": {
+              "g": 0.6414213562373096,
+              "parent": 2859,
+              "closed": false
+            },
+            "3370": {
+              "g": 0.7414213562373094,
+              "parent": 3114,
+              "closed": false
+            },
+            "3371": {
+              "g": 0.7,
+              "parent": 3115,
+              "closed": false
+            },
+            "3372": {
+              "g": 0.7538997111994251,
+              "parent": 3115,
+              "closed": false
+            }
+          },
+          "open": [],
+          "path": [
+            1579,
+            1835,
+            2091,
+            2346,
+            2602,
+            2858,
+            2857,
+            2856,
+            3112
+          ],
+          "status": "found",
+          "expansions": 23,
+          "regionExpansions": 0,
+          "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+          "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+          "deferred": false
+        }
+      },
+      "duration": 3313228,
+      "goods": {
+        "food": 3
+      },
+      "reference": false,
+      "optionalDuration": 152882,
+      "informationValue": 0,
+      "valuationDependencies": [
+        {
+          "subject": "occupancy",
+          "property": "food-patch:0",
+          "version": 2
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "subject": "method:consume",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "seen:2",
+      "property": "own-local-stocks",
+      "version": 2
+    },
+    {
+      "subject": "method:gather",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "seen:3",
+      "property": "location",
+      "version": 1
+    },
+    {
+      "subject": "seen:3",
+      "property": "stock:food",
+      "version": 1
+    },
+    {
+      "subject": "self",
+      "property": "rate:gather:food-patch",
+      "version": 1
+    },
+    {
+      "subject": "method:leisure",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "method:rest",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "method:inquire",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "method:consume",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "seen:2",
+      "property": "own-local-stocks",
+      "version": 2
+    },
+    {
+      "subject": "method:gather",
+      "property": "known",
+      "version": 1
+    },
+    {
+      "subject": "seen:3",
+      "property": "location",
+      "version": 1
+    },
+    {
+      "subject": "seen:3",
+      "property": "stock:food",
+      "version": 1
+    },
+    {
+      "subject": "self",
+      "property": "rate:gather:food-patch",
+      "version": 1
+    },
+    {
+      "subject": "occupancy",
+      "property": "food-patch:0",
+      "version": 2
+    }
+  ],
+  "premises": {
+    "self": {
+      "identity": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+      "location": {
+        "x": 4.05,
+        "y": 1.25
+      },
+      "currentLeg": null,
+      "carried": {
+        "subject": "seen:1",
+        "stocks": {}
+      },
+      "reservations": []
+    },
+    "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+    "quietEstimate": 1,
+    "ownedInputs": [
+      {
+        "subject": "seen:1",
+        "quantity": 0,
+        "at": 1
+      },
+      {
+        "subject": "seen:2",
+        "quantity": 2,
+        "at": 0
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "subject": "method:consume",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "seen:2",
+      "property": "own-local-stocks",
+      "version": 2,
+      "observedAt": 0,
+      "value": {
+        "food": 2
+      }
+    },
+    {
+      "subject": "method:gather",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "seen:3",
+      "property": "location",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "x": 4.05,
+        "y": 1.25
+      }
+    },
+    {
+      "subject": "seen:3",
+      "property": "stock:food",
+      "version": 1,
+      "observedAt": 0,
+      "value": 27.025904469686928
+    },
+    {
+      "subject": "self",
+      "property": "rate:gather:food-patch",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "rate": 6,
+        "logVariance": 0.12249999999999998,
+        "samples": 0,
+        "weight": 0,
+        "logSum": 0,
+        "anchorAt": 0,
+        "priorRate": 6,
+        "priorWeight": 8.163265306122451
+      }
+    },
+    {
+      "subject": "method:leisure",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "method:rest",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "method:inquire",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "method:consume",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "seen:2",
+      "property": "own-local-stocks",
+      "version": 2,
+      "observedAt": 0,
+      "value": {
+        "food": 2
+      }
+    },
+    {
+      "subject": "method:gather",
+      "property": "known",
+      "version": 1,
+      "observedAt": 0,
+      "value": true
+    },
+    {
+      "subject": "seen:3",
+      "property": "location",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "x": 4.05,
+        "y": 1.25
+      }
+    },
+    {
+      "subject": "seen:3",
+      "property": "stock:food",
+      "version": 1,
+      "observedAt": 0,
+      "value": 27.025904469686928
+    },
+    {
+      "subject": "self",
+      "property": "rate:gather:food-patch",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "rate": 6,
+        "logVariance": 0.12249999999999998,
+        "samples": 0,
+        "weight": 0,
+        "logSum": 0,
+        "anchorAt": 0,
+        "priorRate": 6,
+        "priorWeight": 8.163265306122451
+      }
+    },
+    {
+      "subject": "occupancy",
+      "property": "food-patch:0",
+      "version": 2,
+      "observedAt": 0,
+      "value": {
+        "alpha": 1.12,
+        "beta": 1.3046250000000001
+      }
+    },
+    {
+      "subject": "self",
+      "property": "body-experience",
+      "version": 2,
+      "observedAt": 1,
+      "value": {
+        "class": "M",
+        "ageSd": 300.0000009536743,
+        "condition": 1,
+        "wounds": 0,
+        "fatigue": 0.6,
+        "enjoyment": 0.2,
+        "intake": 0,
+        "activityLoad": 0,
+        "intervalStart": 0,
+        "effortSd": 0,
+        "restSd": 0,
+        "pleasantSd": 0,
+        "compulsorySd": 0,
+        "leisureSd": 0,
+        "satiation": 0,
+        "familySatiation": {},
+        "familiarity": {},
+        "practice": {
+          "Field": 0,
+          "Fight": 0,
+          "Make": 0,
+          "Organise": 0,
+          "Social": 0
+        }
+      }
+    },
+    {
+      "subject": "self",
+      "property": "quiet-requirement",
+      "version": 1,
+      "observedAt": 0,
+      "value": {
+        "sum": 1,
+        "count": 1,
+        "estimate": 1
+      }
+    }
+  ],
+  "compared": [
+    {
+      "option": {
+        "key": "b041b10ef78868080c5f0251591e7a44",
+        "objective": {
+          "kind": "service",
+          "service": "ordinary-continuation",
+          "quantity": 0
+        },
+        "method": "ordinary-continuation",
+        "steps": [],
+        "dependencies": [],
+        "bindings": {},
+        "status": "executable",
+        "reason": "explicit no-new-intention continuation; no free intake or recovery",
+        "prerequisites": [],
+        "routes": {},
+        "duration": 0,
+        "goods": {},
+        "reference": true
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0.01927092142110043,
+            "condition": 0.23965103644177577,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6480795460382301,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0.8515904541020369,
+            "condition": 0.05743261926761734,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 2
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6599251586732185,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.6684154193274998,
+            "condition": 0.013763786733050397,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 2
+          },
+          {
+            "start": 1.5,
+            "end": 2,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.669514005422735,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.9172981046688862,
+            "condition": 0.003298505755939091,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 2
+          },
+          {
+            "start": 2,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.9799944780532812,
+            "condition": 0.0007904903231199663,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 2
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.692573882793256,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 1.995194977655451,
+            "condition": 0.00018944182523289416,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": 2
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 8.431764355228255,
+        "severeProbability": 0.9997821631903806,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": 0,
+          "error": 0,
+          "reason": "no remaining finite service after completion; no terminal liquidation"
+        }
+      },
+      "feasible": true,
+      "gate": null,
+      "riskPass": false,
+      "value": 0,
+      "error": 0,
+      "errors": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "option": {
+        "key": "a44a5f7a1a7841738ddc8ca6d0582e99",
+        "objective": {
+          "kind": "service",
+          "service": "nourishment",
+          "quantity": 3
+        },
+        "method": "consume",
+        "steps": [
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "input:0": "seen:2",
+          "target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "bound from personal methods and backing",
+        "prerequisites": [
+          {
+            "effect": "have:food",
+            "status": "executable"
+          }
+        ],
+        "routes": {},
+        "duration": 3034516,
+        "goods": {
+          "food": 3
+        },
+        "reference": false
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9999999274874756,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.4500000524520824
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6480795460382301,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.999999910109774,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 0.9000001049041648
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6599251586732185,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9999999059451897,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 0.35000015735624723
+          },
+          {
+            "start": 1.5,
+            "end": 1.8181819915771484,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6614806266412664,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9999999051614132,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 4.85722573273506e-17
+          },
+          {
+            "start": 1.8181819915771484,
+            "end": 1.984848976135254,
+            "materialService": 5.54495607967837,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6211445345451527,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.9241611093071279
+          },
+          {
+            "start": 1.984848976135254,
+            "end": 2,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586993,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6292564957088185,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.9074949846453128
+          },
+          {
+            "start": 2,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.818505560958236,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.35749503709739516
+          },
+          {
+            "start": 2.5,
+            "end": 2.893939971923828,
+            "materialService": 0,
+            "materialLoss": 0.907486070406991,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6890208074937272,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7275164219866243,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": -3.469446951953614e-18
+          },
+          {
+            "start": 2.893939971923828,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.7057711109019873,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.5373275763338413,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": -3.469446951953614e-18
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": 0,
+          "error": 0,
+          "reason": "no remaining finite service after completion; no terminal liquidation"
+        }
+      },
+      "feasible": true,
+      "gate": null,
+      "riskPass": true,
+      "value": -1.9527794828643483,
+      "error": -0.02038081472603848,
+      "errors": [
+        0.020600263985173634,
+        -0.002080952917102235,
+        -0.02033271934238213,
+        -0.007434219723803134,
+        -0.015562756003876375,
+        0.0025702750627618716,
+        0.023611317064836206,
+        -0.019121667330480378,
+        -0.0026303555211659425
+      ]
+    },
+    {
+      "option": {
+        "key": "28bebd67f97e1ca28ee01b1e2098365a",
+        "objective": {
+          "kind": "enjoyed",
+          "quantity": 0.12
+        },
+        "method": "leisure",
+        "steps": [
+          {
+            "family": "Recover",
+            "law": "leisure",
+            "mode": "leisure",
+            "duration": 125830
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:leisure",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "continuation:input:0": "seen:2",
+          "continuation:target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "bound from personal methods and backing",
+        "prerequisites": [],
+        "routes": {},
+        "duration": 3160346,
+        "goods": {
+          "food": 3
+        },
+        "reference": false
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.12000083923339844,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7097378938706718,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.12000083923339844,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8313326179633903,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.5820009630202327
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.4085878324771216,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9174302412035729,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 1.0320010154723152
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.06930900634896746,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9595786145684811,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 0.48200106792439756
+          },
+          {
+            "start": 1.5,
+            "end": 1.9381828308105469,
+            "materialService": 0,
+            "materialLoss": 1.099999895095835,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.07993310622580324,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9783850421632071,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0
+          },
+          {
+            "start": 1.9381828308105469,
+            "end": 2,
+            "materialService": 5.460784050834021,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829226,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8199823476732143,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.33757021157747386
+          },
+          {
+            "start": 2,
+            "end": 2.1048498153686523,
+            "materialService": 5.460784050834021,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829227,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6077185792555763,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.9101324110755025
+          },
+          {
+            "start": 2.1048498153686523,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829226,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7769313853973028,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.47546724943392016
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 0.9509344988678403,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.11701600610907624,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7248678332165287,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.6278032705108126,
+            "foodRemaining": 0
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": -0.015334890810500067,
+          "error": 0.10328328334939886,
+          "reason": "finite remaining authorised material flows"
+        }
+      },
+      "feasible": false,
+      "gate": "optional return reserve lacks existing backing",
+      "riskPass": true,
+      "value": 0,
+      "error": 0.1700324972869618,
+      "errors": [
+        0,
+        0.01273398948431566,
+        0.02022656431758428,
+        0.017741276878156045,
+        0.002707504099017652,
+        -0.003293850431159105,
+        0.00420705867987605,
+        -0.015093111281508928,
+        0.027519782191281258
+      ]
+    },
+    {
+      "option": {
+        "key": "41605e96c5fc143ab8d4f0aea58a49bb",
+        "objective": {
+          "kind": "recovered",
+          "quantity": 0.3
+        },
+        "method": "rest",
+        "steps": [
+          {
+            "family": "Recover",
+            "law": "rest",
+            "mode": "rest",
+            "duration": 314573
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:rest",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "continuation:input:0": "seen:2",
+          "continuation:target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "bound from personal methods and backing",
+        "prerequisites": [],
+        "routes": {},
+        "duration": 3349089,
+        "goods": {
+          "food": 3
+        },
+        "reference": false
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.3000001907348633,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.42437261441216517,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.3000001907348633,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.5674289488912634,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.7800002307891625
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6480795460382301,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7882384010828349,
+            "fatigue": 0.12180512576038614,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 1.2300002832412449
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6599251586732185,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8963338267545585,
+            "fatigue": 0.12180512576038614,
+            "enjoyment": 0.18764222249478127,
+            "foodRemaining": 0.6800003356933273
+          },
+          {
+            "start": 1.5,
+            "end": 2,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.669514005422735,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9492510408284094,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.1300003881454097
+          },
+          {
+            "start": 2,
+            "end": 2.1181821823120117,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958347,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.957134823256375,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0
+          },
+          {
+            "start": 2.1181821823120117,
+            "end": 2.284849166870117,
+            "materialService": 5.717050226991711,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.5945191206718913,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.9528435218999409
+          },
+          {
+            "start": 2.284849166870117,
+            "end": 2.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6835724393586994,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7018145910524208,
+            "fatigue": 0.6769301604251057,
+            "enjoyment": 0.17321560285725068,
+            "foodRemaining": 0.7161776280272882
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.692573882793256,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8540257713670347,
+            "fatigue": 0.8811492479578403,
+            "enjoyment": 0.15989815444674377,
+            "foodRemaining": 0.16617768047937065
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": -0.21333415857942975,
+          "error": -0.023955191698051048,
+          "reason": "finite remaining authorised material flows"
+        }
+      },
+      "feasible": false,
+      "gate": "optional return reserve lacks existing backing",
+      "riskPass": true,
+      "value": 0,
+      "error": -0.09176914468282953,
+      "errors": [
+        0,
+        0.005714594220216238,
+        -0.002080952917102235,
+        -0.02033271934238213,
+        -0.043697407315035824,
+        0.0036528470096770784,
+        -0.0156704486376137,
+        0.011053085526053507,
+        -0.006452951528591421
+      ]
+    },
+    {
+      "option": {
+        "key": "9f5306b382db34404d3dbe47fbe547e5",
+        "objective": {
+          "kind": "knows",
+          "question": "inquiry:frontier:1579",
+          "quantity": 1
+        },
+        "method": "inquire",
+        "steps": [
+          {
+            "family": "Move",
+            "target": {
+              "x": 4.3500000000000005,
+              "y": 0.65
+            },
+            "exploratory": true,
+            "experiment": {
+              "form": "inquiry",
+              "operation": "survey",
+              "targetKind": "food-patch:0",
+              "descriptor": "inquiry:frontier:1579",
+              "evidenceVersion": 1,
+              "paid": 0,
+              "completed": false,
+              "success": false
+            }
+          },
+          {
+            "family": "Attend",
+            "duration": 125830,
+            "scope": "local-survey",
+            "experiment": {
+              "form": "inquiry",
+              "operation": "survey",
+              "targetKind": "food-patch:0",
+              "descriptor": "inquiry:frontier:1579",
+              "evidenceVersion": 1,
+              "paid": 0,
+              "completed": false,
+              "success": false
+            }
+          },
+          {
+            "family": "Move",
+            "target": {
+              "x": 4.05,
+              "y": 1.25
+            },
+            "exploratory": true,
+            "experiment": {
+              "form": "inquiry",
+              "operation": "survey",
+              "targetKind": "food-patch:0",
+              "descriptor": "inquiry:frontier:1579",
+              "evidenceVersion": 1,
+              "paid": 0,
+              "completed": false,
+              "success": false
+            }
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:inquire",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "continuation:input:0": "seen:2",
+          "continuation:target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "personal EVSI 0; absent/poor/useful [0.5478952513461165,0.22605237432694175,0.22605237432694175]",
+        "prerequisites": [],
+        "routes": {
+          "0": {
+            "regions": {},
+            "regionByCell": {},
+            "coarse": {
+              "open": [],
+              "nodes": {},
+              "goal": -1,
+              "done": true
+            },
+            "corridor": null,
+            "profile": {
+              "width": 256,
+              "height": 192,
+              "cellKm": 0.1,
+              "regionCells": 32,
+              "bucketKm": 0.6
+            },
+            "known": {},
+            "start": 3112,
+            "goal": 1579,
+            "exploratory": true,
+            "prior": {
+              "speedFactor": 1,
+              "uncertainty": 1,
+              "version": 1,
+              "provenance": "e7facc385ef67e66163f49040f159b20"
+            },
+            "nodes": {
+              "1575": {
+                "g": 0.6747546895706429,
+                "parent": 1832,
+                "closed": false
+              },
+              "1576": {
+                "g": 0.6333333333333333,
+                "parent": 1832,
+                "closed": false
+              },
+              "1579": {
+                "g": 0.9080880229039762,
+                "parent": 1835,
+                "closed": true
+              },
+              "1580": {
+                "g": 0.9495093791412857,
+                "parent": 1835,
+                "closed": false
+              },
+              "1831": {
+                "g": 0.5816582489435278,
+                "parent": 2088,
+                "closed": false
+              },
+              "1832": {
+                "g": 0.5333333333333333,
+                "parent": 2088,
+                "closed": true
+              },
+              "1835": {
+                "g": 0.8080880229039762,
+                "parent": 2091,
+                "closed": true
+              },
+              "1836": {
+                "g": 0.8495093791412858,
+                "parent": 2091,
+                "closed": false
+              },
+              "2086": {
+                "g": 0.4828427124746191,
+                "parent": 2343,
+                "closed": false
+              },
+              "2087": {
+                "g": 0.4414213562373095,
+                "parent": 2343,
+                "closed": false
+              },
+              "2088": {
+                "g": 0.4166666666666667,
+                "parent": 2344,
+                "closed": true
+              },
+              "2090": {
+                "g": 0.6666666666666666,
+                "parent": 2346,
+                "closed": true
+              },
+              "2091": {
+                "g": 0.7080880229039762,
+                "parent": 2346,
+                "closed": true
+              },
+              "2092": {
+                "g": 0.8080880229039762,
+                "parent": 2091,
+                "closed": false
+              },
+              "2342": {
+                "g": 0.4230796051808373,
+                "parent": 2599,
+                "closed": false
+              },
+              "2343": {
+                "g": 0.3414213562373095,
+                "parent": 2600,
+                "closed": true
+              },
+              "2344": {
+                "g": 0.30000000000000004,
+                "parent": 2600,
+                "closed": true
+              },
+              "2346": {
+                "g": 0.5666666666666667,
+                "parent": 2602,
+                "closed": true
+              },
+              "2347": {
+                "g": 0.6080880229039762,
+                "parent": 2602,
+                "closed": false
+              },
+              "2348": {
+                "g": 0.8495093791412858,
+                "parent": 2091,
+                "closed": false
+              },
+              "2598": {
+                "g": 0.3064129385141706,
+                "parent": 2855,
+                "closed": false
+              },
+              "2599": {
+                "g": 0.2580880229039762,
+                "parent": 2855,
+                "closed": true
+              },
+              "2600": {
+                "g": 0.2,
+                "parent": 2856,
+                "closed": true
+              },
+              "2602": {
+                "g": 0.4666666666666667,
+                "parent": 2858,
+                "closed": true
+              },
+              "2603": {
+                "g": 0.5080880229039763,
+                "parent": 2858,
+                "closed": false
+              },
+              "2854": {
+                "g": 0.2580880229039762,
+                "parent": 2855,
+                "closed": false
+              },
+              "2855": {
+                "g": 0.14142135623730953,
+                "parent": 3112,
+                "closed": true
+              },
+              "2856": {
+                "g": 0.1,
+                "parent": 3112,
+                "closed": true
+              },
+              "2857": {
+                "g": 0.23333333333333336,
+                "parent": 2856,
+                "closed": true
+              },
+              "2858": {
+                "g": 0.3666666666666667,
+                "parent": 2857,
+                "closed": true
+              },
+              "2859": {
+                "g": 0.4666666666666667,
+                "parent": 2858,
+                "closed": false
+              },
+              "3110": {
+                "g": 0.2,
+                "parent": 3111,
+                "closed": false
+              },
+              "3111": {
+                "g": 0.1,
+                "parent": 3112,
+                "closed": true
+              },
+              "3112": {
+                "g": 0,
+                "parent": -1,
+                "closed": true
+              },
+              "3114": {
+                "g": 0.4666666666666667,
+                "parent": 2858,
+                "closed": false
+              },
+              "3115": {
+                "g": 0.5080880229039763,
+                "parent": 2858,
+                "closed": false
+              },
+              "3366": {
+                "g": 0.24142135623730954,
+                "parent": 3111,
+                "closed": false
+              },
+              "3367": {
+                "g": 0.14142135623730953,
+                "parent": 3112,
+                "closed": false
+              },
+              "3368": {
+                "g": 0.1,
+                "parent": 3112,
+                "closed": false
+              }
+            },
+            "open": [],
+            "path": [
+              3112,
+              2856,
+              2857,
+              2858,
+              2602,
+              2346,
+              2091,
+              1835,
+              1579
+            ],
+            "status": "found",
+            "expansions": 18,
+            "regionExpansions": 0,
+            "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+            "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+            "deferred": false
+          },
+          "2": {
+            "regions": {},
+            "regionByCell": {},
+            "coarse": {
+              "open": [],
+              "nodes": {},
+              "goal": -1,
+              "done": true
+            },
+            "corridor": null,
+            "profile": {
+              "width": 256,
+              "height": 192,
+              "cellKm": 0.1,
+              "regionCells": 32,
+              "bucketKm": 0.6
+            },
+            "known": {},
+            "start": 1579,
+            "goal": 3112,
+            "exploratory": true,
+            "prior": {
+              "speedFactor": 1,
+              "uncertainty": 1,
+              "version": 1,
+              "provenance": "e7facc385ef67e66163f49040f159b20"
+            },
+            "nodes": {
+              "1319": {
+                "g": 0.4414213562373096,
+                "parent": 1576,
+                "closed": false
+              },
+              "1320": {
+                "g": 0.3414213562373095,
+                "parent": 1577,
+                "closed": false
+              },
+              "1321": {
+                "g": 0.24142135623730954,
+                "parent": 1578,
+                "closed": false
+              },
+              "1322": {
+                "g": 0.14142135623730953,
+                "parent": 1579,
+                "closed": false
+              },
+              "1323": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": false
+              },
+              "1324": {
+                "g": 0.14142135623730953,
+                "parent": 1579,
+                "closed": false
+              },
+              "1325": {
+                "g": 0.24142135623730954,
+                "parent": 1580,
+                "closed": false
+              },
+              "1575": {
+                "g": 0.4,
+                "parent": 1576,
+                "closed": false
+              },
+              "1576": {
+                "g": 0.30000000000000004,
+                "parent": 1577,
+                "closed": true
+              },
+              "1577": {
+                "g": 0.2,
+                "parent": 1578,
+                "closed": true
+              },
+              "1578": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": true
+              },
+              "1579": {
+                "g": 0,
+                "parent": -1,
+                "closed": true
+              },
+              "1580": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": true
+              },
+              "1581": {
+                "g": 0.2,
+                "parent": 1580,
+                "closed": false
+              },
+              "1831": {
+                "g": 0.4414213562373096,
+                "parent": 1576,
+                "closed": false
+              },
+              "1832": {
+                "g": 0.4,
+                "parent": 1576,
+                "closed": true
+              },
+              "1835": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": true
+              },
+              "1836": {
+                "g": 0.14142135623730953,
+                "parent": 1579,
+                "closed": true
+              },
+              "1837": {
+                "g": 0.24142135623730954,
+                "parent": 1836,
+                "closed": false
+              },
+              "2087": {
+                "g": 0.5414213562373096,
+                "parent": 1832,
+                "closed": false
+              },
+              "2088": {
+                "g": 0.5166666666666667,
+                "parent": 1832,
+                "closed": false
+              },
+              "2090": {
+                "g": 0.30000000000000004,
+                "parent": 2091,
+                "closed": true
+              },
+              "2091": {
+                "g": 0.2,
+                "parent": 1835,
+                "closed": true
+              },
+              "2092": {
+                "g": 0.24142135623730954,
+                "parent": 1835,
+                "closed": true
+              },
+              "2093": {
+                "g": 0.28284271247461906,
+                "parent": 1836,
+                "closed": false
+              },
+              "2346": {
+                "g": 0.3414213562373095,
+                "parent": 2091,
+                "closed": true
+              },
+              "2347": {
+                "g": 0.30000000000000004,
+                "parent": 2091,
+                "closed": true
+              },
+              "2348": {
+                "g": 0.3414213562373095,
+                "parent": 2091,
+                "closed": true
+              },
+              "2349": {
+                "g": 0.3828427124746191,
+                "parent": 2092,
+                "closed": false
+              },
+              "2599": {
+                "g": 0.9730796051808372,
+                "parent": 2856,
+                "closed": false
+              },
+              "2600": {
+                "g": 0.9080880229039762,
+                "parent": 2856,
+                "closed": false
+              },
+              "2602": {
+                "g": 0.4414213562373095,
+                "parent": 2346,
+                "closed": true
+              },
+              "2603": {
+                "g": 0.4,
+                "parent": 2347,
+                "closed": true
+              },
+              "2604": {
+                "g": 0.4414213562373095,
+                "parent": 2348,
+                "closed": false
+              },
+              "2605": {
+                "g": 0.4828427124746191,
+                "parent": 2348,
+                "closed": false
+              },
+              "2855": {
+                "g": 0.9080880229039762,
+                "parent": 2856,
+                "closed": false
+              },
+              "2856": {
+                "g": 0.8080880229039762,
+                "parent": 2857,
+                "closed": true
+              },
+              "2857": {
+                "g": 0.6747546895706429,
+                "parent": 2858,
+                "closed": true
+              },
+              "2858": {
+                "g": 0.5414213562373095,
+                "parent": 2602,
+                "closed": true
+              },
+              "2859": {
+                "g": 0.5,
+                "parent": 2603,
+                "closed": true
+              },
+              "2860": {
+                "g": 0.5414213562373096,
+                "parent": 2603,
+                "closed": false
+              },
+              "3111": {
+                "g": 0.9495093791412857,
+                "parent": 2856,
+                "closed": false
+              },
+              "3112": {
+                "g": 0.9080880229039762,
+                "parent": 2856,
+                "closed": true
+              },
+              "3114": {
+                "g": 0.6414213562373094,
+                "parent": 2858,
+                "closed": true
+              },
+              "3115": {
+                "g": 0.6,
+                "parent": 2859,
+                "closed": true
+              },
+              "3116": {
+                "g": 0.6414213562373096,
+                "parent": 2859,
+                "closed": false
+              },
+              "3370": {
+                "g": 0.7414213562373094,
+                "parent": 3114,
+                "closed": false
+              },
+              "3371": {
+                "g": 0.7,
+                "parent": 3115,
+                "closed": false
+              },
+              "3372": {
+                "g": 0.7538997111994251,
+                "parent": 3115,
+                "closed": false
+              }
+            },
+            "open": [],
+            "path": [
+              1579,
+              1835,
+              2091,
+              2346,
+              2602,
+              2858,
+              2857,
+              2856,
+              3112
+            ],
+            "status": "found",
+            "expansions": 23,
+            "regionExpansions": 0,
+            "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+            "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+            "deferred": false
+          }
+        },
+        "duration": 3187398,
+        "goods": {
+          "food": 3
+        },
+        "reference": false,
+        "optionalDuration": 152882,
+        "informationValue": 0,
+        "valuationDependencies": [
+          {
+            "subject": "occupancy",
+            "property": "food-patch:0",
+            "version": 2
+          }
+        ]
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.012898977598067842,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9638166286495562,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.012898977598067842,
+            "end": 0.1328998168314663,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6840571840952673,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.1328998168314663,
+            "end": 0.14579879442953414,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6593056889782093,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.14579879442953414,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7945949078146455,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.6103787110296692
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.4085878324771216,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.899445601609034,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 1.0603787634817516
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.06930900634896746,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9507743842548368,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 0.510378815933834
+          },
+          {
+            "start": 1.5,
+            "end": 1.9639807860066827,
+            "materialService": 0,
+            "materialLoss": 1.099999895095835,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.08117905211483338,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9746295208329576,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0
+          },
+          {
+            "start": 1.9639807860066827,
+            "end": 2,
+            "materialService": 5.446102772544852,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829226,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8793169212264346,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.19616434119389173
+          },
+          {
+            "start": 2,
+            "end": 2.5,
+            "materialService": 1.423042370999393,
+            "materialLoss": 0.8125748272642918,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829226,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7671807133242827,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.5013981130614422
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 1.0027962261228844,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.11701600610907624,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7744014533569026,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.6278032705108126,
+            "foodRemaining": 6.162975822039155e-33
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": -0.04371263881993652,
+          "error": -0.10783528275617417,
+          "reason": "finite remaining authorised material flows"
+        }
+      },
+      "feasible": false,
+      "gate": "optional return reserve lacks existing backing",
+      "riskPass": true,
+      "value": 0,
+      "error": -0.05053987821741792,
+      "errors": [
+        0,
+        0,
+        0,
+        0.0014864257037666563,
+        0.02022656431758428,
+        0.017741276878156045,
+        -0.01924745700334943,
+        -0.00009207837133263883,
+        0.019273299105005717,
+        0.017907373908925613
+      ]
+    },
+    {
+      "option": {
+        "key": "54bbee751984df28c104ce341ce5b183",
+        "objective": {
+          "kind": "enjoyed",
+          "quantity": 0.12
+        },
+        "method": "leisure",
+        "steps": [
+          {
+            "family": "Recover",
+            "law": "leisure",
+            "mode": "leisure",
+            "duration": 125830
+          },
+          {
+            "family": "Move",
+            "target": {
+              "x": 4.3500000000000005,
+              "y": 0.65
+            },
+            "exploratory": true,
+            "experiment": {
+              "form": "inquiry",
+              "operation": "survey",
+              "targetKind": "food-patch:0",
+              "descriptor": "inquiry:frontier:1579",
+              "evidenceVersion": 1,
+              "paid": 0,
+              "completed": false,
+              "success": false
+            }
+          },
+          {
+            "family": "Attend",
+            "duration": 125830,
+            "scope": "local-survey",
+            "experiment": {
+              "form": "inquiry",
+              "operation": "survey",
+              "targetKind": "food-patch:0",
+              "descriptor": "inquiry:frontier:1579",
+              "evidenceVersion": 1,
+              "paid": 0,
+              "completed": false,
+              "success": false
+            }
+          },
+          {
+            "family": "Move",
+            "target": {
+              "x": 4.05,
+              "y": 1.25
+            },
+            "exploratory": true,
+            "experiment": {
+              "form": "inquiry",
+              "operation": "survey",
+              "targetKind": "food-patch:0",
+              "descriptor": "inquiry:frontier:1579",
+              "evidenceVersion": 1,
+              "paid": 0,
+              "completed": false,
+              "success": false
+            }
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 2,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 1906502
+          },
+          {
+            "family": "Work",
+            "law": "gather",
+            "site": "seen:3",
+            "duration": 174763
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:1",
+            "to": "seen:1",
+            "good": "food",
+            "quantity": 1,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 953251
+          }
+        ],
+        "dependencies": [
+          {
+            "subject": "method:leisure",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "method:inquire",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "method:consume",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:2",
+            "property": "own-local-stocks",
+            "version": 2
+          },
+          {
+            "subject": "method:gather",
+            "property": "known",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "location",
+            "version": 1
+          },
+          {
+            "subject": "seen:3",
+            "property": "stock:food",
+            "version": 1
+          },
+          {
+            "subject": "self",
+            "property": "rate:gather:food-patch",
+            "version": 1
+          }
+        ],
+        "bindings": {
+          "continuation:input:0": "seen:2",
+          "continuation:target:1": "seen:3"
+        },
+        "status": "executable",
+        "reason": "explicit serial alternatives from this admitted agenda; all prefixes paid",
+        "prerequisites": [],
+        "routes": {
+          "1": {
+            "regions": {},
+            "regionByCell": {},
+            "coarse": {
+              "open": [],
+              "nodes": {},
+              "goal": -1,
+              "done": true
+            },
+            "corridor": null,
+            "profile": {
+              "width": 256,
+              "height": 192,
+              "cellKm": 0.1,
+              "regionCells": 32,
+              "bucketKm": 0.6
+            },
+            "known": {},
+            "start": 3112,
+            "goal": 1579,
+            "exploratory": true,
+            "prior": {
+              "speedFactor": 1,
+              "uncertainty": 1,
+              "version": 1,
+              "provenance": "e7facc385ef67e66163f49040f159b20"
+            },
+            "nodes": {
+              "1575": {
+                "g": 0.6747546895706429,
+                "parent": 1832,
+                "closed": false
+              },
+              "1576": {
+                "g": 0.6333333333333333,
+                "parent": 1832,
+                "closed": false
+              },
+              "1579": {
+                "g": 0.9080880229039762,
+                "parent": 1835,
+                "closed": true
+              },
+              "1580": {
+                "g": 0.9495093791412857,
+                "parent": 1835,
+                "closed": false
+              },
+              "1831": {
+                "g": 0.5816582489435278,
+                "parent": 2088,
+                "closed": false
+              },
+              "1832": {
+                "g": 0.5333333333333333,
+                "parent": 2088,
+                "closed": true
+              },
+              "1835": {
+                "g": 0.8080880229039762,
+                "parent": 2091,
+                "closed": true
+              },
+              "1836": {
+                "g": 0.8495093791412858,
+                "parent": 2091,
+                "closed": false
+              },
+              "2086": {
+                "g": 0.4828427124746191,
+                "parent": 2343,
+                "closed": false
+              },
+              "2087": {
+                "g": 0.4414213562373095,
+                "parent": 2343,
+                "closed": false
+              },
+              "2088": {
+                "g": 0.4166666666666667,
+                "parent": 2344,
+                "closed": true
+              },
+              "2090": {
+                "g": 0.6666666666666666,
+                "parent": 2346,
+                "closed": true
+              },
+              "2091": {
+                "g": 0.7080880229039762,
+                "parent": 2346,
+                "closed": true
+              },
+              "2092": {
+                "g": 0.8080880229039762,
+                "parent": 2091,
+                "closed": false
+              },
+              "2342": {
+                "g": 0.4230796051808373,
+                "parent": 2599,
+                "closed": false
+              },
+              "2343": {
+                "g": 0.3414213562373095,
+                "parent": 2600,
+                "closed": true
+              },
+              "2344": {
+                "g": 0.30000000000000004,
+                "parent": 2600,
+                "closed": true
+              },
+              "2346": {
+                "g": 0.5666666666666667,
+                "parent": 2602,
+                "closed": true
+              },
+              "2347": {
+                "g": 0.6080880229039762,
+                "parent": 2602,
+                "closed": false
+              },
+              "2348": {
+                "g": 0.8495093791412858,
+                "parent": 2091,
+                "closed": false
+              },
+              "2598": {
+                "g": 0.3064129385141706,
+                "parent": 2855,
+                "closed": false
+              },
+              "2599": {
+                "g": 0.2580880229039762,
+                "parent": 2855,
+                "closed": true
+              },
+              "2600": {
+                "g": 0.2,
+                "parent": 2856,
+                "closed": true
+              },
+              "2602": {
+                "g": 0.4666666666666667,
+                "parent": 2858,
+                "closed": true
+              },
+              "2603": {
+                "g": 0.5080880229039763,
+                "parent": 2858,
+                "closed": false
+              },
+              "2854": {
+                "g": 0.2580880229039762,
+                "parent": 2855,
+                "closed": false
+              },
+              "2855": {
+                "g": 0.14142135623730953,
+                "parent": 3112,
+                "closed": true
+              },
+              "2856": {
+                "g": 0.1,
+                "parent": 3112,
+                "closed": true
+              },
+              "2857": {
+                "g": 0.23333333333333336,
+                "parent": 2856,
+                "closed": true
+              },
+              "2858": {
+                "g": 0.3666666666666667,
+                "parent": 2857,
+                "closed": true
+              },
+              "2859": {
+                "g": 0.4666666666666667,
+                "parent": 2858,
+                "closed": false
+              },
+              "3110": {
+                "g": 0.2,
+                "parent": 3111,
+                "closed": false
+              },
+              "3111": {
+                "g": 0.1,
+                "parent": 3112,
+                "closed": true
+              },
+              "3112": {
+                "g": 0,
+                "parent": -1,
+                "closed": true
+              },
+              "3114": {
+                "g": 0.4666666666666667,
+                "parent": 2858,
+                "closed": false
+              },
+              "3115": {
+                "g": 0.5080880229039763,
+                "parent": 2858,
+                "closed": false
+              },
+              "3366": {
+                "g": 0.24142135623730954,
+                "parent": 3111,
+                "closed": false
+              },
+              "3367": {
+                "g": 0.14142135623730953,
+                "parent": 3112,
+                "closed": false
+              },
+              "3368": {
+                "g": 0.1,
+                "parent": 3112,
+                "closed": false
+              }
+            },
+            "open": [],
+            "path": [
+              3112,
+              2856,
+              2857,
+              2858,
+              2602,
+              2346,
+              2091,
+              1835,
+              1579
+            ],
+            "status": "found",
+            "expansions": 18,
+            "regionExpansions": 0,
+            "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+            "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+            "deferred": false
+          },
+          "3": {
+            "regions": {},
+            "regionByCell": {},
+            "coarse": {
+              "open": [],
+              "nodes": {},
+              "goal": -1,
+              "done": true
+            },
+            "corridor": null,
+            "profile": {
+              "width": 256,
+              "height": 192,
+              "cellKm": 0.1,
+              "regionCells": 32,
+              "bucketKm": 0.6
+            },
+            "known": {},
+            "start": 1579,
+            "goal": 3112,
+            "exploratory": true,
+            "prior": {
+              "speedFactor": 1,
+              "uncertainty": 1,
+              "version": 1,
+              "provenance": "e7facc385ef67e66163f49040f159b20"
+            },
+            "nodes": {
+              "1319": {
+                "g": 0.4414213562373096,
+                "parent": 1576,
+                "closed": false
+              },
+              "1320": {
+                "g": 0.3414213562373095,
+                "parent": 1577,
+                "closed": false
+              },
+              "1321": {
+                "g": 0.24142135623730954,
+                "parent": 1578,
+                "closed": false
+              },
+              "1322": {
+                "g": 0.14142135623730953,
+                "parent": 1579,
+                "closed": false
+              },
+              "1323": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": false
+              },
+              "1324": {
+                "g": 0.14142135623730953,
+                "parent": 1579,
+                "closed": false
+              },
+              "1325": {
+                "g": 0.24142135623730954,
+                "parent": 1580,
+                "closed": false
+              },
+              "1575": {
+                "g": 0.4,
+                "parent": 1576,
+                "closed": false
+              },
+              "1576": {
+                "g": 0.30000000000000004,
+                "parent": 1577,
+                "closed": true
+              },
+              "1577": {
+                "g": 0.2,
+                "parent": 1578,
+                "closed": true
+              },
+              "1578": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": true
+              },
+              "1579": {
+                "g": 0,
+                "parent": -1,
+                "closed": true
+              },
+              "1580": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": true
+              },
+              "1581": {
+                "g": 0.2,
+                "parent": 1580,
+                "closed": false
+              },
+              "1831": {
+                "g": 0.4414213562373096,
+                "parent": 1576,
+                "closed": false
+              },
+              "1832": {
+                "g": 0.4,
+                "parent": 1576,
+                "closed": true
+              },
+              "1835": {
+                "g": 0.1,
+                "parent": 1579,
+                "closed": true
+              },
+              "1836": {
+                "g": 0.14142135623730953,
+                "parent": 1579,
+                "closed": true
+              },
+              "1837": {
+                "g": 0.24142135623730954,
+                "parent": 1836,
+                "closed": false
+              },
+              "2087": {
+                "g": 0.5414213562373096,
+                "parent": 1832,
+                "closed": false
+              },
+              "2088": {
+                "g": 0.5166666666666667,
+                "parent": 1832,
+                "closed": false
+              },
+              "2090": {
+                "g": 0.30000000000000004,
+                "parent": 2091,
+                "closed": true
+              },
+              "2091": {
+                "g": 0.2,
+                "parent": 1835,
+                "closed": true
+              },
+              "2092": {
+                "g": 0.24142135623730954,
+                "parent": 1835,
+                "closed": true
+              },
+              "2093": {
+                "g": 0.28284271247461906,
+                "parent": 1836,
+                "closed": false
+              },
+              "2346": {
+                "g": 0.3414213562373095,
+                "parent": 2091,
+                "closed": true
+              },
+              "2347": {
+                "g": 0.30000000000000004,
+                "parent": 2091,
+                "closed": true
+              },
+              "2348": {
+                "g": 0.3414213562373095,
+                "parent": 2091,
+                "closed": true
+              },
+              "2349": {
+                "g": 0.3828427124746191,
+                "parent": 2092,
+                "closed": false
+              },
+              "2599": {
+                "g": 0.9730796051808372,
+                "parent": 2856,
+                "closed": false
+              },
+              "2600": {
+                "g": 0.9080880229039762,
+                "parent": 2856,
+                "closed": false
+              },
+              "2602": {
+                "g": 0.4414213562373095,
+                "parent": 2346,
+                "closed": true
+              },
+              "2603": {
+                "g": 0.4,
+                "parent": 2347,
+                "closed": true
+              },
+              "2604": {
+                "g": 0.4414213562373095,
+                "parent": 2348,
+                "closed": false
+              },
+              "2605": {
+                "g": 0.4828427124746191,
+                "parent": 2348,
+                "closed": false
+              },
+              "2855": {
+                "g": 0.9080880229039762,
+                "parent": 2856,
+                "closed": false
+              },
+              "2856": {
+                "g": 0.8080880229039762,
+                "parent": 2857,
+                "closed": true
+              },
+              "2857": {
+                "g": 0.6747546895706429,
+                "parent": 2858,
+                "closed": true
+              },
+              "2858": {
+                "g": 0.5414213562373095,
+                "parent": 2602,
+                "closed": true
+              },
+              "2859": {
+                "g": 0.5,
+                "parent": 2603,
+                "closed": true
+              },
+              "2860": {
+                "g": 0.5414213562373096,
+                "parent": 2603,
+                "closed": false
+              },
+              "3111": {
+                "g": 0.9495093791412857,
+                "parent": 2856,
+                "closed": false
+              },
+              "3112": {
+                "g": 0.9080880229039762,
+                "parent": 2856,
+                "closed": true
+              },
+              "3114": {
+                "g": 0.6414213562373094,
+                "parent": 2858,
+                "closed": true
+              },
+              "3115": {
+                "g": 0.6,
+                "parent": 2859,
+                "closed": true
+              },
+              "3116": {
+                "g": 0.6414213562373096,
+                "parent": 2859,
+                "closed": false
+              },
+              "3370": {
+                "g": 0.7414213562373094,
+                "parent": 3114,
+                "closed": false
+              },
+              "3371": {
+                "g": 0.7,
+                "parent": 3115,
+                "closed": false
+              },
+              "3372": {
+                "g": 0.7538997111994251,
+                "parent": 3115,
+                "closed": false
+              }
+            },
+            "open": [],
+            "path": [
+              1579,
+              1835,
+              2091,
+              2346,
+              2602,
+              2858,
+              2857,
+              2856,
+              3112
+            ],
+            "status": "found",
+            "expansions": 23,
+            "regionExpansions": 0,
+            "geographyId": "7fa1bb6c26b9c1155115e3d1be7cc18d:1",
+            "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+            "deferred": false
+          }
+        },
+        "duration": 3313228,
+        "goods": {
+          "food": 3
+        },
+        "reference": false,
+        "optionalDuration": 152882
+      },
+      "consequences": {
+        "horizon": 3,
+        "blocks": [
+          {
+            "start": 0,
+            "end": 0.12000083923339844,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7097378938706718,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.12000083923339844,
+            "end": 0.1328998168314663,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6840571840952674,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.1328998168314663,
+            "end": 0.2529006560648647,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.48550130512687745,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.2529006560648647,
+            "end": 0.2657996336629326,
+            "materialService": 0,
+            "materialLoss": 0,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.4679342311123465,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 2
+          },
+          {
+            "start": 0.2657996336629326,
+            "end": 0.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.6400000000000001,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.6192301110182066,
+            "fatigue": 0.6,
+            "enjoyment": 0.2,
+            "foodRemaining": 1.7423796215978196
+          },
+          {
+            "start": 0.5,
+            "end": 1,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.4085878324771216,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8135972279574374,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 1.192379674049902
+          },
+          {
+            "start": 1,
+            "end": 1.5,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.06930900634896746,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9087480289471689,
+            "fatigue": 0.8197741226420682,
+            "enjoyment": 0.7367339627886509,
+            "foodRemaining": 0.6423797265019844
+          },
+          {
+            "start": 1.5,
+            "end": 2,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.08270357336090443,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.9553283099718555,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.0923797789540668
+          },
+          {
+            "start": 2,
+            "end": 2.5,
+            "materialService": 1.796749286745041,
+            "materialLoss": 0.7333325640361245,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.10234166335829226,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.7174442329336458,
+            "fatigue": 0.9336986049529311,
+            "enjoyment": 0.6800911639884071,
+            "foodRemaining": 0.624088140308525
+          },
+          {
+            "start": 2.5,
+            "end": 3,
+            "materialService": 0,
+            "materialLoss": 1.0999998950958352,
+            "dependantCoverage": 0,
+            "enjoymentDeficit": 0.11701600610907624,
+            "processValue": 0,
+            "relationshipExperience": 0,
+            "encounterValue": 0,
+            "severeHazard": 0,
+            "condition": 0.8616771321918505,
+            "fatigue": 0.9756090798411973,
+            "enjoyment": 0.6278032705108126,
+            "foodRemaining": 0.07408819276060741
+          }
+        ],
+        "oneOff": 0,
+        "severeHazard": 0,
+        "severeProbability": 0,
+        "commitments": [],
+        "assent": [],
+        "tail": {
+          "value": -0.17571354938808698,
+          "error": -0.036513071554995,
+          "reason": "finite remaining authorised material flows"
+        }
+      },
+      "feasible": false,
+      "gate": "optional return reserve lacks existing backing",
+      "riskPass": true,
+      "value": 0,
+      "error": -0.05367194673618517,
+      "errors": [
+        0,
+        0,
+        0,
+        0,
+        -0.008180354945621079,
+        0.02022656431758428,
+        0.017741276878156045,
+        -0.01774766153551668,
+        -0.011515494966821917,
+        -0.017683204928970814
+      ]
+    }
+  ],
+  "winner": "a44a5f7a1a7841738ddc8ca6d0582e99",
+  "rejected": "b041b10ef78868080c5f0251591e7a44",
+  "rule": "safe-response",
+  "margin": -1.9527794828643483,
+  "selected": {
+    "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+    "intentionId": "intention:d3cff55047bb25ef6679e94fe0be07b6",
+    "taskId": "task:d3cff55047bb25ef6679e94fe0be07b6",
+    "semanticKey": "d3cff55047bb25ef6679e94fe0be07b6",
+    "objective": "[{\"kind\":\"service\",\"quantity\":3,\"service\":\"nourishment\"},\"[\\\"7fa1bb6c26b9c1155115e3d1be7cc18d\\\",\\\"review\\\",1]\"]",
+    "method": "consume",
+    "bindings": {
+      "input:0": "seen:2",
+      "target:1": "seen:3"
+    },
+    "steps": [
+      {
+        "family": "Transfer",
+        "from": "seen:2",
+        "to": "seen:2",
+        "good": "food",
+        "quantity": 2,
+        "basis": "own-custody",
+        "use": "consume",
+        "duration": 1906502
+      },
+      {
+        "family": "Work",
+        "law": "gather",
+        "site": "seen:3",
+        "duration": 174763
+      },
+      {
+        "family": "Transfer",
+        "from": "seen:1",
+        "to": "seen:1",
+        "good": "food",
+        "quantity": 1,
+        "basis": "own-custody",
+        "use": "consume",
+        "duration": 953251
+      }
+    ],
+    "dependsOn": [
+      {
+        "key": "[\"method:consume\",\"known\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"seen:2\",\"own-local-stocks\"]",
+        "version": 2,
+        "valueFingerprint": "ecc27f85b9fd3aa7515a7f376f94344a"
+      },
+      {
+        "key": "[\"method:gather\",\"known\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"seen:3\",\"location\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"seen:3\",\"stock:food\"]",
+        "version": 1
+      },
+      {
+        "key": "[\"self\",\"rate:gather:food-patch\"]",
+        "version": 1
+      }
+    ],
+    "authorised": {
+      "time": 3793145,
+      "goods": {
+        "food": 3.3000000000000003
+      }
+    },
+    "reserve": [],
+    "source": "bounded-personal-review",
+    "effortAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]",
+    "preparedRoutes": {},
+    "repairScope": {
+      "moveTargets": [],
+      "bindings": {}
+    },
+    "envelope": {
+      "purpose": "[{\"kind\":\"service\",\"quantity\":3,\"service\":\"nourishment\"},\"[\\\"7fa1bb6c26b9c1155115e3d1be7cc18d\\\",\\\"review\\\",1]\"]",
+      "end": {
+        "kind": "service",
+        "service": "nourishment",
+        "quantity": 3
+      },
+      "targets": [
+        "seen:2",
+        "seen:3"
+      ],
+      "quantity": {
+        "estimate": 3,
+        "low": 2.25,
+        "high": 3.75
+      },
+      "riskCeiling": 0.17268784206826238,
+      "locationBasis": "dated personal locations and established personal route prefixes",
+      "rightsBasis": "own-custody-and-public-extraction",
+      "stop": [
+        "desired end reached",
+        "finite authorised time or goods exhausted"
+      ],
+      "escalation": [
+        "required personal assumption invalidated",
+        "operation fails outside permitted repair",
+        "risk or spending ceiling exceeded"
+      ],
+      "reviewAccount": "[\"7fa1bb6c26b9c1155115e3d1be7cc18d\",\"review\",1]"
+    }
+  },
+  "deferrals": [
+    "full comparison admission cap"
+  ]
+}
