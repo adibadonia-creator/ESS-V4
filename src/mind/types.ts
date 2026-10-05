@@ -20,7 +20,7 @@ export const effectOf = (o: Objective) =>
         : o.kind === "tried"
           ? `tried:${o.context}`
           : o.kind;
-export type WakeCause = "periodic" | "food" | "rest" | "completion" | "failure";
+export type WakeCause = "periodic" | "food" | "rest" | "completion" | "failure" | "danger";
 export interface Dispositions {
   p: number;
   rT: number;
@@ -130,6 +130,8 @@ export interface DecisionTrace {
 export interface MindState {
   actor: string;
   projects?: import("./projects").Project[];
+  repairSignature?: string;
+  safetySignature?: string;
   dispositions: Dispositions;
   periodicAt: number;
   nextWake: number | null;

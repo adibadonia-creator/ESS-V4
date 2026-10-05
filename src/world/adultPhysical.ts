@@ -1,3 +1,4 @@
+import type {StorageLaw} from "./storage";
 import type { MaterialLaw } from "./material";
 import effects from "../content/material-effects.json";
 // Startup compilation; runtime lookup touches only the matching trigger.
@@ -74,6 +75,7 @@ export interface AdultPhysicalState {
 }
 export interface PhysicalPort {
   now(): number;
+  engage?(actor:string,target:string,duration:number):boolean;
   remainingGoods?(actor:string,good:string):number;
   workRadiusKm: number;
   position(actor: string): Point;
@@ -147,6 +149,7 @@ export class AdultPhysical {
     private counts: Counters,
     state: AdultPhysicalState = { bodies: [], sites: [], segments: [] },
     private materials?: MaterialLaw,
+    private storage?:StorageLaw,
   ) {
     this.state = state;
     for (const b of state.bodies) {
@@ -207,6 +210,13 @@ export class AdultPhysical {
     set.add(actor);
     this.workers.set(site, set);
   }
+  harm(actor:string,wound:number,fatal=false) {
+    const b=this.bodies.get(actor);if(!b||!b.alive)return;
+    const v=materialiseBody(b,this.port.now());b.anchor.w=Math.min(1,v.w+wound);b.anchor.c=v.c;b.anchor.at=this.port.now();
+    if(fatal||b.anchor.w>=1)b.alive=false;
+    reanchorBody(b,this.port.now(),this.active.get(actor)?.load??0,this.active.get(actor)?.from?this.active.get(actor)!.rate:0);this.experience(actor);
+  }
+  force(actor:string){const b=this.bodies.get(actor);if(!b||!b.alive)return 0;const v=materialiseBody(b,this.port.now());return ability(b,{B:.4,A:.1,Fight:.5},.70)*math.sqrt(v.c)*(1-v.w);}
   body(actor: string) {
     return this.bodies.get(actor) ?? null;
   }
@@ -500,6 +510,7 @@ export class AdultPhysical {
       seg.from = from;
       seg.good = step.good;
       seg.rate = step.quantity / (step.duration / QUANTA);
+      this.storage?.settle(from);
       const available = this.goods.available(from, step.good);
       if (!res && available <= 0)
         return { ok: false, observed: "food exhausted" };
@@ -525,9 +536,12 @@ export class AdultPhysical {
         );
       if (r.status !== "active" || backing <= 0)
         return { ok: false, observed: "food exhausted" };
-      if ((backing / seg.rate) * QUANTA < remaining) {
-        seg.end = now + Math.ceil((backing / seg.rate) * QUANTA);
-        seg.rate = backing / ((seg.end - now) / QUANTA);
+      const until=this.storage?.beginFlow(from,step.good,seg.rate)??backing/seg.rate;
+      if (Math.min(backing/seg.rate,until)*QUANTA < remaining) {
+        seg.end = now + Math.max(1,Math.ceil(Math.min(backing/seg.rate,until)*QUANTA));
+        const dt=(seg.end-now)/QUANTA,lambda=this.storage?.rate(from,step.good)??0;
+        seg.rate=until<backing/seg.rate&&lambda>0?lambda*(this.goods.get(from).stocks[step.good]??0)/math.expm1(lambda*dt):backing/dt;
+        this.storage?.beginFlow(from,step.good,seg.rate);
         seg.reason = "food exhausted";
       }
     }
@@ -550,6 +564,10 @@ export class AdultPhysical {
         b.familySatiation.exploration ?? 0,
         this.port.frustration(task.actor, context),
       );
+    }
+    if(step.family==="Engage"){
+      if(!step.target || !this.port.reference(task.actor,step.target))return {ok:false,observed:"engagement target not personally bound"};
+      seg.category="engage";seg.load=.7;seg.effort=1;seg.practice={Fight:1};const v=materialiseBody(b,now);seg.learning=learningRates(b,v.c,v.w,seg.practice,1);
     }
     const recipe = step.family === "Work" ? this.materials?.recipes.get(step.law) : null;
     if (step.family === "Work" && recipe) {
@@ -718,6 +736,9 @@ export class AdultPhysical {
     }
     if (s.site && s.toolScope) this.materials?.wear(task.actor,s.toolScope,(now-s.start)/QUANTA);
     const step = task.steps[task.cursor];
+    if(step?.family==="Engage" && final && now>=s.remainingEnd && step.target){
+      if(!this.port.engage?.(task.actor,this.port.reference(task.actor,step.target)!, (now-s.start)/QUANTA))s.reason="engagement target no longer local";
+    }
     if (step?.family === "Work" && OPERATION_INDEX.has(step.law)) {
       const completed = final && now >= s.remainingEnd;
       if (completed) {
@@ -838,8 +859,9 @@ export class AdultPhysical {
         `${task.semanticKey}:${task.cursor}:${now}:paid`,
       );
     if (s.from && s.reservation && now > s.start) {
+      this.storage?.endFlow(s.from);
       const r = this.goods.reservation(s.reservation);
-      quantity = Math.min((s.rate * (now - s.start)) / QUANTA, r.remaining);
+      quantity = Math.min((s.rate * (now - s.start)) / QUANTA, r.remaining,this.goods.get(s.from).stocks[s.good!]??0);
       if (quantity > 0) {
         this.port.consume(task.actor, s.from, s.good!, quantity, s.reservation);
         this.counts.consumptionSettlements++;

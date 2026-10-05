@@ -25,7 +25,7 @@ export interface Reservation {
   expires: Time;
   status: "active" | "released" | "spent" | "expired";
 }
-export type Sink = "consumption" | "destruction" | "recipe-input";
+export type Sink = "consumption" | "destruction" | "recipe-input" | "spoilage";
 export type Source =
   "diagnostic-source" | "initial-endowment" | "extraction" | "production";
 export type GoodsRequest =
@@ -154,13 +154,13 @@ export class GoodsLedger {
     }
     return c.location.kind === "carrier" ? c.location.actor : null;
   }
-  load(key: Key): number {
+  load(key: Key, override?:Map<Key,Record<string,number>>): number {
     const c = this.get(key);
     let load = 0;
-    for (const good of Object.keys(c.stocks).sort())
-      load += c.stocks[good]! * this.good(good).bulk;
+    for (const good of Object.keys(override?.get(key)??c.stocks).sort())
+      load += (override?.get(key)??c.stocks)[good]! * this.good(good).bulk;
     // Nesting is supported, but no child registry scan in hot load accounting.
-    for (const child of this.children.get(key) ?? []) load += this.load(child);
+    for (const child of this.children.get(key) ?? []) load += this.load(child,override);
     return load;
   }
   private children = new Map<Key, Set<Key>>();
@@ -233,9 +233,9 @@ export class GoodsLedger {
     }
     return amount;
   }
-  available(container: Key, good: string): number {
+  available(container: Key, good: string, override?:Map<Key,Record<string,number>>): number {
     return (
-      (this.get(container).stocks[good] ?? 0) - this.reserved(container, good)
+      ((override?.get(container)??this.get(container).stocks)[good] ?? 0) - this.reserved(container, good)
     );
   }
   private ancestors(key: Key): Key[] {
@@ -256,7 +256,7 @@ export class GoodsLedger {
       throw e;
     }
   }
-  private validate(key: Key, at: Time, request: GoodsRequest): PreparedGoods {
+  private validate(key: Key, at: Time, request: GoodsRequest, override?:Map<Key,Record<string,number>>): PreparedGoods {
     checkTime(at);
     request = JSON.parse(JSON.stringify(request)) as GoodsRequest;
     const revision = this.state.transactions.length;
@@ -300,7 +300,7 @@ export class GoodsLedger {
         deltas.set(request.to, quantity);
       } else {
         const from = this.get(request.from);
-        const a = this.position(request.actor),
+        const a = request.kind==="sink"&&request.sink==="spoilage"?this.location(from.key):this.position(request.actor),
           p = this.location(from.key);
         if (
           math.sqrt((a.x - p.x) ** 2 + (a.y - p.y) ** 2) >
@@ -311,7 +311,7 @@ export class GoodsLedger {
           if (
             !Number.isSafeInteger(request.expires) ||
             request.expires <= at ||
-            quantity > this.available(from.key, good)
+            quantity > this.available(from.key, good,override)
           )
             throw new Error("Unbacked reservation");
           newReservation = {
@@ -338,8 +338,8 @@ export class GoodsLedger {
               throw new Error("Reservation cannot fund this debit");
           }
           if (
-            (from.stocks[good] ?? 0) -
-              this.reserved(from.key, good, request.reservation) <
+            ((override?.get(from.key)??from.stocks)[good] ?? 0) -
+              (request.kind==="sink"&&request.sink==="spoilage"?0:this.reserved(from.key, good, request.reservation)) <
             quantity
           )
             throw new Error("Insufficient finite backing");
@@ -367,7 +367,7 @@ export class GoodsLedger {
               throw new Error("Remote transfer");
             deltas.set(to.key, (deltas.get(to.key) ?? 0) + quantity);
           } else if (
-            !["consumption", "destruction", "recipe-input"].includes(
+            !["consumption", "destruction", "recipe-input", "spoilage"].includes(
               request.sink,
             )
           )
@@ -383,7 +383,7 @@ export class GoodsLedger {
           (ancestorDelta.get(a) ?? 0) + delta * this.good(good).bulk,
         );
     for (const [c, delta] of ancestorDelta)
-      if (this.load(c) + delta > this.get(c).capacityCu + tolerance)
+      if (this.load(c,override) + delta > this.get(c).capacityCu + tolerance)
         throw new Error("Capacity exceeded");
     const loadActors = [
       ...new Set(
@@ -436,6 +436,7 @@ export class GoodsLedger {
       },
     };
   }
+  validateProjected(key:Key,at:Time,request:GoodsRequest,stocks:Map<Key,Record<string,number>>) { this.validate(key,at,request,stocks); }
   transact(key: Key, at: Time, request: GoodsRequest): Transaction {
     return this.prepare(key, at, request).commit();
   }

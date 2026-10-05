@@ -1,3 +1,6 @@
+import {StorageLaw,type StorageState} from "../world/storage";
+import { DangerLaw, type DangerState } from "../world/danger";
+import { boundedRepair } from "../mind/repair";
 import { MaterialLaw, type MaterialState } from "../world/material";
 import { stockAt } from "../world/resources";
 import { EXTRACTION_INDEX } from "../content/extraction";
@@ -83,6 +86,8 @@ import { Mind } from "../mind/review";
 import type { MindState, WakeCause, Dispositions } from "../mind/types";
 import { bodySignals, ownedLots } from "../mind/signals";
 type PhysicalEvent =
+  | {kind:"predator-tick"}
+  | {kind:"danger-observe"|"mind-safety";actor:Key}
   | { kind: "leg"; actor: Key; generation: number }
   | { kind: "lease"; reservation: Key }
   | { kind: "contact"; a: Key; b: Key; ga: number; gb: number; radius: number }
@@ -99,7 +104,7 @@ type PhysicalEvent =
   | { kind: "runtime-operation"; taskId: string; event: "operation" | "budget" }
   | { kind: "representative-closure"; actor: Key }
   | {
-      kind: "mind-periodic" | "mind-review" | "mind-food-crossing";
+      kind: "mind-periodic" | "mind-review" | "mind-food-crossing" | "mind-repair";
       actor: Key;
     };
 interface RouteRequest {
@@ -136,6 +141,8 @@ interface Save {
   epistemicActors: Key[];
   adultPhysical: AdultPhysicalState;
   materials: MaterialState;
+  danger:DangerState;
+  storage:StorageState;
   mind: MindState[];
 }
 const FIELDS = [
@@ -168,6 +175,8 @@ export class PhysicalSimulation {
   private runtime: TaskRuntime;
   private adultPhysical: AdultPhysical;
   private materials: MaterialLaw;
+  private danger:DangerLaw;
+  private storage:StorageLaw;
   private mind: Mind;
   private epistemicActors = new Set<Key>();
   private carriedByActor = new Map<Key, Key>();
@@ -219,6 +228,14 @@ export class PhysicalSimulation {
       config.spatial,
     );
     this.epistemicActors = new Set(saved?.epistemicActors ?? []);
+    this.storage=new StorageLaw(this.ledger,()=>this.kernel.state.now,(from,good,quantity)=>{
+      this.goods({kind:"sink",sink:"spoilage",actor:this.ledger.get(from).custodian??from,from,good,quantity});
+      const c=this.ledger.get(from),owner=c.custodian;
+      if(owner&&this.epistemicActors.has(owner)){
+        const p=this.position(owner),q=this.ledger.location(from);if(c.kind==="carried"||(p.x-q.x)**2+(p.y-q.y)**2<=.08**2)this.publishOwnStocks(owner,from);
+      }
+    },saved?.storage);
+    if(!saved)for(const c of this.ledger.state.containers)this.storage.touch(c.key);
     this.materials = new MaterialLaw(seed,this.ledger,{
       position: actor=>this.position(actor),
       input:(actor,good,quantity)=>{const from=this.ledger.carriedContainer(actor).key;this.goods({kind:"sink",sink:"recipe-input",actor,from,good,quantity});this.publishOwnStocks(actor,from);},
@@ -235,6 +252,7 @@ export class PhysicalSimulation {
       {
         now: () => this.kernel.state.now,
         remainingGoods:(actor,good)=>{const b=this.runtime.currentExecution(actor).budget;return b?(b.authorised.goods[good]??0)-(b.spent.goods[good]??0):0;},
+        engage:(actor,target,duration)=>!!this.danger.engage(actor,target,duration),
         workRadiusKm: config.movement.workRadiusKm,
         position: (actor) => this.position(actor),
         knownMethod: (actor, method) =>
@@ -380,15 +398,27 @@ export class PhysicalSimulation {
       this.counters,
       saved?.adultPhysical,
       this.materials,
+      this.storage,
     );
     for (const site of this.adultPhysical.state.sites)
       this.spatial.put(site.key, site.point);
+    this.danger=new DangerLaw(seed,{
+      now:()=>this.kernel.state.now,position:actor=>this.position(actor),
+      nearby:(point,radius)=>this.spatial.query(point,radius).filter(key=>this.byActor.has(key)),
+      passable:point=>{const k=cell(this.terrain,point);return k>=0&&!!this.terrain.passable[k];},
+      alive:actor=>this.adultPhysical.body(actor)?.alive??false,
+      force:actor=>this.adultPhysical.force(actor),
+      harm:(actor,wound,fatal)=>{const task=this.runtime.task(actor);if(task)this.runtime.interrupt(actor,"animal harm");this.adultPhysical.harm(actor,wound,fatal);if(task&&this.adultPhysical.body(actor)?.alive)this.runtime.resume(actor);},
+      fact:(actor,subject,property,value)=>this.evidence.fact(actor,this.evidence.selfHandle(actor,subject),property,value as import("../evidence/types").Value,this.kernel.state.now,"local physical encounter","direct"),
+    },saved?.danger);
+    if(this.danger.state.predator)this.spatial.put(this.danger.state.predator.key,this.danger.state.predator.point);
     this.runtime = new TaskRuntime(
       {
         beginPhysical: (task, step, remaining) => {
+          const before=task.dependsOn.map(d=>({key:d.key,before:this.evidence.version(task.actor,d.key)}));
           const result = this.adultPhysical.begin(task, step, remaining);
           if (result.ok) this.refreshMindThresholds(task.actor, step);
-          return result;
+          return result.ok?{...result,ownWrites:before.map(d=>({...d,after:this.evidence.version(task.actor,d.key)})).filter(d=>d.before!==d.after)}:result;
         },
         endPhysical: (task, final) => {
           const before = task.dependsOn.map((d) => ({
@@ -580,9 +610,11 @@ export class PhysicalSimulation {
           this.evidence.route(actor, subject, cells, status, at),
         record: (kind, actor, detail) => {
           this.kernel.record(kind, actor, detail);
-          if (kind === "task-complete") this.requestReview(actor, "completion");
-          if (kind === "task-repair-required")
-            this.requestReview(actor, "failure");
+          if (kind === "task-complete") {
+            if(!this.runtime.resumeSuspended(actor))this.requestReview(actor,"completion");
+          }
+          if (kind === "task-repair-required" && this.mind?.person(actor))
+            this.kernel.schedule(digest(["mind-repair",actor]),this.kernel.state.now+(this.kernel.state.phase===PHASE.decide?1:0),PHASE.decide,{kind:"mind-repair",actor});
         },
       },
       this.counters,
@@ -832,6 +864,7 @@ export class PhysicalSimulation {
     return state ? freezeProjection(clone(state)) : null;
   }
   requestReview(actor: Key, cause: WakeCause): void {
+    if(this.adultPhysical.body(actor)?.alive===false)return;
     if (!this.mind?.person(actor)) return;
     const at =
       this.kernel.state.now +
@@ -962,6 +995,9 @@ export class PhysicalSimulation {
     this.adultPhysical.found(actor, class_, profile);
     this.adultPhysical.experience(actor);
   }
+  diagnosticPredator(point:Point) {
+    const id=this.kernel.ids.allocate("predator",digest([this.seed,"founding-predator"]));this.danger.found(id.key,point);this.spatial.put(id.key,point);this.kernel.schedule(id.key,this.kernel.state.now+Math.ceil(.1*QUANTA),PHASE.harm,{kind:"predator-tick"});return id.key;
+  }
   diagnosticResource(
     kind: string,
     point: Point,
@@ -1044,6 +1080,11 @@ export class PhysicalSimulation {
     )) {
       if (key === actor || (focus && key !== focus)) continue;
       this.counters.perceptionCandidateChecks++;
+      const predator=this.danger?.state.predator;
+      if(predator?.key===key){
+        if(visible(this.terrain,p,predator.point,sight))facts.push({reference:key,kind:"animal",position:predator.point,detection:1,properties:[{property:"threat",value:{force:1.6,point:predator.point,active:predator.retreatUntil<=this.kernel.state.now} as unknown as import("../evidence/types").Value,volatility:"fast",uncertainty:0}]});
+        continue;
+      }
       const resource = this.adultPhysical.site(key);
       if (resource) {
         if (!visible(this.terrain, p, resource.point, sight)) continue;
@@ -1172,6 +1213,7 @@ export class PhysicalSimulation {
       context,
       directed,
     );
+    if(this.mind?.person(actor)&&facts.some(f=>f.kind==="animal"))this.kernel.schedule(digest(["mind-safety",actor]),this.kernel.state.now+(this.kernel.state.phase===PHASE.decide?1:0),PHASE.decide,{kind:"mind-safety",actor});
     // A newly visible obstruction of the selected physical path is consequential.
     const task = this.runtime?.task(actor);
     if (task?.active?.family === "Move" && task.route) {
@@ -1200,6 +1242,7 @@ export class PhysicalSimulation {
           true,
         );
       this.runtime.evidenceBoundary(actor);
+
     }
   }
   private startPersonalPrefix(
@@ -1432,7 +1475,7 @@ export class PhysicalSimulation {
           y: (leg.from.y + leg.to.y) / 2,
         };
         for (const key of this.spatial.query(mid, r + s.cellKm * 2)) {
-          if (this.byActor.has(key) || this.adultPhysical.site(key)) continue;
+          if (this.byActor.has(key) || this.adultPhysical.site(key) || this.danger.state.predator?.key===key) continue;
           for (const radius of [r, this.config.movement.workRadiusKm]) {
             const u = entryFraction(
               leg.from,
@@ -1544,6 +1587,16 @@ export class PhysicalSimulation {
   }
   private execute(e: Event<PhysicalEvent>): void {
     const p = e.payload;
+    if(p.kind==="predator-tick"){
+      this.danger.tick();const predator=this.danger.state.predator!;this.spatial.put(predator.key,predator.point);
+      for(const actor of this.spatial.query(predator.point,this.config.movement.sightKm).filter(key=>this.epistemicActors.has(key)))this.kernel.schedule(digest(["danger-observe",actor]),e.at,PHASE.observe,{kind:"danger-observe",actor});
+      this.kernel.schedule(predator.key,e.at+Math.ceil(.1*QUANTA),PHASE.harm,{kind:"predator-tick"});
+    }
+    if(p.kind==="danger-observe")this.perceive(p.actor,"local moving animal",true);
+    if(p.kind==="mind-safety"){
+      const trace=this.mind.safety(this.personalReview(p.actor),this.runtime.currentExecution(p.actor));
+      if(trace){this.runtime.admitEffort(trace.effort,trace.selected);if(trace.selected){this.runtime.suspendForSafety(p.actor);this.runtime.select(trace.selected);}}
+    }
     if (p.kind === "mind-periodic") {
       const state = this.mind.person(p.actor)!;
       this.requestReview(p.actor, "periodic");
@@ -1553,6 +1606,18 @@ export class PhysicalSimulation {
     if (p.kind === "mind-food-crossing") {
       this.runtime.reviewBoundary(p.actor);
       this.refreshMindThresholds(p.actor);
+    }
+    if(p.kind==="mind-repair") {
+      const state=this.mind.person(p.actor)!,execution=this.runtime.currentExecution(p.actor),review=this.personalReview(p.actor);
+      if(!execution.task||!execution.budget||execution.task.status!=="blocked")return;
+      const signature=digest([execution.task.semanticKey,execution.task.cursor,execution.task.failure,review.geographyId]);
+      if(state.repairSignature===signature){this.requestReview(p.actor,"failure");return;}
+      state.repairSignature=signature;
+      const result=boundedRepair(review,execution.task,execution.budget,this.counters);
+      this.runtime.admitEffort(result.effort);
+      if(result.repair)this.runtime.installBoundRepair(p.actor,result.repair);
+      else this.requestReview(p.actor,"failure");
+      this.kernel.record("bounded-repair-result",p.actor,{semanticKey:execution.task.semanticKey,installed:!!result.repair,reason:result.reason,effort:result.effort});
     }
     if (p.kind === "mind-review") {
       const state = this.mind.person(p.actor)!;
@@ -1609,6 +1674,7 @@ export class PhysicalSimulation {
           !!this.adultPhysical.body(p.actor) && a.motion?.status === "moving";
       if (moving) this.movement.settle(a, this.kernel.state.now);
       this.runtime.closure(p.actor);
+      for(const c of this.ledger.state.containers.filter(c=>c.custodian===p.actor))this.storage.settle(c.key);
       this.refreshMindThresholds(p.actor);
       if (moving && a.motion?.status === "moving") {
         this.kernel.invalidate(motionScope(p.actor));
@@ -1686,11 +1752,19 @@ export class PhysicalSimulation {
       ordinal = this.kernel.state.ids.ordinals[tag] ?? 0,
       key = lineage("transaction", parent, ordinal),
       now = this.kernel.state.now;
-    const prepared = this.ledger.prepare(key, now, request);
+    if(this.storage&&!(request.kind==="sink"&&request.sink==="spoilage")){
+      const projected=this.storage.preview(request);this.ledger.validateProjected(key,now,request,projected);
+      for(const container of projected.keys())this.storage.settle(container);
+    }
+    const prepared = this.ledger.prepare(lineage("transaction",parent,this.kernel.state.ids.ordinals[tag]??0), now, request);
     for (const actor of prepared.loadActors)
       this.movement.settle(this.actor(actor), now);
     this.kernel.ids.allocate("transaction", parent);
-    prepared.commit();
+    const committed=prepared.commit();
+    if(this.storage&&!(request.kind==="sink"&&request.sink==="spoilage")){
+      const keys=request.kind==="source"?[request.to]:request.kind==="transfer"?[request.from,request.to]:request.kind==="sink"?[request.from]:[];
+      for(const container of keys)this.storage.touch(container);
+    }
     if(request.kind==="transfer")this.materials?.transfer(request.from,request.to,request.good,request.quantity);
     for (const actor of prepared.loadActors) {
       const a = this.actor(actor),
@@ -1703,16 +1777,16 @@ export class PhysicalSimulation {
       }
     }
     if (request.kind === "reserve")
-      this.kernel.schedule(key, request.expires, PHASE.settle, {
+      this.kernel.schedule(committed.key, request.expires, PHASE.settle, {
         kind: "lease",
-        reservation: key,
+        reservation: committed.key,
       });
     if (request.kind === "release") this.kernel.invalidate(request.reservation);
     this.kernel.record("goods-" + request.kind, parent, {
-      transaction: key,
+      transaction: committed.key,
       request,
     });
-    return key;
+    return committed.key;
   }
   diagnosticGoods(request: Exclude<GoodsRequest, { kind: "expire" }>): Key {
     if ("actor" in request && this.epistemicActors.has(request.actor))
@@ -1893,6 +1967,8 @@ export class PhysicalSimulation {
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
       materials: this.materials.state,
+      danger:this.danger.state,
+      storage:this.storage.state,
       mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
@@ -1930,6 +2006,8 @@ export class PhysicalSimulation {
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
       materials: this.materials.state,
+      danger:this.danger.state,
+      storage:this.storage.state,
       mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
@@ -2305,7 +2383,7 @@ function validateSaved(s: Save): void {
     )
       throw Error("Missing review authorization backing");
   const taskIds = new Set<string>();
-  for (const t of [...s.runtime.tasks, ...s.runtime.terminal]) {
+  for (const t of [...s.runtime.tasks, ...(s.runtime.suspended??[]), ...s.runtime.terminal]) {
     const budget = s.runtime.budgets[t.actor + ":" + t.semanticKey];
     if (
       !owners.has(t.actor) ||

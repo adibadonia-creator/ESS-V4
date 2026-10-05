@@ -42,7 +42,7 @@ export type Operation =
       duration: number;
       mode?: "rest" | "leisure";
     }
-  | { family: "Engage"; law: string; duration: number };
+  | { family: "Engage"; law: string; duration: number; target?:string };
 export interface Budget {
   time: number;
   goods: Record<string, number>;
@@ -140,6 +140,7 @@ export interface ActivityState {
 }
 export interface RuntimeState {
   tasks: Task[];
+  suspended?: Task[];
   terminal: Task[];
   retry: Record<string, number>;
   purpose: Record<string, string>;
@@ -166,7 +167,7 @@ export interface RuntimePort {
     task: Task,
     step: Operation,
     remaining: number,
-  ): { ok: true; end: number } | { ok: false; observed: string };
+  ): { ok: true; end: number;ownWrites?:{key:string;before:number;after:number}[] } | { ok: false; observed: string };
   endPhysical(
     task: Task,
     final: boolean,
@@ -228,4 +229,5 @@ export interface BoundRepair {
   bindings: Record<string, string>;
   steps: Operation[];
   dependsOn: { key: string; version: number }[];
+  preparedRoutes?: Record<number,PersonalSearch>;
 }

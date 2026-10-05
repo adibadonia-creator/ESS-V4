@@ -126,7 +126,7 @@ export interface PersonalView {
 // Only physically filtered facts may be delivered through this contract.
 export interface PerceptibleFact {
   reference: string;
-  kind: "site" | "cache" | "person";
+  kind: "site" | "cache" | "person" | "animal";
   position: Point;
   properties: {
     property: string;

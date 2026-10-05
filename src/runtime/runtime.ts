@@ -82,6 +82,18 @@ export class TaskRuntime {
       this.state.reviewAuthorizations[account.key] = digest(selected);
     }
   }
+  suspendForSafety(actor:string) {
+    const t=this.task(actor);if(!t)return;
+    if(t.source==="bounded-safety-reflex"){this.abandon(actor);return;}
+    if((this.state.suspended??[]).some(s=>s.actor===actor))throw Error("Nested ordinary safety suspension");
+    this.interrupt(actor,"immediate personal danger");
+    this.state.tasks.splice(this.state.tasks.indexOf(t),1);this.current.delete(actor);this.byId.delete(t.taskId);
+    (this.state.suspended??=[]).push(t);
+  }
+  resumeSuspended(actor:string) {
+    const rows=this.state.suspended??[],index=rows.findIndex(t=>t.actor===actor);if(index<0||this.current.has(actor))return false;
+    const t=rows.splice(index,1)[0]!;this.state.tasks.push(t);this.current.set(actor,t);this.byId.set(t.taskId,t);this.resume(actor);return true;
+  }
   private budget(t: Task) {
     return this.state.budgets[t.actor + ":" + t.semanticKey]!;
   }
@@ -321,7 +333,7 @@ export class TaskRuntime {
     }
     const step = t.steps[t.cursor]!;
     if (
-      !["Move", "Attend", "Transfer", "Work", "Recover"].includes(step.family)
+      !["Move", "Attend", "Transfer", "Work", "Recover", "Engage"].includes(step.family)
     ) {
       t.status = "failed";
       t.failure = `not-yet-implemented law: ${step.family}`;
@@ -408,6 +420,7 @@ export class TaskRuntime {
       end: now + duration,
     };
     const physical = this.port.beginPhysical(t, step, duration);
+    if(physical.ok)this.advanceOwnWrites(t,physical.ownWrites??[]);
     if (!physical.ok) {
       this.block(t, physical.observed);
       return;
@@ -634,6 +647,9 @@ export class TaskRuntime {
       });
     }
     this.complete(t);
+  }
+  private advanceOwnWrites(t:Task,writes:{key:string;before:number;after:number}[]) {
+    for(const write of writes){const d=t.dependsOn.find(d=>d.key===write.key&&d.version===write.before);if(d){d.version=write.after;if(d.valueFingerprint){const [subject,property]=JSON.parse(d.key) as [string,string];d.valueFingerprint=digest(this.port.personal(t.actor).belief(subject,property)?.value);}}}
   }
   private settlePhysical(t: Task, final: boolean) {
     const result = this.port.endPhysical(t, final),
@@ -862,6 +878,7 @@ export class TaskRuntime {
           end: this.port.now() + remaining,
         };
         const result = this.port.beginPhysical(t, step, remaining);
+        if(result.ok)this.advanceOwnWrites(t,result.ownWrites??[]);
         if (!result.ok) {
           this.block(t, result.observed);
           return;
@@ -966,6 +983,9 @@ export class TaskRuntime {
     )
       throw Error("Repair depends on stale personal knowledge");
     t.steps = [...t.steps.slice(0, t.cursor), ...clone(repair.steps)];
+    if(repair.preparedRoutes){
+      t.preparedRoutes={};for(const [index,route] of Object.entries(repair.preparedRoutes))t.preparedRoutes[t.cursor+Number(index)]=clone(route);
+    }else if(t.preparedRoutes)delete t.preparedRoutes[t.cursor];
     t.bindings = clone(repair.bindings);
     t.dependsOn = clone(repair.dependsOn);
     t.bindingRevision++;

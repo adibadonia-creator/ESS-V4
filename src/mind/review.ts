@@ -1,3 +1,5 @@
+import { beginPersonalSearch,resumePersonalSearch } from "../runtime/routing";
+import { chargeRoute,routeAllowance } from "../kernel/effort";
 import { ProjectFrontier } from "./projects";
 import { capitalOptions } from "./capital";
 import { canonical, compareKey, digest } from "../kernel/canonical";
@@ -54,6 +56,42 @@ export class Mind {
       Object.freeze(s.dispositions);
       this.people.set(s.actor, s);
     }
+  }
+  safety(review:PersonalReview,execution:Execution):DecisionTrace|null {
+    const state=this.people.get(review.owner);if(!state)return null;
+    const evidence=review.places("threat",1).entries[0];
+    const threat=evidence?.value as unknown as {force:number;point:{x:number;y:number};active:boolean}|undefined;
+    if(!threat?.active || review.time-evidence!.observedAt>QUANTA/4)return null;
+    const loc=review.self.location,distance=math.sqrt((loc.x-threat.point.x)**2+(loc.y-threat.point.y)**2);
+    if(distance>=.6)return null;
+    const signature=digest([evidence!.subject,Math.floor(distance/.1)]);
+    if(state.safetySignature===signature)return null;state.safetySignature=signature;
+    const account={...openReview(review.owner,review.time),kind:"safety" as const,key:canonical([review.owner,"safety",review.time]),allowance:80};
+    const meter=new ReviewEffort(account,this.counts),reference=continuation(review,execution),options:BoundOption[]=[reference];
+    const p=review.profile,k=(point:{x:number;y:number})=>Math.floor(point.x/p.cellKm)+p.width*Math.floor(point.y/p.cellKm);
+    const norm=distance||1,away={x:(loc.x-threat.point.x)/norm,y:(loc.y-threat.point.y)/norm};
+    if(distance===0){away.x=1;away.y=0;}
+    for(const scale of [.5,.3]) {
+      if(!meter.spend("descriptor")||!meter.spend("binding"))break;
+      const point={x:Math.max(p.cellKm/2,Math.min(p.width*p.cellKm-p.cellKm/2,loc.x+away.x*scale)),y:Math.max(p.cellKm/2,Math.min(p.height*p.cellKm-p.cellKm/2,loc.y+away.y*scale))};
+      if(!review.cell(k(point))?.passable||review.belief("method:escape","known")?.value!==true)continue;
+      const route=beginPersonalSearch(p,[],k(loc),k(point),false,review.traversalPrior(),this.counts,[],review.geography());
+      route.effortAccount=account.key;
+      const before=route.expansions,allowance=Math.min(512,routeAllowance(account));resumePersonalSearch(route,allowance,this.counts,allowance,review.geography());chargeRoute(account,route.expansions-before);
+      if(route.status!=="found"||route.path.some(cell=>review.cell(cell)?.passable!==true))continue;
+      const b=bodySignals(review),duration=Math.ceil(route.nodes[route.goal]!.g/(80*math.sqrt(Math.max(.05,b.condition))*math.sqrt(1-b.wounds)*(1-.2*b.fatigue))*QUANTA);
+      const o:BoundOption={key:"",objective:{kind:"service",service:"safety",quantity:1},method:"escape",steps:[{family:"Move",target:point,exploratory:false}],dependencies:[],bindings:{threat:evidence!.subject},status:"executable",reason:"flight on personally established local geometry",prerequisites:[],routes:{0:route},duration,goods:{},reference:false};o.key=optionKey(o);options.push(o);
+    }
+    if(distance<=.08&&review.belief("method:defend","known")?.value===true&&meter.spend("binding")) {
+      const o:BoundOption={key:"",objective:{kind:"service",service:"safety",quantity:1},method:"defend",steps:[{family:"Engage",law:"contest",target:evidence!.subject,duration:Math.ceil(.04*QUANTA)}],dependencies:[],bindings:{threat:evidence!.subject},status:"executable",reason:"local defence of the interrupted purpose",prerequisites:[],routes:{},duration:Math.ceil(.04*QUANTA),goods:{},reference:false};o.key=optionKey(o);options.push(o);
+    }
+    const compared:Compared[]=[];const baseline=forecast(review,reference,meter,3);if(!baseline)return null;
+    for(const o of options){const c=o.reference?baseline:forecast(review,o,meter,3);if(!c)continue;const gate=o.reference?null:feasibility(review,{option:o,consequences:c} as Compared,true);compared.push({option:o,consequences:c,feasible:gate===null,gate,riskPass:c.severeProbability<=.12+.06*state.dispositions.rT,value:o.reference?0:preference(c,baseline,state.dispositions,review.quietRequirement(),[]),error:0,errors:c.blocks.map(()=>0)});}
+    const result=arbitrate(compared,.12+.06*state.dispositions.rT);
+    const selected=result.winner.option.reference?null:authorization(review,state,result.winner.option,account.key);
+    if(selected)selected.source="bounded-safety-reflex";
+    const trace:DecisionTrace={actor:review.owner,at:review.time,epoch:state.epoch,causes:["danger"],signature,effort:copy(account),drives:options.slice(1).map(o=>({objective:o.objective,urgency:1,admitted:true})),agenda:options.slice(1).map(o=>o.objective),methods:options.slice(1).map(o=>o.method),bindings:copy(options),dependencies:[],premises:{self:review.self,geographyId:review.geographyId,quietEstimate:review.quietRequirement(),ownedInputs:ownedLots(review,"food")},evidence:[{subject:evidence!.subject,property:evidence!.property,version:evidence!.version,observedAt:evidence!.observedAt,value:copy(evidence!.value)}],compared:copy(compared),winner:result.winner.option.key,rejected:result.rejected?.option.key??null,rule:result.rule,margin:result.margin,selected,deferrals:[]};
+    state.traces.push(copy(trace));if(state.traces.length>TRACE_WINDOW)state.traces.shift();return trace;
   }
   person(actor: string) {
     return this.people.get(actor) ?? null;
@@ -707,7 +745,7 @@ function authorization(
     source: "bounded-personal-review",
     effortAccount: account,
     preparedRoutes: copy(o.routes),
-    repairScope: { moveTargets: [], bindings: {} },
+    repairScope: { moveTargets: o.steps.flatMap(step=>step.family==="Move"?[{...step.target}]:[]), bindings: {} },
     envelope: {
       purpose,
       end: o.objective,

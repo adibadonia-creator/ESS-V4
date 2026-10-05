@@ -1,3 +1,4 @@
+import { injuryProbability,contestProbability } from "../laws/engagement";
 import { nutrition } from "../content/goods";
 import { OPERATION_INDEX } from "../content/exploration";
 import { math } from "../kernel/numerics";
@@ -75,6 +76,7 @@ function activity(
   }
   if ((step.family === "Attend" || step.family === "Move") && step.experiment)
     a.pleasant = explorationWeight(review, step.experiment);
+  if(step.family==="Engage"){a.load=.7;a.effort=1;}
   if (step.family === "Recover") {
     a.rest = (step.mode ?? step.law) === "rest";
     if ((step.mode ?? step.law) === "leisure") {
@@ -144,6 +146,10 @@ export function forecast(
   let closure =
     Math.floor(review.time / QUANTA) + offset - review.time / QUANTA;
   if (closure <= 0) closure++;
+  const threatRecord=review.places("threat",1).entries[0];
+  const threat=threatRecord?.value as unknown as {force:number;point:{x:number;y:number};active:boolean}|undefined;
+  const dangerous=threat?.active===true&&review.time-threatRecord!.observedAt<=QUANTA/4;
+  let projectedPosition={...review.self.location},defended=false;
   let severeHazard = 0;
   const stock = new Map<string, number>();
   for (const a of activities)
@@ -218,6 +224,12 @@ export function forecast(
           );
         }
       }
+      if(dangerous&&!defended){
+        if(a?.step.family==="Engage"){
+          if(z>=a.end-1e-12){const force=Number(review.belief("self","force-estimate")?.value??1),fraction=threat!.force/(force+threat!.force),win=contestProbability(force,threat!.force);const injury=win*injuryProbability(fraction,false,0,a.end-a.start)+(1-win)*injuryProbability(fraction,true,0,a.end-a.start);hazard+=-math.log(Math.max(1e-12,1-injury));defended=true;}
+        }else{const distance=math.sqrt((projectedPosition.x-threat!.point.x)**2+(projectedPosition.y-threat!.point.y)**2);hazard+=.15*Math.max(0,1-distance/.8)*dt;}
+      }
+      if(a?.step.family==="Move"&&z>=a.end-1e-12)projectedPosition={...a.step.target};
       const segment = conditionSegment(
         c,
         intake,
@@ -243,6 +255,7 @@ export function forecast(
         heldActivity = undefined;
       }
     }
+
     severeHazard += hazard;
     blocks.push({
       start,

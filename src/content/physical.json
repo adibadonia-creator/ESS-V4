@@ -167,7 +167,9 @@
       "make-spear",
       "establish-cache",
       "fish",
-      "eat-fish"
+      "eat-fish",
+      "escape",
+      "defend"
     ],
     "stockLogSd": 0.35,
     "places": 32,
@@ -529,6 +531,20 @@
         "cheapCost": 1,
         "locality": "known-local-or-route"
       }
+    },
+    {
+      "id": "escape",
+      "effects": [
+        "service:safety"
+      ],
+      "inputs": []
+    },
+    {
+      "id": "defend",
+      "effects": [
+        "service:safety"
+      ],
+      "inputs": []
     }
   ],
   "cognitiveEffort": {
