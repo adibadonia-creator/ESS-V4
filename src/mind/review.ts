@@ -1,7 +1,9 @@
+import {EXTRACTION_INDEX} from "../content/extraction";
+import {grantMaintenance} from "./maintenance";
 import { beginPersonalSearch,resumePersonalSearch } from "../runtime/routing";
 import { chargeRoute,routeAllowance } from "../kernel/effort";
 import { ProjectFrontier } from "./projects";
-import { capitalOptions } from "./capital";
+import { capitalOptions,capitalCue } from "./capital";
 import { canonical, compareKey, digest } from "../kernel/canonical";
 import { draw, normal } from "../kernel/random";
 import { math } from "../kernel/numerics";
@@ -267,7 +269,7 @@ export class Mind {
     const opportunities = explorationOptions(review, s, meter);
     const allDrives = [
       ...drives(review, page.lots),
-      ...(review.bestMethod("service:capital")&&review.places("service-use",1).entries.length?[{objective:{kind:"service" as const,service:"capital",quantity:1},urgency:.1}]:[]),
+      ...(capitalCue(review,this.catalogue)?[{objective:{kind:"service" as const,service:"capital",quantity:1},urgency:.1}]:[]),
       ...opportunities.map((o) => {
         const experiment = o.steps.find(
           (step) =>
@@ -308,10 +310,22 @@ export class Mind {
     this.counts.agendaDeferred += allDrives.length - admitted.length;
     const bound: BoundOption[] = [],
       deferrals: string[] = [];
+    for(const project of (s.projects??[]).filter(p=>p.status!=="abandoned"&&p.status!=="complete").slice(0,1)) {
+      const key=canonical([s.actor,project.key]);
+      let frontier=this.projectFrontiers.get(key);if(!frontier){frontier=new ProjectFrontier(project,this.catalogue);this.projectFrontiers.set(key,frontier);}
+      const leaf=frontier.advance(review,meter,Math.min(9,meter.nodes+9));
+      const method=leaf?this.catalogue.get(leaf.method):null;
+      if(leaf&&method){const option=binder.bind(leaf.objective,method);option.project=project.key;option.projectFinal=project.focus===0;
+        if(!option.projectFinal){option.completion=frontier.completion(review);option.key=optionKey(option);}
+        if(option.status==="executable"&&reference.steps.length&&effectOf(option.objective)!==effectOf(reference.objective)&&canCompose(review,option,reference,this.catalogue))append(option,reference);
+        bound.push(option);}
+      else if(project.status==="computationally-deferred")deferrals.push(project.reason);
+    }
     for (const item of admitted) {
       const opportunity = opportunities.find(
         (o) => effectOf(o.objective) === effectOf(item.objective),
       );
+      if(bound.some(o=>o.project&&canonical(o.objective)===canonical(item.objective)))continue;
       const choices = item.objective.kind==="service"&&item.objective.service==="capital"?capitalOptions(review,binder,meter):opportunity
         ? [opportunity]
         : binder
@@ -325,7 +339,7 @@ export class Mind {
           o.status === "executable" &&
           reference.steps.length &&
           o.duration < 3 * QUANTA &&
-          effectOf(o.objective) !== effectOf(reference.objective)
+          effectOf(o.objective) !== effectOf(reference.objective)&&canCompose(review,o,reference,this.catalogue)
         )
           append(o, reference);
         bound.push(o);
@@ -350,7 +364,7 @@ export class Mind {
             x.duration >= QUANTA &&
             effectOf(x.objective) !== effectOf(o.objective),
         );
-        if (suffix) append(o, copy(suffix));
+        if (suffix&&canCompose(review,o,suffix,this.catalogue)) append(o, copy(suffix));
       }
     if (opportunities.length) {
       const shorts = primitives
@@ -371,7 +385,7 @@ export class Mind {
             effectOf(o.objective) !==
               effectOf(suffix?.objective ?? prefix.objective),
         );
-        if (!suffix || !upkeep || !meter.spend("descriptor")) continue;
+        if (!suffix || !upkeep || !canCompose(review,prefix,suffix,this.catalogue)||!meter.spend("descriptor")) continue;
         const combined = copy(prefix);
         append(combined, copy(suffix));
         append(combined, copy(upkeep));
@@ -379,14 +393,6 @@ export class Mind {
           "explicit serial alternatives from this admitted agenda; all prefixes paid";
         bound.push(combined);
       }
-    }
-    for(const project of s.projects??[]) {
-      const key=canonical([s.actor,project.key]);
-      let frontier=this.projectFrontiers.get(key);if(!frontier){frontier=new ProjectFrontier(project,this.catalogue);this.projectFrontiers.set(key,frontier);}
-      const leaf=frontier.advance(review,meter);
-      const method=leaf?this.catalogue.get(leaf.method):null;
-      if(leaf&&method){const option=binder.bind(leaf.objective,method);option.project=project.key;bound.push(option);}
-      else if(project.status==="computationally-deferred")deferrals.push(project.reason);
     }
     const executable = bound.filter((o) => o.status === "executable");
     const first = [
@@ -413,6 +419,7 @@ export class Mind {
         ...fairExtras,
       ]),
     ].slice(0, 6);
+    for(const option of candidates)grantMaintenance(review,option,this.catalogue,meter);
     for (const o of bound.filter(
       (o) => o.status === "executable" && !candidates.includes(o),
     )) {
@@ -420,7 +427,7 @@ export class Mind {
       o.reason = "full comparison admission cap";
       deferrals.push(o.reason);
     }
-    const horizon=candidates.some(o=>(o.capital?.length??0)>0)?12:3;
+    const horizon=candidates.some(o=>(o.capital?.length??0)>0||o.completion)?12:3;
     const commonReference=horizon===3?refForecast:forecast(review,reference,meter,horizon,page.lots);
     if(!commonReference)throw Error("Mandatory common reference forecast exhausted");
     const compared: Compared[] = [];
@@ -509,7 +516,7 @@ export class Mind {
         !o.reference &&
         effectOf(o.objective) === "service:nourishment" &&
         refForecast.severeProbability > 0.12 + 0.06 * s.dispositions.rT;
-      x.gate = feasibility(review, x, emergency, page.lots);
+      x.gate = feasibility(review, x, emergency, page.lots,this.catalogue.recipes);
       x.feasible = x.gate === null;
       if (x.feasible && !o.reference)
         x.value = preference(
@@ -530,6 +537,10 @@ export class Mind {
     if (selected) {
       this.counts.alternativeSelected++;
     } else this.counts.incumbentRetained++;
+    for(const x of compared)if(x.option.project&&x.option.status==="executable"&&x.feasible&&x.value<result.winner.value-.05){
+      const p=s.projects?.find(p=>p.key===x.option.project);
+      if(p&&p.status!=="complete")this.projectFrontiers.get(canonical([s.actor,p.key]))?.abandon("remaining personally estimated value below admitted alternative");
+    }
     s.deferred = copy(
       bound.filter((o) => o.status === "computationally-deferred").slice(0, 5),
     );
@@ -585,6 +596,37 @@ export class Mind {
     return trace;
   }
 }
+function canCompose(review:PersonalReview,prefix:BoundOption,suffix:BoundOption,catalogue:MethodIndex){
+  const funds=new Map<string,number>(),stocks=new Map<string,number>();
+  const funding=(subject:string,good:string)=>{
+    const key=canonical([subject,good]);
+    if(!funds.has(key))funds.set(key,subject===review.self.carried.subject?review.self.carried.stocks[good]??0:Number((review.belief(subject,"own-local-stocks")?.value as Record<string,number>|undefined)?.[good]??0));
+    return funds.get(key)!;
+  };
+  for(const step of [...prefix.steps,...suffix.steps]){
+    if(step.family==="Transfer"){
+      if(step.quantity>funding(step.from,step.good)+1e-9)return false;
+      funds.set(canonical([step.from,step.good]),funding(step.from,step.good)-step.quantity);
+      if(step.use!=="consume")funds.set(canonical([step.to,step.good]),funding(step.to,step.good)+step.quantity);
+    }
+    if(step.family==="Work"){
+      const law=EXTRACTION_INDEX.method(step.law);
+      if(law&&step.site){
+        const site=canonical([step.site,law.good]);
+        if(!stocks.has(site))stocks.set(site,Number(review.belief(step.site,`stock:${law.good}`)?.value??0));
+        const q=Math.min(stocks.get(site)!,Math.max(0,(review.rateEstimate(law.id,law.siteKind)?.rate??0)*step.duration/QUANTA));
+        stocks.set(site,stocks.get(site)!-q);
+        funds.set(canonical([review.self.carried.subject,law.good]),funding(review.self.carried.subject,law.good)+q);
+      }
+      const recipe=catalogue.recipes.get(step.law);
+      if(recipe&&!step.workObject)for(const [good,q] of Object.entries(recipe.inputs)){
+        if(q>funding(review.self.carried.subject,good)+1e-9)return false;
+        funds.set(canonical([review.self.carried.subject,good]),funding(review.self.carried.subject,good)-q);
+      }
+    }
+  }
+  return true;
+}
 function append(prefix: BoundOption, suffix: BoundOption) {
   const offset = prefix.steps.length;
   prefix.steps.push(...copy(suffix.steps));
@@ -621,6 +663,7 @@ export function continuation(
   const steps = valid ? copy(t.steps.slice(t.cursor)) : [];
   if (steps.length && steps[0]!.family !== "Move") {
     const step = steps[0]! as Exclude<Operation, { family: "Move" }>;
+    if(step.maintenance)step.maintenance.quantity=Math.max(0,step.maintenance.quantity-(t!.maintenanceForStep??0));
     const oldDuration = step.duration;
     step.duration = Math.max(0, step.duration - t!.paidForStep);
     if (step.family === "Transfer")
@@ -742,6 +785,7 @@ function authorization(
       ),
     },
     reserve: [],
+    ...(o.project?{project:o.project,projectFinal:o.projectFinal??false}:{}),
     source: "bounded-personal-review",
     effortAccount: account,
     preparedRoutes: copy(o.routes),

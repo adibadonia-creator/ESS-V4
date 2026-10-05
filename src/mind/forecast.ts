@@ -1,5 +1,6 @@
 import { injuryProbability,contestProbability } from "../laws/engagement";
 import { nutrition } from "../content/goods";
+import {RECIPES} from "../content/recipes";
 import { OPERATION_INDEX } from "../content/exploration";
 import { math } from "../kernel/numerics";
 import { QUANTA } from "../kernel/time";
@@ -63,6 +64,7 @@ function activity(
       a.effort = law.effort;
       a.rate = review.rateEstimate(step.law, law.siteKind)?.rate ?? 0;
     }
+    if(RECIPES.get(step.law)||step.workObject){a.load=.45;a.effort=.6;}
     const compatible = OPERATION_INDEX.get(step.law);
     if (compatible) {
       a.load = compatible.load;
@@ -190,25 +192,32 @@ export function forecast(
             (1 - law.fatiguePenalty * b.fatigue)
           : 0;
       }
+      const futureSource=!a&&horizon>3&&t>=Math.max(3,cursor)&&review.bestMethod("service:nourishment")
+        ?[...backing.entries()].find(([key,q])=>q>1e-12&&nutrition(key.slice(key.lastIndexOf(":")+1))>0)?.[0]??null:null;
       const source =
         a?.step.family === "Transfer" && a.step.use === "consume"
           ? a.step.from+":"+a.step.good
-          : null;
+          : a?.step.maintenance?a.step.maintenance.from+":"+a.step.maintenance.good:futureSource;
+      const consumeRate=futureSource?b.quiet:(a?.step.maintenance?.rate??a?.rate??0);
       const available = source ? (backing.get(source) ?? 0) : 0;
       const depletion =
-        source && available > 1e-12 && a!.rate > 0
-          ? t + available / a!.rate
+        source && available > 1e-12 && consumeRate > 0
+          ? t + available / consumeRate
           : Infinity;
-      const z = Math.min(end, a?.end ?? nextStart, closure, depletion),
+      const z = Math.min(end, a?.end ?? nextStart, closure, depletion, !a&&horizon>3&&t<Math.max(3,cursor)?Math.max(3,cursor):Infinity),
         dt = z - t;
       if (!(dt > 0)) throw Error("Forecast fragment did not advance");
       let intake = 0;
-      if (a?.step.family === "Transfer" && a.step.use === "consume") {
-        intake = Math.min(a.rate, available / dt);
+      if (source) {
+        intake = Math.min(consumeRate, available / dt);
         const used = intake * dt;
         food -= used;
         loss += used;
-        backing.set(a.step.from+":"+a.step.good, Math.max(0, available - used));
+        backing.set(source, Math.max(0, available - used));
+      }
+      if(a?.step.family==="Transfer"&&a.step.use!=="consume"&&z>=a.end-1e-12&&nutrition(a.step.good)>0){
+        const from=a.step.from+":"+a.step.good,to=a.step.to+":"+a.step.good,moved=Math.min(a.step.quantity,backing.get(from)??0);
+        backing.set(from,(backing.get(from)??0)-moved);backing.set(to,(backing.get(to)??0)+moved);
       }
       if (a?.step.family === "Work") {
         const law = EXTRACTION_INDEX.method(a.step.law),
@@ -291,6 +300,13 @@ export function forecast(
             b.quiet;
       }
     }
+  if(option.completion){
+    const q=option.completion,tau=24;
+    // Finite service is discounted from its actual estimated date, excluding
+    // any same nutritional production already booked in the explicit prefix.
+    const booked=blocks.reduce((v,b)=>v+b.materialService*(b.end-b.start),0);
+    tail+=math.exp(-(Math.max(horizon,q.at)-horizon)/tau)*(Math.max(0,q.materialQuantity-booked)-q.remainingCost)/b.quiet;
+  }
   return {
     horizon,
     blocks,

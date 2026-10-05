@@ -28,6 +28,9 @@ export function optionKey(
   return digest([o.objective, o.steps, o.bindings]);
 }
 export class Binder {
+  method(id:string){return this.catalogue.get(id);}
+  counterfactual(good:string,quantity=1){return new Binder(this.review,this.state,this.meter,this.catalogue,this.sharedLots,{...this.assumedGoods,[good]:quantity});}
+  get recipes(){return this.catalogue.recipes;}
   methods: string[] = [];
   dependencies: Dependency[] = [];
   constructor(
@@ -36,6 +39,7 @@ export class Binder {
     private meter: ReviewEffort,
     private catalogue: MethodIndex = METHOD_INDEX,
     private sharedLots?: ReturnType<typeof ownedLots>,
+    private assumedGoods:Record<string,number>={},
   ) {}
   private read(subject: string, property: string) {
     const e = this.review.belief(subject, property);
@@ -277,7 +281,7 @@ export class Binder {
     o:BoundOption, method:MethodEntry, quantity:number,
     read:(subject:string,property:string)=>ReturnType<PersonalReview["belief"]>,
     ancestry:Set<string>,
-    funding={held:{...this.review.self.carried.stocks} as Record<string,number>,withdrawn:new Map<string,number>()},
+    funding={held:{...this.review.self.carried.stocks,...this.assumedGoods} as Record<string,number>,withdrawn:new Map<string,number>()},
   ): {status:BoundOption["status"];reason:string}|null {
     const schema=method.schema;
     if (!schema || !["make","extract"].includes(schema.operation)) return {status:"unsupported",reason:"no declarative producer"};
@@ -288,11 +292,11 @@ export class Binder {
     if(schema.operation==="make") {
       const wip=this.review.places(`work-recipe:${schema.law}`,2).entries.find(e=>{
         const w=e.value as unknown as {point:{x:number;y:number};complete:boolean};
-        return !w.complete&&(w.point.x-this.review.self.location.x)**2+(w.point.y-this.review.self.location.y)**2<=.08**2;
+        return !w.complete;
       });
       if(wip){
-        const w=wip.value as unknown as {progress:number;required:number};read(wip.subject,"work-progress");
-        o.steps.push({family:"Work",law:schema.law,duration:time(Math.max(.001,w.required-w.progress))});
+        const w=wip.value as unknown as {progress:number;required:number;point:{x:number;y:number}};const travel=this.locate(o,w.point);if(travel)return travel;read(wip.subject,"work-progress");
+        o.steps.push({family:"Work",law:schema.law,workObject:wip.subject,duration:time(Math.max(.001,w.required-w.progress)/(this.review.rateEstimate(schema.law,"making")?.rate??1))});
         funding.held[schema.good!]=(funding.held[schema.good!]??0)+quantity;ancestry.delete(effect);return null;
       }
     }
@@ -320,7 +324,7 @@ export class Binder {
     }
     if(o.steps.length>=12)return {status:"computationally-deferred",reason:"paid project prefix step allowance exhausted"};
     if(schema.operation==="make") {
-      for(let i=0;i<Math.ceil(quantity);i++)o.steps.push({family:"Work",law:schema.law,duration:time(schema.durationSd)});
+      for(let i=0;i<Math.ceil(quantity);i++)o.steps.push({family:"Work",law:schema.law,duration:time(schema.durationSd/(this.review.rateEstimate(schema.law,"making")?.rate??1))});
     } else {
       const result=this.extract(o,method,quantity,read);if(result)return result;
     }
@@ -338,67 +342,11 @@ export class Binder {
           (1 - 0.2 * b.fatigue)),
     );
   }
-  private extract(
-    o: BoundOption,
-    method: MethodEntry,
-    quantity: number,
-    read: (
-      subject: string,
-      property: string,
-    ) => ReturnType<PersonalReview["belief"]>,
-  ): { status: BoundOption["status"]; reason: string } | null {
-    const s = method.schema!;
-    read(`method:${method.id}`, "known");
-    const property = `class:${s.targetProperty}:${JSON.stringify(s.targetValue)}`;
-    const cursor = this.state.targetCursors[property];
-    let page = this.review.places(
-      property,
-      4,
-      cursor ? { after: cursor } : null,
-    );
-    if (!page.entries.length && cursor) page = this.review.places(property, 4);
-    this.state.targetCursors[property] = page.next?.after ?? null;
-    const candidates: {
-      subject: string;
-      point: { x: number; y: number };
-      distance: number;
-    }[] = [];
-    for (const e of page.entries) {
-      if (!this.meter.spend("retrieval"))
-        return {
-          status: "computationally-deferred",
-          reason: "source posting retrieval deferred",
-        };
-      this.meter.counts.targetsVisited++;
-      const p = read(e.subject, "location")?.value as
-        { x: number; y: number } | undefined;
-      const stock = read(e.subject, `stock:${s.good}`)?.value;
-      if (p && typeof stock === "number" && stock > 0)
-        candidates.push({
-          subject: e.subject,
-          point: p,
-          distance:
-            (p.x - this.review.self.location.x) ** 2 +
-            (p.y - this.review.self.location.y) ** 2,
-        });
-    }
-    candidates.sort(
-      (a, b) => a.distance - b.distance || compareKey(a.subject, b.subject),
-    );
-    const target = candidates[0];
-    if (!target)
-      return {
-        status: "epistemically-unresolved",
-        reason: "no personally known nonempty compatible source",
-      };
-    const rate = this.review.rateEstimate(method.id, s.rateContext!);
-    read("self", `rate:${method.id}:${s.rateContext}`);
-    if (!rate || rate.rate <= 0)
-      return {
-        status: "epistemically-unresolved",
-        reason: "no personal expected rate",
-      };
-    if (target.distance > 0.08 ** 2) {
+  private location(o:BoundOption){const last=[...o.steps].reverse().find(s=>s.family==="Move");return last?.family==="Move"?last.target:this.review.self.location;}
+  private locate(o:BoundOption,point:{x:number;y:number}):{status:BoundOption["status"];reason:string}|null {
+    const origin=this.location(o);
+    if((point.x-origin.x)**2+(point.y-origin.y)**2<=.08**2)return null;
+    {
       const p = this.review.profile,
         k = (point: { x: number; y: number }) =>
           Math.floor(point.x / p.cellKm) +
@@ -407,8 +355,8 @@ export class Binder {
         .flatMap((x) => Object.values(x.routes))
         .find(
           (r) =>
-            r.start === k(this.review.self.location) &&
-            r.goal === k(target.point) &&
+            r.start === k(origin) &&
+            r.goal === k(point) &&
             r.geographyId === this.review.geographyId &&
             r.status === "unresolved",
         );
@@ -417,8 +365,8 @@ export class Binder {
         : beginPersonalSearch(
             p,
             [],
-            k(this.review.self.location),
-            k(target.point),
+            k(origin),
+            k(point),
             false,
             this.review.traversalPrior(),
             this.meter.counts,
@@ -460,10 +408,73 @@ export class Binder {
         };
       o.steps.push({
         family: "Move",
-        target: target.point,
+        target: point,
         exploratory: false,
       });
     }
+    return null;
+  }
+  private extract(
+    o: BoundOption,
+    method: MethodEntry,
+    quantity: number,
+    read: (
+      subject: string,
+      property: string,
+    ) => ReturnType<PersonalReview["belief"]>,
+  ): { status: BoundOption["status"]; reason: string } | null {
+    const s = method.schema!;
+    read(`method:${method.id}`, "known");
+    const property = `class:${s.targetProperty}:${JSON.stringify(s.targetValue)}`;
+    const cursor = this.state.targetCursors[property];
+    let page = this.review.places(
+      property,
+      4,
+      cursor ? { after: cursor } : null,
+    );
+    if (!page.entries.length && cursor) page = this.review.places(property, 4);
+    this.state.targetCursors[property] = page.next?.after ?? null;
+    const candidates: {
+      subject: string;
+      point: { x: number; y: number };
+      distance: number;
+    }[] = [];
+    for (const e of page.entries) {
+      if (!this.meter.spend("retrieval"))
+        return {
+          status: "computationally-deferred",
+          reason: "source posting retrieval deferred",
+        };
+      this.meter.counts.targetsVisited++;
+      const p = read(e.subject, "location")?.value as
+        { x: number; y: number } | undefined;
+      const stock = read(e.subject, `stock:${s.good}`)?.value;
+      if (p && typeof stock === "number" && stock > 0)
+        candidates.push({
+          subject: e.subject,
+          point: p,
+          distance:
+            (p.x - this.location(o).x) ** 2 +
+            (p.y - this.location(o).y) ** 2,
+        });
+    }
+    candidates.sort(
+      (a, b) => a.distance - b.distance || compareKey(a.subject, b.subject),
+    );
+    const target = candidates[0];
+    if (!target)
+      return {
+        status: "epistemically-unresolved",
+        reason: "no personally known nonempty compatible source",
+      };
+    const rate = this.review.rateEstimate(method.id, s.rateContext!);
+    read("self", `rate:${method.id}:${s.rateContext}`);
+    if (!rate || rate.rate <= 0)
+      return {
+        status: "epistemically-unresolved",
+        reason: "no personal expected rate",
+      };
+    const travel=this.locate(o,target.point);if(travel)return travel;
     // Dated rate evidence already includes the actor's paid expression; project
     // only the public condition/fatigue changes relative to the observed signal.
     const duration = time(quantity / rate.rate);

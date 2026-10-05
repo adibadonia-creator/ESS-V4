@@ -8,7 +8,7 @@ export interface Predator {key:string;point:Point;home:Point;direction:Point;at:
 export interface DangerState {predator:Predator|null}
 export interface DangerPort {
  now():number; nearby(point:Point,radius:number):string[];position(actor:string):Point;
- passable(point:Point):boolean;alive(actor:string):boolean;force(actor:string):number;
+ passable(point:Point):boolean;alive(actor:string):boolean;force(actor:string):number;wounds(actor:string):number;
  harm(actor:string,wound:number,fatal:boolean):void;fact(actor:string,subject:string,property:string,value:unknown):void;
 }
 // One local animal law. It queries only physical neighbors, never human beliefs or plans.
@@ -30,7 +30,7 @@ export class DangerLaw {
     if(h.spent>=h.budget){
       const ordinal=++h.episodes;h.spent-=h.budget;h.budget=-math.log(Math.max(1e-12,draw(this.seed,"predator-hazard",[p.key,actor,String(ordinal)])));
       const wound=.2+.4*draw(this.seed,"predator-wound",[p.key,actor,String(ordinal)]);
-      this.port.harm(actor,wound,false);this.port.fact(actor,p.key,"danger-contact",{wound,at:now});
+      this.port.harm(actor,wound,draw(this.seed,"predator-fatality",[p.key,actor,String(ordinal)])<Math.min(1,.05+.30*this.port.wounds(actor)));this.port.fact(actor,p.key,"danger-contact",{wound,at:now});
     }
   }
   let direction=p.direction;
@@ -48,7 +48,7 @@ export class DangerLaw {
   const won=draw(this.seed,"engagement-outcome",key)<contestProbability(a,b);
   const probability=injuryProbability(b/(a+b),!won,0,duration);
   const injured=draw(this.seed,"engagement-injury",key)<probability;
-  if(injured)this.port.harm(actor,.2+.4*draw(this.seed,"engagement-wound",key),draw(this.seed,"engagement-fatality",key)<.05);
+  if(injured)this.port.harm(actor,.2+.4*draw(this.seed,"engagement-wound",key),draw(this.seed,"engagement-fatality",key)<Math.min(1,.05+.30*this.port.wounds(actor)));
   p.retreatUntil=this.port.now()+Math.ceil(3*QUANTA);
   this.port.fact(actor,p.key,"threat",{force:1.6,point:p.point,active:false,at:this.port.now()});
   return {won,injured};

@@ -327,6 +327,7 @@ export class TaskRuntime {
       this.release(t);
       this.archive(t);
       this.port.record("task-complete", t.actor, {
+        project:t.project??null,projectFinal:t.projectFinal??false,
         semanticKey: t.semanticKey,
       });
       return;
@@ -400,6 +401,7 @@ export class TaskRuntime {
       return;
     }
     if (step.family === "Transfer") {
+      for(const role of ["from","to"] as const){if(step[role].startsWith("$output:")){const binding=t.bindings[step[role]];if(!binding){this.block(t,"authorised production has not completed");return;}step[role]=binding;}}
       const b = this.budget(t),
         spent = b.spent.goods[step.good] ?? 0;
       if (
@@ -670,6 +672,8 @@ export class TaskRuntime {
         }
       }
     }
+    if(result.maintenanceCost)t.maintenanceForStep=(t.maintenanceForStep??0)+result.maintenanceCost;
+    if(result.outputSubject)t.bindings[`$output:${t.cursor}`]=result.outputSubject;
     if (step?.family === "Work") t.physicalStepOutput += result.quantity;
     for (const [good, quantity] of Object.entries(result.costs ?? {})) {
       const budget = this.budget(t);
@@ -703,6 +707,7 @@ export class TaskRuntime {
     t.cursor++;
     t.paidForStep = 0;
     t.physicalStepOutput = 0;
+    t.maintenanceForStep=0;
     t.route = null;
     this.port.unpinGeography(t.taskId);
     this.counts.runtimeStepCompletions++;
@@ -973,6 +978,10 @@ export class TaskRuntime {
           throw Error("Repair target is not an authorised known place");
         if (next.exploratory !== previous.exploratory)
           throw Error("Repair changes authorised exposure");
+      } else if(next.family==="Transfer"&&previous.family==="Transfer"&&next.from!==previous.from){
+        const role=`input:${t.cursor+i}`;
+        const stocks=next.from===view.self.carried.subject?view.self.carried.stocks:view.belief(next.from,"own-local-stocks")?.value as Record<string,number>|undefined;
+        if(!scope.bindings[role]?.includes(next.from)||repair.bindings[role]!==next.from||!stocks||canonical({...next,from:previous.from})!==canonical(previous))throw Error("Repair changes fixed input terms or supplier");
       } else if (canonical(next) !== canonical(previous))
         throw Error("Repair changes fixed operation terms");
     }

@@ -1,4 +1,5 @@
 import data from "./physical.json";
+import { RECIPES, type RecipeIndex } from "./recipes";
 export interface MethodEntry {
   id: string;
   effects: string[];
@@ -30,7 +31,7 @@ export class MethodIndex {
   private byId = new Map<string, MethodEntry>();
   private byEffect = new Map<string, MethodEntry[]>();
   private byInput = new Map<string, MethodEntry[]>();
-  constructor(entries: readonly MethodEntry[]) {
+  constructor(entries: readonly MethodEntry[], readonly recipes:RecipeIndex=RECIPES) {
     for (const entry of entries) {
       if (this.byId.has(entry.id)) throw Error("Duplicate method content");
       if (

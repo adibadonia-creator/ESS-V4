@@ -5,7 +5,7 @@ export interface Recipe {
   work: number;
   output: string;
   bulk: number;
-  effect: { kind: string; scope: string; coefficient: number };
+  effect: { kind: string; scope: string; coefficient: number;forceCoefficient?:number };
 }
 export class RecipeIndex {
   private rows = new Map<string, Recipe>();

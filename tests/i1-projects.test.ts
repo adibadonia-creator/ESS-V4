@@ -17,7 +17,7 @@ it("a prerequisite chain exceeds one review's EU and advances across restored bo
  while(!leaf&&reviews<40){
   const frontier=new ProjectFrontier(state,catalogue),meter=new ReviewEffort(openReview(f.actor,reviews),f.counts);
   leaf=frontier.advance(f.review(),meter);total+=meter.account.spent;reviews++;
-  expect(meter.nodes).toBeLessThanOrEqual(16);expect(meter.account.spent).toBeLessThanOrEqual(600);
+  expect(meter.nodes).toBeLessThanOrEqual(12);expect(meter.account.spent).toBeLessThanOrEqual(600);
   state=JSON.parse(canonical(state));
  }
  expect(leaf?.method).toBe("chain-219");expect(reviews).toBeGreaterThan(1);expect(total).toBeGreaterThan(600);expect(state.frames).toHaveLength(220);
@@ -38,11 +38,11 @@ it("complementary recipe inputs use one generic paid binder prefix",()=>{
  f.e.fact(f.actor,"self","rate:wood:wood-site",{priorRate:4,priorWeight:1,weight:0,logSum:0,anchorAt:0,samples:1},0,"public rate prior");
  const meter=new ReviewEffort(openReview(f.actor,0),f.counts),binder=new Binder(f.review(),f.state,meter);
  const o=binder.bind({kind:"have",good:"work-tool",quantity:1,place:"carried"},METHOD_INDEX.get("make-work-tool")!);
- expect(o.status).toBe("executable");expect(o.steps.filter(s=>s.family==="Work").map(s=>s.law)).toEqual(["wood","make-work-tool"]);expect(o.goods).toMatchObject({wood:1,stone:1});expect(meter.nodes).toBeLessThanOrEqual(16);
+ expect(o.status).toBe("executable");expect(o.steps.filter(s=>s.family==="Work").map(s=>s.law)).toEqual(["wood","make-work-tool"]);expect(o.goods).toMatchObject({wood:1,stone:1});expect(meter.nodes).toBeLessThanOrEqual(12);
 });
 it("capital has no intrinsic value when no personally evidenced service use or opportunity exists",()=>{
  const f=cognition({trial:false,inquiry:false});f.self.carried.stocks.wood=2;f.self.carried.stocks.stone=2;
- f.e.foundMethods(f.actor,["make-work-tool","make-spear"],0);
+ f.e.foundMethods(f.actor,["make-work-tool","make-spear"],0);f.e.fact(f.actor,"patch","stock:food",0,0,"observed depleted patch");
  const meter=new ReviewEffort(openReview(f.actor,0),f.counts),options=capitalOptions(f.review(),new Binder(f.review(),f.state,meter),meter);
  expect(options).toHaveLength(2);expect(options.every(o=>o.capital?.length===0)).toBe(true);expect(meter.account.spent).toBeLessThanOrEqual(600);
 });

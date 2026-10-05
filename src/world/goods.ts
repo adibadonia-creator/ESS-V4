@@ -81,6 +81,9 @@ export class GoodsLedger {
   private seen: Set<Key>;
   private byActor = new Map<Key, Set<Key>>();
   private goodById: Map<string, PhysicalConfig["goods"][number]>;
+  private owned = new Map<Key,Container[]>();
+  ownedContainers(actor:Key){return this.owned.get(actor)??[];}
+  private indexContainer(c:Container){if(c.custodian){const rows=this.owned.get(c.custodian)??[];rows.push(c);this.owned.set(c.custodian,rows);}}
   private carried = new Map<Key, Key>();
   private held = new Map<string, Set<Key>>();
   constructor(
@@ -93,6 +96,7 @@ export class GoodsLedger {
     this.goodById = new Map(config.goods.map((g) => [g.id, g]));
     if (this.goodById.size !== config.goods.length)
       throw Error("Duplicate physical good");
+    for (const c of state.containers)this.indexContainer(c);
     for (const c of state.containers)
       if (c.kind === "carried" && c.location.kind === "carrier")
         this.carried.set(c.location.actor, c.key);
@@ -122,6 +126,7 @@ export class GoodsLedger {
     if (Object.keys(c.stocks).length)
       throw new Error("New containers must be empty; use declared sources");
     this.containers.set(c.key, c);
+    this.indexContainer(c);
     if (c.kind === "carried" && c.location.kind === "carrier")
       this.carried.set(c.location.actor, c.key);
     this.state.containers.push(c);

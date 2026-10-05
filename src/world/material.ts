@@ -81,7 +81,7 @@ export class MaterialLaw {
       }
       w.complete = true; quantity = 1;
     }
-    this.publish(w);return {quantity,costs};
+    this.publish(w);return {quantity,costs,...(quantity>0&&w.output?{output:w.output}:{})};
   }
   activeItem(actor: string, scope: string) {
     const held=this.ledger.carriedContainer(actor);
@@ -91,6 +91,7 @@ export class MaterialLaw {
   effect(actor: string, scope: string) {
     const i=this.activeItem(actor,scope); return i ? 1+this.recipes.get(i.recipe)!.effect.coefficient*i.quality*i.durability : 1;
   }
+  force(actor:string){const held=this.ledger.carriedContainer(actor);const force=Math.max(0,...(this.byContainer.get(held.key)??[]).map(i=>(this.recipes.get(i.recipe)?.effect.forceCoefficient??0)*i.quality*i.durability));return 1+force;}
   wear(actor: string, scope: string, paidSd: number) {
     const item=this.activeItem(actor,scope);if (item) {item.durability=Math.max(0,item.durability-.04*paidSd);this.publishItems(actor);}
   }

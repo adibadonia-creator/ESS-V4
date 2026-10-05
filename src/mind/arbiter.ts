@@ -90,6 +90,7 @@ export function feasibility(
   x: Compared,
   reserveExempt: boolean,
   lots = ownedLots(review, "food"),
+  recipes=RECIPES,
 ): string | null {
   const o = x.option;
   if(o.capital && !o.capital.length)return "no personally evidenced instrumental service";
@@ -112,9 +113,11 @@ export function feasibility(
     if(!funds.has(key))funds.set(key,Number((review.belief(subject,"own-local-stocks")?.value as Record<string,number>|undefined)?.[good]??0));
     return funds.get(key)!;
   };
+  const outputs=new Map<string,{x:number;y:number}>();
   let location = { ...review.self.location };
   const spent: Record<string, number> = {};
   for (const [i, step] of o.steps.entries()) {
+    if(step.maintenance){const m=step.maintenance;if(m.quantity>funding(m.from,m.good)+1e-9)return "standing maintenance lacks existing backing";funds.set(m.from+":"+m.good,funding(m.from,m.good)-m.quantity);spent[m.good]=(spent[m.good]??0)+m.quantity;}
     if (step.family === "Move") {
       if (!o.routes[i] || o.routes[i]!.status !== "found")
         return "no personally established executable route";
@@ -126,7 +129,7 @@ export function feasibility(
         const local =
           step.from === review.self.carried.subject
             ? location
-            : (review.belief(step.from, "location")?.value as
+            : (outputs.get(step.from)??review.belief(step.from, "location")?.value as
                 { x: number; y: number } | undefined);
         if (
           !local ||
@@ -139,21 +142,27 @@ export function feasibility(
         )
           return "near-term goods lack prior accessible backing";
         funds.set(step.from+":"+step.good,funding(step.from,step.good)-step.quantity);
+        if(step.use!=="consume"){const destination=step.to===review.self.carried.subject?location:outputs.get(step.to)??review.belief(step.to,"location")?.value as {x:number;y:number}|undefined;
+          if(!destination||(destination.x-location.x)**2+(destination.y-location.y)**2>.08**2||(!outputs.has(step.to)&&step.to!==review.self.carried.subject&&!review.belief(step.to,"own-local-stocks")))return "deposit lacks personally established own local destination";
+        }
         if(step.use!=="consume")funds.set(step.to+":"+step.good,funding(step.to,step.good)+step.quantity);
         spent[step.good] = (spent[step.good] ?? 0) + step.quantity;
         if (spent[step.good]! > (o.goods[step.good] ?? 0) + 1e-9)
           return "unauthorised material spending";
       }
       if (step.family === "Work") {
-        const recipe=RECIPES.get(step.law);
+        const recipe=recipes.get(step.law);
         if(recipe){
           if(review.belief(`method:${step.law}`,"known")?.value!==true)return "making method not personally established";
-          for(const [good,q] of Object.entries(recipe.inputs)){
+          const progress=step.workObject?review.belief(step.workObject,"work-progress")?.value as unknown as {complete:boolean;recipe:string}:null;
+          if(step.workObject&&(!progress||progress.complete||progress.recipe!==step.law))return "located progress assumption unavailable";
+          for(const [good,q] of Object.entries(progress?{}:recipe.inputs)){
             if(funding(review.self.carried.subject,good)+1e-9<q)return "complementary input not previously funded";
             funds.set(review.self.carried.subject+":"+good,funding(review.self.carried.subject,good)-q);
             spent[good]=(spent[good]??0)+q;
             if(spent[good]!>(o.goods[good]??0)+1e-9)return "recipe input outside envelope";
           }
+          if(recipe.effect.kind==="storage")outputs.set(`$output:${i}`,{...location});
           funds.set(review.self.carried.subject+":"+recipe.output,funding(review.self.carried.subject,recipe.output)+1);
           continue;
         }
@@ -226,14 +235,13 @@ export function feasibility(
       return "optional food ceiling exceeded";
   }
   if (!o.reference && (!reserveExempt || o.optionalDuration !== undefined)) {
-    const last = x.consequences.blocks.at(-1)!;
-    // This reserve counts ONLY existing owned accessible backing after spending,
-    // never hoped-for output appearing in the forecast.
-    const acquired = x.consequences.blocks.reduce(
-      (sum, b) => sum + b.materialService * (b.end - b.start),
-      0,
-    );
-    if (last.foodRemaining - acquired < 0.5 * review.quietRequirement())
+    // Reserve is evaluated at the authorised return, using existing backing.
+    // Compressed later services and prospective extraction never fund it.
+    const existing=lots.reduce((q,l)=>q+l.quantity,0);
+    const consumption=o.steps.reduce((q,step)=>q+(step.family==="Transfer"&&step.use==="consume"?step.quantity* (step.good==="food"?1:0):0),0);
+    const material=o.steps.reduce((q,step)=>q+(step.family==="Work"&&!step.workObject?(recipes.get(step.law)?.inputs.food??0):0),0);
+    const upkeep=o.steps.reduce((q,s)=>q+(s.maintenance?.good==="food"?s.maintenance.quantity:0),0);
+    if (existing-consumption-material-upkeep < 0.5 * review.quietRequirement())
       return "optional return reserve lacks existing backing";
   }
   return null;

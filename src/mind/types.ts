@@ -53,6 +53,8 @@ export interface BoundOption {
   goods: Record<string, number>;
   reference: boolean;
   project?: string;
+  projectFinal?:boolean;
+  completion?:{at:number;materialQuantity:number;remainingCost:number;provenance:string};
   capital?: {start:number;end:number;materialService:number;provenance:string}[];
   informationValue?: number;
   optionalDuration?: number;

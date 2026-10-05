@@ -67,6 +67,7 @@ export interface PhysicalSegment {
   workObject?: string;
   craftCompetence?: number;
   toolScope?: string;
+  maintenance?:{from:string;good:string;rate:number;quantity:number;reservation:string;at:number;consumed:number};
 }
 export interface AdultPhysicalState {
   bodies: Body[];
@@ -364,8 +365,9 @@ export class AdultPhysical {
     // Demand shares settle symmetrically from the same anchor, in semantic order.
     let unextracted = 0;
     for (const actor of [...(this.workers.get(s.key) ?? [])].sort()) {
-      const seg = this.active.get(actor)!,
-        wanted = seg.rate * until,
+      const seg = this.active.get(actor)!;
+      this.settleMaintenance(seg);
+      const wanted = seg.rate * until,
         q = Math.min(
           wanted,
           Math.max(
@@ -378,6 +380,7 @@ export class AdultPhysical {
       if (q > 0) {
         this.port.source(this.goods.carriedContainer(actor).key, seg.good!, q);
         seg.output += q;
+        if(seg.maintenance)this.storage?.beginFlow(seg.maintenance.from,seg.maintenance.good,seg.maintenance.rate);
         this.counts.workGoodsTransactions++;
       }
       seg.paidOutputAt = now;
@@ -428,7 +431,7 @@ export class AdultPhysical {
       now = this.port.now();
     const physical =
       step.family === "Work" ||
-      step.family === "Recover" ||
+      step.family === "Recover" || step.family === "Engage" ||
       (step.family === "Transfer" && step.use === "consume");
     if (!b)
       return physical
@@ -490,7 +493,7 @@ export class AdultPhysical {
     if (step.family === "Transfer" && step.use === "consume") {
       const from = this.port.reference(task.actor, step.from),
         res = task.reservations.find(
-          (r) => r.subject === step.from && r.good === step.good,
+          (r) => r.subject === step.from && r.good === step.good && this.goods.reservation(r.key).status==="active" && this.goods.reservation(r.key).remaining>0,
         );
       if (
         !from ||
@@ -575,10 +578,11 @@ export class AdultPhysical {
       const target=step.qualityTarget??1,prep=step.preparation??0;
       if((target>1&&b.mastery.Make<.2)||target>2)return {ok:false,observed:"making quality gate unavailable"};
       if(!this.materials!.pending(task.actor,recipe.id)&&Object.entries(recipe.inputs).some(([good,q])=>q*(1+prep)>(this.port.remainingGoods?.(task.actor,good)??task.authorised.goods[good]??0)+1e-9))return {ok:false,observed:"recipe inputs outside remaining envelope"};
+      if(step.workObject){const pending=this.materials!.pending(task.actor,recipe.id);if(!pending||this.port.reference(task.actor,step.workObject)!==pending.key)return {ok:false,observed:"located work no longer accessible"};}
       const w = this.materials!.start(task.actor,recipe.id,undefined,target,prep);
       if (!w) return {ok:false,observed:"making inputs unavailable"};
       const v = materialiseBody(b,now);
-      seg.workObject = w.key;
+      seg.method=recipe.id;seg.workObject = w.key;
       seg.craftCompetence = competence(b,"Make");
       seg.rate = ability(b,{A:.15,Make:.85},.70) * math.pow(v.c,.7) * (1-v.w) * (1-.2*b.d);
       if (seg.rate <= 0) return {ok:false,observed:"no current making capacity"};
@@ -692,11 +696,32 @@ export class AdultPhysical {
       this.segmentSlots.set(task.actor, this.state.segments.length);
       this.state.segments.push(seg);
     }
-    reanchorBody(b, now, seg.load, seg.from ? seg.rate : 0);
+    if(step.maintenance){
+      const m=step.maintenance,from=this.port.reference(task.actor,m.from);
+      if(from&&this.goods.get(from).custodian===task.actor&&this.goods.nutrition(m.good)>0){
+        const p=this.port.position(task.actor),q=this.goods.location(from);
+        if((p.x-q.x)**2+(p.y-q.y)**2<=this.port.workRadiusKm**2){
+          this.storage?.settle(from);
+          const quantity=Math.min(Math.max(0,m.quantity-(task.maintenanceForStep??0)),this.goods.available(from,m.good),this.port.remainingGoods?.(task.actor,m.good)??0);
+          if(quantity>0){const reservation=this.port.reserve(task.actor,from,m.good,quantity,seg.end+1);task.reservations.push({key:reservation,subject:m.from,good:m.good});seg.maintenance={from,good:m.good,rate:m.rate,quantity,reservation,at:now,consumed:0};
+            const until=this.storage?.beginFlow(from,m.good,m.rate)??quantity/m.rate;seg.end=Math.min(seg.end,now+Math.max(1,Math.floor(Math.min(until,quantity/m.rate)*QUANTA)));}
+        }
+      }
+    }
+    reanchorBody(b, now, seg.load, seg.from ? seg.rate : seg.maintenance?.rate??0);
     this.counts.bodyCommits++;
     this.counts.conditionSegments++;
     this.experience(task.actor);
     return { ok: true, end: seg.end };
+  }
+  private settleMaintenance(s:PhysicalSegment){
+    const m=s.maintenance;if(!m)return;
+    const now=this.port.now();this.storage?.endFlow(m.from);
+    const r=this.goods.reservation(m.reservation);
+    const available=Math.max(0,(this.goods.get(m.from).stocks[m.good]??0)-this.goods.reserved(m.from,m.good,m.reservation));
+    const q=Math.min(m.rate*(now-m.at)/QUANTA,m.quantity-m.consumed,r.status==="active"?r.remaining:0,available);
+    if(q>0)this.port.consume(s.actor,m.from,m.good,q,m.reservation);
+    m.consumed+=q;m.at=now;
   }
   paid(task: Task, start: number, end: number) {
     const b = this.bodies.get(task.actor),
@@ -728,16 +753,20 @@ export class AdultPhysical {
       this.updateDemand(site);
       this.scheduleSite(site);
     }
-    let quantity = s.output;
-    const costs: Record<string, number> = {};
+    this.settleMaintenance(s);
+    const maintenanceCost=s.maintenance?.consumed??0;
+    let quantity = s.output;let outputSubject:string|undefined;
+    const costs: Record<string, number> = s.maintenance?{[s.maintenance.good]:maintenanceCost}:{};
     if (s.workObject && this.materials) {
-      const made=this.materials.settle(s.workObject,s.rate*(now-s.start)/QUANTA,s.craftCompetence!);
-      quantity=made.quantity;Object.assign(costs,made.costs);
+      const paidSd=(now-s.start)/QUANTA;
+      const made=this.materials.settle(s.workObject,s.rate*paidSd,s.craftCompetence!);
+      if(paidSd>0)this.port.rate(task.actor,s.method!,"making",s.rate*paidSd,paidSd,s.workObject,b.capability.C,competence(b,"Make"));
+      quantity=made.quantity;if("output" in made)outputSubject=String(made.output);for(const [good,q] of Object.entries(made.costs))costs[good]=(costs[good]??0)+q;
     }
     if (s.site && s.toolScope) this.materials?.wear(task.actor,s.toolScope,(now-s.start)/QUANTA);
     const step = task.steps[task.cursor];
     if(step?.family==="Engage" && final && now>=s.remainingEnd && step.target){
-      if(!this.port.engage?.(task.actor,this.port.reference(task.actor,step.target)!, (now-s.start)/QUANTA))s.reason="engagement target no longer local";
+      if(!this.port.engage?.(task.actor,this.port.reference(task.actor,step.target)!, (task.paidForStep)/QUANTA))s.reason="engagement target no longer local";
     }
     if (step?.family === "Work" && OPERATION_INDEX.has(step.law)) {
       const completed = final && now >= s.remainingEnd;
@@ -858,7 +887,7 @@ export class AdultPhysical {
         },
         `${task.semanticKey}:${task.cursor}:${now}:paid`,
       );
-    if (s.from && s.reservation && now > s.start) {
+    if (s.from && s.reservation) {
       this.storage?.endFlow(s.from);
       const r = this.goods.reservation(s.reservation);
       quantity = Math.min((s.rate * (now - s.start)) / QUANTA, r.remaining,this.goods.get(s.from).stocks[s.good!]??0);
@@ -905,6 +934,8 @@ export class AdultPhysical {
     this.experience(task.actor);
     return {
       quantity,
+      ...(outputSubject?{outputSubject}:{}),
+      ...(s.maintenance?{maintenanceCost}:{}),
       costs,
       ...(s.good ? { good: s.good } : {}),
       ...(final && s.reason && now >= s.end ? { reason: s.reason } : {}),

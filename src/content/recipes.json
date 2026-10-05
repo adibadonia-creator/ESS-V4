@@ -26,7 +26,8 @@
     "effect": {
       "kind": "access",
       "scope": "fishing",
-      "coefficient": 0.4
+      "coefficient": 0.4,
+      "forceCoefficient": 0.4
     }
   },
   {

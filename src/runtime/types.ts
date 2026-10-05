@@ -3,7 +3,7 @@ import type { GeographyVersion } from "../evidence/geography";
 import type { EffortAccount } from "../kernel/effort";
 import type { PersonalSearch } from "./routing";
 import type { PersonalView, Point, ExactSelf } from "../evidence/types";
-export type Operation =
+export type Operation = ({maintenance?:{from:string;good:string;rate:number;quantity:number}}) & (
   | {
       family: "Move";
       target: Point;
@@ -32,6 +32,7 @@ export type Operation =
       duration: number;
       site?: string;
       compulsory?: boolean;
+      workObject?: string;
       qualityTarget?: number;
       preparation?: number;
       experiment?: import("../evidence/types").ExplorationOutcome;
@@ -42,7 +43,7 @@ export type Operation =
       duration: number;
       mode?: "rest" | "leisure";
     }
-  | { family: "Engage"; law: string; duration: number; target?:string };
+  | { family: "Engage"; law: string; duration: number; target?:string });
 export interface Budget {
   time: number;
   goods: Record<string, number>;
@@ -67,6 +68,8 @@ export interface SelectedIntention {
     expires: number;
   }[];
   source: string;
+  project?:string;
+  projectFinal?:boolean;
   effortAccount?: string;
   preparedRoutes?: Record<number, PersonalSearch>;
   envelope?: {
@@ -100,6 +103,7 @@ export interface Task extends SelectedIntention {
   bindingRevision: number;
   paidForStep: number;
   physicalStepOutput: number;
+  maintenanceForStep?:number;
   cursor: number;
   status:
     | "ready"
@@ -173,6 +177,8 @@ export interface RuntimePort {
     final: boolean,
   ): {
     quantity: number;
+    outputSubject?:string;
+    maintenanceCost?:number;
     good?: string;
     reason?: string;
     costs?: Record<string, number>;
