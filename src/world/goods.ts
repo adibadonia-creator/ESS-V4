@@ -143,6 +143,7 @@ export class GoodsLedger {
       ? { ...c.location.point }
       : this.position(c.location.actor);
   }
+  nutrition(good:string) { return this.good(good).nutrition??0; }
   carrier(key: Key): Key | null {
     const seen = new Set<Key>();
     let c = this.get(key);

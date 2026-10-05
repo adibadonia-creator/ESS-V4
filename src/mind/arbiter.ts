@@ -4,6 +4,7 @@ import { canonical, compareKey } from "../kernel/canonical";
 import type { PersonalReview } from "../evidence/read";
 import { ownedLots } from "./signals";
 import { EXPLORATION, OPERATION_INDEX } from "../content/exploration";
+import { RECIPES } from "../content/recipes";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { QUANTA } from "../kernel/time";
 import type { Compared, Consequences, Dispositions } from "./types";
@@ -91,6 +92,7 @@ export function feasibility(
   lots = ownedLots(review, "food"),
 ): string | null {
   const o = x.option;
+  if(o.capital && !o.capital.length)return "no personally evidenced instrumental service";
   if (o.status !== "executable" && o.status !== "known-available")
     return o.reason;
   if (
@@ -103,7 +105,13 @@ export function feasibility(
     return "operation envelope exceeds supported bounded prefix";
   if (x.consequences.assent.length || x.consequences.commitments.length)
     return "unsupported assent or commitment requirement";
-  const funds = new Map(lots.map((l) => [l.subject, l.quantity]));
+  const funds = new Map(lots.map((l) => [l.subject+":food", l.quantity]));
+  for(const [good,q] of Object.entries(review.self.carried.stocks)) funds.set(review.self.carried.subject+":"+good,q);
+  const funding=(subject:string,good:string)=>{
+    const key=subject+":"+good;
+    if(!funds.has(key))funds.set(key,Number((review.belief(subject,"own-local-stocks")?.value as Record<string,number>|undefined)?.[good]??0));
+    return funds.get(key)!;
+  };
   let location = { ...review.self.location };
   const spent: Record<string, number> = {};
   for (const [i, step] of o.steps.entries()) {
@@ -126,17 +134,29 @@ export function feasibility(
         )
           return "personally believed backing inaccessible";
         if (
-          step.good !== "food" ||
           step.basis !== "own-custody" ||
-          (funds.get(step.from) ?? 0) + 1e-9 < step.quantity
+          funding(step.from,step.good) + 1e-9 < step.quantity
         )
           return "near-term goods lack prior accessible backing";
-        funds.set(step.from, (funds.get(step.from) ?? 0) - step.quantity);
+        funds.set(step.from+":"+step.good,funding(step.from,step.good)-step.quantity);
+        if(step.use!=="consume")funds.set(step.to+":"+step.good,funding(step.to,step.good)+step.quantity);
         spent[step.good] = (spent[step.good] ?? 0) + step.quantity;
         if (spent[step.good]! > (o.goods[step.good] ?? 0) + 1e-9)
           return "unauthorised material spending";
       }
       if (step.family === "Work") {
+        const recipe=RECIPES.get(step.law);
+        if(recipe){
+          if(review.belief(`method:${step.law}`,"known")?.value!==true)return "making method not personally established";
+          for(const [good,q] of Object.entries(recipe.inputs)){
+            if(funding(review.self.carried.subject,good)+1e-9<q)return "complementary input not previously funded";
+            funds.set(review.self.carried.subject+":"+good,funding(review.self.carried.subject,good)-q);
+            spent[good]=(spent[good]??0)+q;
+            if(spent[good]!>(o.goods[good]??0)+1e-9)return "recipe input outside envelope";
+          }
+          funds.set(review.self.carried.subject+":"+recipe.output,funding(review.self.carried.subject,recipe.output)+1);
+          continue;
+        }
         if (OPERATION_INDEX.has(step.law)) {
           const operation = OPERATION_INDEX.get(step.law)!;
           const p = step.site
@@ -169,6 +189,10 @@ export function feasibility(
           review.belief(`method:${step.law}`, "known")?.value !== true
         )
           return "current operation prerequisite not personally established";
+        if(law.requiredItemScope){
+          const prereqs=o.prerequisites.filter(p=>p.effect.startsWith("have:"));
+          if(!prereqs.some(p=>funding(review.self.carried.subject,p.effect.slice(5))>=1))return "compatible input unavailable";
+        }
         const stock = review.belief(step.site!, `stock:${law.good}`)?.value;
         const rate = review.rateEstimate(step.law, law.siteKind)?.rate ?? 0;
         if (typeof stock !== "number" || stock <= 0 || rate <= 0)
@@ -176,8 +200,8 @@ export function feasibility(
         // Prospective output becomes a later input only after explicit paid Work.
         // It cannot back any earlier operation or the optional return reserve.
         funds.set(
-          review.self.carried.subject,
-          (funds.get(review.self.carried.subject) ?? 0) +
+          review.self.carried.subject+":"+law.good,
+          funding(review.self.carried.subject,law.good) +
             Math.min(stock, (rate * step.duration) / QUANTA),
         );
       }

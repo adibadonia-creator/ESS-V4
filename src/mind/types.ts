@@ -52,6 +52,8 @@ export interface BoundOption {
   duration: number;
   goods: Record<string, number>;
   reference: boolean;
+  project?: string;
+  capital?: {start:number;end:number;materialService:number;provenance:string}[];
   informationValue?: number;
   optionalDuration?: number;
   valuationDependencies?: Dependency[];
@@ -127,6 +129,7 @@ export interface DecisionTrace {
 }
 export interface MindState {
   actor: string;
+  projects?: import("./projects").Project[];
   dispositions: Dispositions;
   periodicAt: number;
   nextWake: number | null;

@@ -11,8 +11,8 @@ export interface MethodSchema {
   target: "self" | "owned" | "site";
   targetProperty?: string;
   targetValue?: string;
-  prerequisites: { effect: string; good: string; consumes: boolean }[];
-  operation: "consume" | "extract" | "recover" | "material";
+  prerequisites: { effect: string; good: string; consumes: boolean; quantity?: number }[];
+  operation: "consume" | "extract" | "recover" | "material" | "make";
   law: string;
   good?: string;
   mode?: "rest" | "leisure";

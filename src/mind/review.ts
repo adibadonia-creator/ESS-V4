@@ -1,3 +1,5 @@
+import { ProjectFrontier } from "./projects";
+import { capitalOptions } from "./capital";
 import { canonical, compareKey, digest } from "../kernel/canonical";
 import { draw, normal } from "../kernel/random";
 import { math } from "../kernel/numerics";
@@ -40,6 +42,7 @@ export interface Execution {
 const copy = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
 export class Mind {
   private people = new Map<string, MindState>();
+  private projectFrontiers=new Map<string,ProjectFrontier>();
   constructor(
     readonly seed: string,
     private counts: Counters,
@@ -69,6 +72,7 @@ export class Mind {
     if (periodicAt <= at) periodicAt += 2 * QUANTA;
     const s: MindState = {
       actor,
+      projects:[],
       dispositions: Object.freeze({ ...d }),
       periodicAt,
       nextWake: null,
@@ -225,6 +229,7 @@ export class Mind {
     const opportunities = explorationOptions(review, s, meter);
     const allDrives = [
       ...drives(review, page.lots),
+      ...(review.bestMethod("service:capital")&&review.places("service-use",1).entries.length?[{objective:{kind:"service" as const,service:"capital",quantity:1},urgency:.1}]:[]),
       ...opportunities.map((o) => {
         const experiment = o.steps.find(
           (step) =>
@@ -269,7 +274,7 @@ export class Mind {
       const opportunity = opportunities.find(
         (o) => effectOf(o.objective) === effectOf(item.objective),
       );
-      const choices = opportunity
+      const choices = item.objective.kind==="service"&&item.objective.service==="capital"?capitalOptions(review,binder,meter):opportunity
         ? [opportunity]
         : binder
             .admission(effectOf(item.objective))
@@ -286,6 +291,10 @@ export class Mind {
         )
           append(o, reference);
         bound.push(o);
+        if(o.status==="computationally-deferred"&&o.reason.includes("frontier")) {
+          s.projects??=[];
+          if(s.projects.length<2&&!s.projects.some(p=>canonical(p.root)===canonical(o.objective)))s.projects.push(ProjectFrontier.found(o.objective));
+        }
         if (o.status === "computationally-deferred") deferrals.push(o.reason);
       }
     }
@@ -333,6 +342,14 @@ export class Mind {
         bound.push(combined);
       }
     }
+    for(const project of s.projects??[]) {
+      const key=canonical([s.actor,project.key]);
+      let frontier=this.projectFrontiers.get(key);if(!frontier){frontier=new ProjectFrontier(project,this.catalogue);this.projectFrontiers.set(key,frontier);}
+      const leaf=frontier.advance(review,meter);
+      const method=leaf?this.catalogue.get(leaf.method):null;
+      if(leaf&&method){const option=binder.bind(leaf.objective,method);option.project=project.key;bound.push(option);}
+      else if(project.status==="computationally-deferred")deferrals.push(project.reason);
+    }
     const executable = bound.filter((o) => o.status === "executable");
     const first = [
       ...new Map(executable.map((o) => [effectOf(o.objective), o])).keys(),
@@ -365,12 +382,15 @@ export class Mind {
       o.reason = "full comparison admission cap";
       deferrals.push(o.reason);
     }
+    const horizon=candidates.some(o=>(o.capital?.length??0)>0)?12:3;
+    const commonReference=horizon===3?refForecast:forecast(review,reference,meter,horizon,page.lots);
+    if(!commonReference)throw Error("Mandatory common reference forecast exhausted");
     const compared: Compared[] = [];
     const sharedErrors = new Map<string, number>();
     for (const o of candidates) {
       const c = o.reference
-        ? refForecast
-        : forecast(review, o, meter, 3, page.lots);
+        ? commonReference
+        : forecast(review, o, meter, horizon, page.lots);
       if (!c) {
         o.status = "computationally-deferred";
         o.reason = "forecast EU exhausted";
@@ -397,7 +417,7 @@ export class Mind {
       for (let i = 0; i < c.blocks.length; i++) {
         const block = c.blocks[i]!,
           mid = (block.start + block.end) / 2,
-          r = refForecast.blocks.find((r) => r.start <= mid && r.end >= mid)!;
+          r = commonReference.blocks.find((r) => r.start <= mid && r.end >= mid)!;
         const changed = canonical([
           block.materialService - r.materialService,
           block.materialLoss - r.materialLoss,
@@ -425,7 +445,7 @@ export class Mind {
           errors[i] = sharedErrors.get(key)!;
         }
       }
-      if (c.tail.value !== refForecast.tail.value)
+      if (c.tail.value !== commonReference.tail.value)
         c.tail.error =
           (normal(this.seed, "forecast-tail-error", [
             review.owner,
@@ -456,7 +476,7 @@ export class Mind {
       if (x.feasible && !o.reference)
         x.value = preference(
           c,
-          refForecast,
+          commonReference,
           s.dispositions,
           review.quietRequirement(),
           errors,

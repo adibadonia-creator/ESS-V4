@@ -1,3 +1,4 @@
+import type { MaterialLaw } from "./material";
 import effects from "../content/material-effects.json";
 // Startup compilation; runtime lookup touches only the matching trigger.
 const EFFECT_INDEX = new Map(
@@ -62,6 +63,9 @@ export interface PhysicalSegment {
   reservation: string | null;
   good: string | null;
   reason: string | null;
+  workObject?: string;
+  craftCompetence?: number;
+  toolScope?: string;
 }
 export interface AdultPhysicalState {
   bodies: Body[];
@@ -70,6 +74,7 @@ export interface AdultPhysicalState {
 }
 export interface PhysicalPort {
   now(): number;
+  remainingGoods?(actor:string,good:string):number;
   workRadiusKm: number;
   position(actor: string): Point;
   legitimate(actor: string): boolean;
@@ -141,6 +146,7 @@ export class AdultPhysical {
     private goods: GoodsLedger,
     private counts: Counters,
     state: AdultPhysicalState = { bodies: [], sites: [], segments: [] },
+    private materials?: MaterialLaw,
   ) {
     this.state = state;
     for (const b of state.bodies) {
@@ -479,7 +485,7 @@ export class AdultPhysical {
       if (
         !from ||
         this.goods.get(from).custodian !== task.actor ||
-        step.good !== "food"
+        this.goods.nutrition(step.good) <= 0
       )
         return {
           ok: false,
@@ -545,7 +551,24 @@ export class AdultPhysical {
         this.port.frustration(task.actor, context),
       );
     }
-    if (
+    const recipe = step.family === "Work" ? this.materials?.recipes.get(step.law) : null;
+    if (step.family === "Work" && recipe) {
+      if (!this.port.knownMethod(task.actor, task.method)) return {ok:false,observed:"making method not personally known"};
+      const target=step.qualityTarget??1,prep=step.preparation??0;
+      if((target>1&&b.mastery.Make<.2)||target>2)return {ok:false,observed:"making quality gate unavailable"};
+      if(!this.materials!.pending(task.actor,recipe.id)&&Object.entries(recipe.inputs).some(([good,q])=>q*(1+prep)>(this.port.remainingGoods?.(task.actor,good)??task.authorised.goods[good]??0)+1e-9))return {ok:false,observed:"recipe inputs outside remaining envelope"};
+      const w = this.materials!.start(task.actor,recipe.id,undefined,target,prep);
+      if (!w) return {ok:false,observed:"making inputs unavailable"};
+      const v = materialiseBody(b,now);
+      seg.workObject = w.key;
+      seg.craftCompetence = competence(b,"Make");
+      seg.rate = ability(b,{A:.15,Make:.85},.70) * math.pow(v.c,.7) * (1-v.w) * (1-.2*b.d);
+      if (seg.rate <= 0) return {ok:false,observed:"no current making capacity"};
+      seg.category="work";seg.load=.45;seg.effort=.6;
+      seg.practice={Make:1};seg.learning=learningRates(b,v.c,v.w,seg.practice,1);
+      seg.end=Math.min(seg.end,now+Math.max(1,Math.ceil((w.required-w.progress)/seg.rate*QUANTA)));
+      this.active.set(task.actor,seg);this.segmentSlots.set(task.actor,this.state.segments.length);this.state.segments.push(seg);
+    } else if (
       step.family === "Work" &&
       (step.experiment || OPERATION_INDEX.has(step.law))
     ) {
@@ -594,6 +617,8 @@ export class AdultPhysical {
         m.siteKind !== s.kind
       )
         return { ok: false, observed: "known method/site binding unavailable" };
+      if (m.requiredItemScope && !this.materials?.activeItem(task.actor,m.requiredItemScope)) return {ok:false,observed:"compatible held tool unavailable"};
+      seg.toolScope = m.requiredItemScope ?? "extraction";
       const p = this.port.position(task.actor);
       if (
         math.sqrt((p.x - s.point.x) ** 2 + (p.y - s.point.y) ** 2) >
@@ -621,7 +646,7 @@ export class AdultPhysical {
         math.pow(v.c, m.conditionExponent) *
         math.pow(1 - v.w, m.woundExponent) *
         (1 - m.fatiguePenalty * b.d) *
-        z;
+        z * (this.materials?.effect(task.actor,seg.toolScope) ?? 1);
       seg.category = "work";
       seg.compulsory = step.compulsory ?? false;
       seg.load = m.load;
@@ -687,6 +712,11 @@ export class AdultPhysical {
     }
     let quantity = s.output;
     const costs: Record<string, number> = {};
+    if (s.workObject && this.materials) {
+      const made=this.materials.settle(s.workObject,s.rate*(now-s.start)/QUANTA,s.craftCompetence!);
+      quantity=made.quantity;Object.assign(costs,made.costs);
+    }
+    if (s.site && s.toolScope) this.materials?.wear(task.actor,s.toolScope,(now-s.start)/QUANTA);
     const step = task.steps[task.cursor];
     if (step?.family === "Work" && OPERATION_INDEX.has(step.law)) {
       const completed = final && now >= s.remainingEnd;

@@ -1,3 +1,4 @@
+import { MaterialLaw, type MaterialState } from "../world/material";
 import { stockAt } from "../world/resources";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { AdultPhysical, type AdultPhysicalState } from "../world/adultPhysical";
@@ -134,6 +135,7 @@ interface Save {
   runtime: RuntimeState;
   epistemicActors: Key[];
   adultPhysical: AdultPhysicalState;
+  materials: MaterialState;
   mind: MindState[];
 }
 const FIELDS = [
@@ -165,6 +167,7 @@ export class PhysicalSimulation {
   private evidence: EvidenceService;
   private runtime: TaskRuntime;
   private adultPhysical: AdultPhysical;
+  private materials: MaterialLaw;
   private mind: Mind;
   private epistemicActors = new Set<Key>();
   private carriedByActor = new Map<Key, Key>();
@@ -216,9 +219,22 @@ export class PhysicalSimulation {
       config.spatial,
     );
     this.epistemicActors = new Set(saved?.epistemicActors ?? []);
+    this.materials = new MaterialLaw(seed,this.ledger,{
+      position: actor=>this.position(actor),
+      input:(actor,good,quantity)=>{const from=this.ledger.carriedContainer(actor).key;this.goods({kind:"sink",sink:"recipe-input",actor,from,good,quantity});this.publishOwnStocks(actor,from);},
+      output:(actor,good,quantity)=>{const to=this.ledger.carriedContainer(actor).key;this.goods({kind:"source",source:"production",to,good,quantity});this.publishOwnStocks(actor,to);},
+      cache:(actor,point,key)=>{
+        const id=this.kernel.ids.allocate("constructed-cache",key);
+        this.ledger.add({...id,kind:"cache",location:{kind:"ground",point:{...point}},custodian:actor,capacityCu:12,stocks:{}});
+        this.spatial.put(id.key,point);this.evidence.selfHandle(actor,id.key);this.publishOwnStocks(actor,id.key);this.perceive(actor,"cache completion",true);
+        return id.key;
+      },
+      fact:(actor,subject,property,value)=>this.evidence.fact(actor,subject==="self"?subject:this.evidence.selfHandle(actor,subject),property,value as import("../evidence/types").Value,this.kernel.state.now,"paid material law",subject==="self"?"self":"direct"),
+    },saved?.materials);
     this.adultPhysical = new AdultPhysical(
       {
         now: () => this.kernel.state.now,
+        remainingGoods:(actor,good)=>{const b=this.runtime.currentExecution(actor).budget;return b?(b.authorised.goods[good]??0)-(b.spent.goods[good]??0):0;},
         workRadiusKm: config.movement.workRadiusKm,
         position: (actor) => this.position(actor),
         knownMethod: (actor, method) =>
@@ -363,6 +379,7 @@ export class PhysicalSimulation {
       this.ledger,
       this.counters,
       saved?.adultPhysical,
+      this.materials,
     );
     for (const site of this.adultPhysical.state.sites)
       this.spatial.put(site.key, site.point);
@@ -663,7 +680,7 @@ export class PhysicalSimulation {
       const k = cells[Math.floor(((i + 0.25) * cells.length) / d.sites)]!,
         p = center(this.terrain, k),
         id = this.kernel.ids.allocate("resource-site", root, i);
-      const g = this.config.goods[i % this.config.goods.length]!,
+      const g = this.config.goods.filter(g => g.divisible)[i % this.config.goods.filter(g => g.divisible).length]!,
         quantity =
           g.id === "food"
             ? d.sourceFoodFu
@@ -1674,6 +1691,7 @@ export class PhysicalSimulation {
       this.movement.settle(this.actor(actor), now);
     this.kernel.ids.allocate("transaction", parent);
     prepared.commit();
+    if(request.kind==="transfer")this.materials?.transfer(request.from,request.to,request.good,request.quantity);
     for (const actor of prepared.loadActors) {
       const a = this.actor(actor),
         r = this.routes.get(actor);
@@ -1874,6 +1892,7 @@ export class PhysicalSimulation {
       evidence: this.evidence.persisted(),
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
+      materials: this.materials.state,
       mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
@@ -1882,6 +1901,7 @@ export class PhysicalSimulation {
     };
   }
   private terrainDigestCache: { version: number; hash: string } | null = null;
+  materialSnapshot(): MaterialState { return freezeProjection(clone(this.materials.state)); }
   causalHash(): string {
     if (!this.kernel.committed)
       throw new Error("Hash requires committed boundary");
@@ -1909,6 +1929,7 @@ export class PhysicalSimulation {
       evidence: this.evidence.persisted(),
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
+      materials: this.materials.state,
       mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>

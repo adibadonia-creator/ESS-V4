@@ -4,27 +4,50 @@
     {
       "id": "food",
       "bulk": 1,
-      "divisible": true
+      "divisible": true,
+      "nutrition": 1
     },
     {
       "id": "wood",
       "bulk": 0.2,
-      "divisible": true
+      "divisible": true,
+      "nutrition": 0
     },
     {
       "id": "stone",
       "bulk": 0.4,
-      "divisible": true
+      "divisible": true,
+      "nutrition": 0
     },
     {
       "id": "fibre",
       "bulk": 0.1,
-      "divisible": true
+      "divisible": true,
+      "nutrition": 0
     },
     {
       "id": "edged-flake",
       "bulk": 0.4,
-      "divisible": true
+      "divisible": true,
+      "nutrition": 0
+    },
+    {
+      "id": "work-tool",
+      "bulk": 0.1,
+      "divisible": false,
+      "nutrition": 0
+    },
+    {
+      "id": "spear",
+      "bulk": 0.15,
+      "divisible": false,
+      "nutrition": 0
+    },
+    {
+      "id": "fish",
+      "bulk": 1,
+      "divisible": true,
+      "nutrition": 1
     }
   ],
   "terrain": [
@@ -92,8 +115,16 @@
     "sightKm": 0.6
   },
   "generator": {
-    "scales": [15, 7, 3],
-    "weights": [0.6, 0.3, 0.1],
+    "scales": [
+      15,
+      7,
+      3
+    ],
+    "weights": [
+      0.6,
+      0.3,
+      0.1
+    ],
     "warpCells": 3,
     "forestMoisture": 0.55,
     "scrubMoisture": 0.35,
@@ -101,7 +132,7 @@
     "cliffElevation": 0.72,
     "riverFlow": 25,
     "fordModulo": 11,
-    "floodEpsilon": 1e-6
+    "floodEpsilon": 1e-06
   },
   "diagnostic": {
     "actors": 8,
@@ -113,7 +144,7 @@
     "sourceWood": 21,
     "sourceStone": 120,
     "sourceFibre": 16.8,
-    "quantityTolerance": 1e-9,
+    "quantityTolerance": 1e-09,
     "routeExpansionsPerResume": 4096
   },
   "evidence": {
@@ -131,7 +162,12 @@
       "rest",
       "leisure",
       "inquire",
-      "try-compatible"
+      "try-compatible",
+      "make-work-tool",
+      "make-spear",
+      "establish-cache",
+      "fish",
+      "eat-fish"
     ],
     "stockLogSd": 0.35,
     "places": 32,
@@ -140,23 +176,36 @@
       "uncertainty": 1,
       "context": "declared founding cultural unseen-terrain expectation"
     },
-    "foundingOperations": ["strike"]
+    "foundingOperations": [
+      "strike"
+    ]
   },
   "methods": [
     {
       "id": "contact",
-      "effects": ["contact"],
+      "effects": [
+        "contact"
+      ],
       "inputs": []
     },
     {
       "id": "exchange",
-      "effects": ["transfer"],
-      "inputs": ["goods"]
+      "effects": [
+        "transfer"
+      ],
+      "inputs": [
+        "goods"
+      ]
     },
     {
       "id": "gather",
-      "effects": ["extract:food", "have:food"],
-      "inputs": ["site:food-patch"],
+      "effects": [
+        "extract:food",
+        "have:food"
+      ],
+      "inputs": [
+        "site:food-patch"
+      ],
       "schema": {
         "target": "site",
         "targetProperty": "resource-kind",
@@ -173,27 +222,85 @@
     },
     {
       "id": "wood",
-      "effects": ["extract:wood"],
-      "inputs": ["site:wood-site"]
+      "effects": [
+        "extract:wood",
+        "have:wood"
+      ],
+      "inputs": [
+        "site:wood-site"
+      ],
+      "schema": {
+        "target": "site",
+        "targetProperty": "resource-kind",
+        "targetValue": "wood-site",
+        "prerequisites": [],
+        "operation": "extract",
+        "law": "wood",
+        "good": "wood",
+        "durationSd": 0.2,
+        "rateContext": "wood-site",
+        "cheapCost": 0.2,
+        "locality": "known-local-or-route"
+      }
     },
     {
       "id": "stone",
-      "effects": ["extract:stone"],
-      "inputs": ["site:stone-deposit"]
+      "effects": [
+        "extract:stone",
+        "have:stone"
+      ],
+      "inputs": [
+        "site:stone-deposit"
+      ],
+      "schema": {
+        "target": "site",
+        "targetProperty": "resource-kind",
+        "targetValue": "stone-deposit",
+        "prerequisites": [],
+        "operation": "extract",
+        "law": "stone",
+        "good": "stone",
+        "durationSd": 0.2,
+        "rateContext": "stone-deposit",
+        "cheapCost": 0.2,
+        "locality": "known-local-or-route"
+      }
     },
     {
       "id": "fibre",
-      "effects": ["extract:fibre"],
-      "inputs": ["site:fibre-site"]
+      "effects": [
+        "extract:fibre",
+        "have:fibre"
+      ],
+      "inputs": [
+        "site:fibre-site"
+      ],
+      "schema": {
+        "target": "site",
+        "targetProperty": "resource-kind",
+        "targetValue": "fibre-site",
+        "prerequisites": [],
+        "operation": "extract",
+        "law": "fibre",
+        "good": "fibre",
+        "durationSd": 0.2,
+        "rateContext": "fibre-site",
+        "cheapCost": 0.2,
+        "locality": "known-local-or-route"
+      }
     },
     {
       "id": "recover",
-      "effects": ["recover"],
+      "effects": [
+        "recover"
+      ],
       "inputs": []
     },
     {
       "id": "consume",
-      "effects": ["service:nourishment"],
+      "effects": [
+        "service:nourishment"
+      ],
       "inputs": [],
       "schema": {
         "target": "owned",
@@ -214,7 +321,9 @@
     },
     {
       "id": "rest",
-      "effects": ["recovered"],
+      "effects": [
+        "recovered"
+      ],
       "inputs": [],
       "schema": {
         "target": "self",
@@ -229,7 +338,9 @@
     },
     {
       "id": "leisure",
-      "effects": ["enjoyed"],
+      "effects": [
+        "enjoyed"
+      ],
       "inputs": [],
       "schema": {
         "target": "self",
@@ -244,18 +355,27 @@
     },
     {
       "id": "inquire",
-      "effects": ["knows"],
+      "effects": [
+        "knows"
+      ],
       "inputs": []
     },
     {
       "id": "try-compatible",
-      "effects": ["tried"],
+      "effects": [
+        "tried"
+      ],
       "inputs": []
     },
     {
       "id": "edge-flaking",
-      "effects": ["have:edged-flake"],
-      "inputs": ["property:glassy", "hammer:stone"],
+      "effects": [
+        "have:edged-flake"
+      ],
+      "inputs": [
+        "property:glassy",
+        "hammer:stone"
+      ],
       "schema": {
         "target": "site",
         "targetProperty": "material-kind",
@@ -269,6 +389,146 @@
         "cheapCost": 0.03,
         "locality": "known-local-or-route"
       }
+    },
+    {
+      "id": "make-work-tool",
+      "effects": [
+        "have:work-tool",
+        "service:capital"
+      ],
+      "inputs": [
+        "have:wood",
+        "have:stone"
+      ],
+      "schema": {
+        "target": "self",
+        "prerequisites": [
+          {
+            "effect": "have:wood",
+            "good": "wood",
+            "consumes": true,
+            "quantity": 1
+          },
+          {
+            "effect": "have:stone",
+            "good": "stone",
+            "consumes": true,
+            "quantity": 1
+          }
+        ],
+        "operation": "make",
+        "law": "make-work-tool",
+        "good": "work-tool",
+        "durationSd": 0.08,
+        "cheapCost": 0.08,
+        "locality": "known-local-or-route"
+      }
+    },
+    {
+      "id": "make-spear",
+      "effects": [
+        "have:spear",
+        "service:capital"
+      ],
+      "inputs": [
+        "have:wood",
+        "have:stone"
+      ],
+      "schema": {
+        "target": "self",
+        "prerequisites": [
+          {
+            "effect": "have:wood",
+            "good": "wood",
+            "consumes": true,
+            "quantity": 2
+          },
+          {
+            "effect": "have:stone",
+            "good": "stone",
+            "consumes": true,
+            "quantity": 2
+          }
+        ],
+        "operation": "make",
+        "law": "make-spear",
+        "good": "spear",
+        "durationSd": 0.15,
+        "cheapCost": 0.15,
+        "locality": "known-local-or-route"
+      }
+    },
+    {
+      "id": "establish-cache",
+      "effects": [
+        "have:cache",
+        "service:capital"
+      ],
+      "inputs": [],
+      "schema": {
+        "target": "self",
+        "prerequisites": [],
+        "operation": "make",
+        "law": "establish-cache",
+        "good": "cache",
+        "durationSd": 0.02,
+        "cheapCost": 0.02,
+        "locality": "known-local-or-route"
+      }
+    },
+    {
+      "id": "fish",
+      "effects": [
+        "have:fish"
+      ],
+      "inputs": [
+        "have:spear"
+      ],
+      "schema": {
+        "target": "site",
+        "targetProperty": "resource-kind",
+        "targetValue": "fishing-node",
+        "prerequisites": [
+          {
+            "effect": "have:spear",
+            "good": "spear",
+            "consumes": false,
+            "quantity": 1
+          }
+        ],
+        "operation": "extract",
+        "law": "fish",
+        "good": "fish",
+        "durationSd": 0.2,
+        "rateContext": "fishing-node",
+        "cheapCost": 0.2,
+        "locality": "known-local-or-route"
+      }
+    },
+    {
+      "id": "eat-fish",
+      "effects": [
+        "service:nourishment"
+      ],
+      "inputs": [
+        "have:fish"
+      ],
+      "schema": {
+        "target": "owned",
+        "prerequisites": [
+          {
+            "effect": "have:fish",
+            "good": "fish",
+            "consumes": true
+          }
+        ],
+        "operation": "consume",
+        "law": "eat-fish",
+        "good": "fish",
+        "durationSd": 0.04,
+        "cheapCost": 1,
+        "locality": "known-local-or-route"
+      }
     }
   ],
   "cognitiveEffort": {
@@ -277,7 +537,9 @@
     "repair": 40,
     "routeExpansionsPerEu": 64
   },
-  "materialEffects": ["edge-flaking"],
+  "materialEffects": [
+    "edge-flaking"
+  ],
   "exploration": {
     "outcomeClasses": 3,
     "candidatesPerReview": 2,
@@ -306,7 +568,10 @@
   "compatibleOperations": [
     {
       "id": "strike",
-      "properties": ["hard", "glassy"],
+      "properties": [
+        "hard",
+        "glassy"
+      ],
       "input": "stone",
       "hammer": "stone",
       "durationSd": 0.03,
@@ -317,8 +582,13 @@
   "materialKinds": [
     {
       "id": "glassy-stone",
-      "perceptible": ["hard", "glassy"],
-      "revealed": ["edge-flaking"]
+      "perceptible": [
+        "hard",
+        "glassy"
+      ],
+      "revealed": [
+        "edge-flaking"
+      ]
     }
   ]
 }

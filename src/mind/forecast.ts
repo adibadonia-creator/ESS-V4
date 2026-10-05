@@ -1,3 +1,4 @@
+import { nutrition } from "../content/goods";
 import { OPERATION_INDEX } from "../content/exploration";
 import { math } from "../kernel/numerics";
 import { QUANTA } from "../kernel/time";
@@ -123,13 +124,17 @@ export function forecast(
     bounds.add(a.end);
   const grid = [...bounds].sort((a, z) => a - z);
   const blocks: ConsequenceBlock[] = [];
-  const backing = new Map(lots.map((l) => [l.subject, l.quantity]));
+  const backing = new Map(lots.map((l) => [l.subject+":food", l.quantity]));
+  for(const a of activities)if(a.step.family==="Transfer"&&a.step.use==="consume"&&a.step.good!=="food") {
+    const good=a.step.good;
+    for(const lot of ownedLots(review,good))backing.set(lot.subject+":"+good,lot.quantity);
+  }
   let heldActivity: Activity | undefined,
     heldRate = 0;
   let c = b.condition,
     d = b.fatigue,
     f = b.enjoyment,
-    food = lots.reduce((sum, x) => sum + x.quantity, 0);
+    food = [...backing.values()].reduce((sum,x)=>sum+x,0);
   let effort = b.effortSd,
     rest = b.restSd,
     pleasant = b.pleasantSd,
@@ -181,7 +186,7 @@ export function forecast(
       }
       const source =
         a?.step.family === "Transfer" && a.step.use === "consume"
-          ? a.step.from
+          ? a.step.from+":"+a.step.good
           : null;
       const available = source ? (backing.get(source) ?? 0) : 0;
       const depletion =
@@ -197,19 +202,19 @@ export function forecast(
         const used = intake * dt;
         food -= used;
         loss += used;
-        backing.set(a.step.from, Math.max(0, available - used));
+        backing.set(a.step.from+":"+a.step.good, Math.max(0, available - used));
       }
       if (a?.step.family === "Work") {
         const law = EXTRACTION_INDEX.method(a.step.law),
           site = a.step.site ?? "";
         const quantity = Math.min(stock.get(site) ?? 0, heldRate * dt);
         stock.set(site, Math.max(0, (stock.get(site) ?? 0) - quantity));
-        if (law?.good === "food") {
+        if (law && nutrition(law.good)>0) {
           food += quantity;
           service += quantity;
           backing.set(
-            review.self.carried.subject,
-            (backing.get(review.self.carried.subject) ?? 0) + quantity,
+            review.self.carried.subject+":"+law.good,
+            (backing.get(review.self.carried.subject+":"+law.good) ?? 0) + quantity,
           );
         }
       }
@@ -242,7 +247,7 @@ export function forecast(
     blocks.push({
       start,
       end,
-      materialService: service / (end - start),
+      materialService: service / (end - start)+(option.capital??[]).reduce((q,flow)=>q+flow.materialService*Math.max(0,Math.min(end,flow.end)-Math.max(start,flow.start))/(end-start),0),
       materialLoss: loss / (end - start),
       dependantCoverage: 0,
       enjoymentDeficit: deficit / (end - start),
@@ -267,7 +272,7 @@ export function forecast(
         tail -= (a.rate * remaining) / b.quiet;
       if (a.step.family === "Work") {
         const law = EXTRACTION_INDEX.method(a.step.law);
-        if (law?.good === "food")
+        if (law && nutrition(law.good)>0)
           tail +=
             Math.min(stock.get(a.step.site ?? "") ?? 0, a.rate * remaining) /
             b.quiet;

@@ -4,6 +4,7 @@ export interface ExtractionMethod {
   siteKind: string;
   good: string;
   referenceRate: number;
+  requiredItemScope?: string;
   weights: Partial<
     Record<
       "B" | "A" | "Field" | "Fight" | "Make" | "Organise" | "Social",

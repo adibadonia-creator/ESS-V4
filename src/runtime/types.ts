@@ -32,6 +32,8 @@ export type Operation =
       duration: number;
       site?: string;
       compulsory?: boolean;
+      qualityTarget?: number;
+      preparation?: number;
       experiment?: import("../evidence/types").ExplorationOutcome;
     }
   | {
