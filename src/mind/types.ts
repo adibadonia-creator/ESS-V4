@@ -20,7 +20,8 @@ export const effectOf = (o: Objective) =>
         : o.kind === "tried"
           ? `tried:${o.context}`
           : o.kind;
-export type WakeCause = "periodic" | "food" | "rest" | "completion" | "failure";
+export type WakeCause =
+  "periodic" | "food" | "rest" | "completion" | "failure" | "danger";
 export interface Dispositions {
   p: number;
   rT: number;
@@ -52,6 +53,22 @@ export interface BoundOption {
   duration: number;
   goods: Record<string, number>;
   reference: boolean;
+  project?: string;
+  projectFinal?: boolean;
+  projectMilestone?: number;
+  completion?: {
+    good?: string;
+    at: number;
+    materialQuantity: number;
+    remainingCost: number;
+    provenance: string;
+  };
+  capital?: {
+    start: number;
+    end: number;
+    materialService: number;
+    provenance: string;
+  }[];
   informationValue?: number;
   optionalDuration?: number;
   valuationDependencies?: Dependency[];
@@ -127,6 +144,11 @@ export interface DecisionTrace {
 }
 export interface MindState {
   actor: string;
+  projects?: import("./projects").Project[];
+  projectCursor?: number;
+  closedProjects?: import("./projects").Project[];
+  repairSignature?: string;
+  safetySignature?: string;
   dispositions: Dispositions;
   periodicAt: number;
   nextWake: number | null;

@@ -1,5 +1,7 @@
 import data from "./physical.json";
 import extraction from "./extraction.json";
+import recipes from "./recipes.json";
+import type {Recipe} from "./recipes";
 import materialEffects from "./material-effects.json";
 import { digest } from "../kernel/canonical";
 export interface SpatialProfile {
@@ -9,12 +11,13 @@ export interface SpatialProfile {
   regionCells: number;
   bucketKm: number;
 }
-export type PhysicalConfig = typeof data;
+export type PhysicalConfig = Omit<typeof data,"goods"> & {goods:{id:string;bulk:number;divisible:boolean;nutrition?:number}[];recipes?:Recipe[]};
 export function resolveConfig(
   spatial: Partial<SpatialProfile> = {},
   diagnostic: Partial<PhysicalConfig["diagnostic"]> = {},
 ): PhysicalConfig {
   const c = JSON.parse(JSON.stringify(data)) as PhysicalConfig;
+  c.recipes=JSON.parse(JSON.stringify(recipes));
   Object.assign(c.spatial, spatial);
   Object.assign(c.diagnostic, diagnostic);
   const s = c.spatial;
@@ -48,7 +51,7 @@ function deepFreeze<T>(o: T): T {
   }
   return o;
 }
-export const CONTENT_HASH = digest({ physical: data, extraction, materialEffects });
+export const CONTENT_HASH = digest({ physical: data, extraction, materialEffects, recipes });
 
 export const EVIDENCE_PROFILE = Object.freeze(data.evidence);
 

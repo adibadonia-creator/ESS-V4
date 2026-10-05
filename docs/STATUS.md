@@ -1,4 +1,18 @@
-# Pack 0C3A — exploration and repertoire growth
+# Stage I.1 — core capability wave
+
+PR #6 / Pack 0C3A exploration-discovery is merged. Main `298c61b1091060ad2055b516550d7fcc7db9f1a8` includes exploration and the persistent debt ledger. Branch `stage1-i1-core-completion` is published as [draft PR #7](https://github.com/adibadonia-creator/ESS-V4/pull/7), unmerged.
+
+The remaining requested I.1 capability paths now include persistent paid projects, personal capital services, generic making/WIP/quality/tools, autonomous caching, content-only spear/fishing, bounded authorised repair, local predator safety, physical Engage and purpose resumption. One Mind/Binder/arbiter/runtime/evidence boundary remains. The browser's **Material life** fixture selects its own actions. Schema 11 rejects incompatible saves; Revision 4 remains normative and unchanged.
+
+[Completion receipt and Computational/state contract](STAGE_I1_CORE_COMPLETION.md), [modest natural panel](STAGE_I1_NATURAL_PANEL.json), [structural rerun](STAGE_I1_STRUCTURAL_GROWTH.json) and [debt ledger](STAGE_DEBT_LEDGER.md) distinguish physical/autonomous proofs from component proofs and remaining approximations. Local boundary/type/core/build checks, 212 tests and six production browser tests pass; final-head CI is reported in the draft PR.
+
+**Stage I remains incomplete. I.2 Social Boundary is next.** It adds the social protocol, independent refusal/P4, teaching, institution lifecycle, obligations restore and social adversaries; subsequent P6/load panels, debt correction and the Adoption Gate complete Stage I. No merger or gate certification occurred.
+
+---
+
+Historical receipts below preserve their status at the time of writing.
+
+# Historical Pack 0C3A — exploration and repertoire growth
 
 PR #5 / Pack 0C2 is merged. Main `4b4c0720c6a3bae09cefe1a202b02d4121223479` includes that merge and the Vercel deployment fix. Branch `pack0c3a-exploration-discovery` is published as [draft PR #6](https://github.com/adibadonia-creator/ESS-V4/pull/6), unmerged.
 

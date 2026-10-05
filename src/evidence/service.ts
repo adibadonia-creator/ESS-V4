@@ -633,6 +633,10 @@ export class EvidenceService {
     if (!schema || paidSd <= 0 || output <= 0) return; // Censored zero yield is stock evidence, not log(0) capability.
     const p = this.person(owner),
       key = canonical([method, context]);
+    if(!p.rateProvenance[provenance]) {
+      const old=get(this.readIndexes.get(owner)!.beliefs,readKey(`method:${method}`,"service-use"))?.value as Record<string,number>|undefined;
+      this.fact(owner,`method:${method}`,"service-use",{workSd:(old?.workSd??0)+paidSd,since:old?.since??at-paidSd*QUANTA},at,"own paid extraction exposure","self");
+    }
     const variance = (0.35 / Math.max(0.25, math.sqrt(cognitive * field))) ** 2;
     const logRate =
       math.log(output / paidSd) +
@@ -1310,6 +1314,10 @@ export class EvidenceService {
       );
     };
     add(e.property);
+    if(e.property==="work-progress" && e.value && typeof e.value==="object") {
+      const work=e.value as unknown as {recipe:string;complete:boolean};
+      if(!work.complete)add(`work-recipe:${work.recipe}`);
+    }
     if (
       e.property === "frontier" &&
       typeof e.value === "object" &&

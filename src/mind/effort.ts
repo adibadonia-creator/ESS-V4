@@ -34,7 +34,7 @@ export class ReviewEffort {
       kind === "binding" ? 4 * amount : kind === "trial" ? 3 * amount : amount;
     if (
       this.account.spent + cost > this.account.allowance ||
-      (kind === "binding" && this.nodes + amount > 16)
+      (kind === "binding" && this.nodes + amount > 12)
     )
       return false;
     this.account.spent += cost;

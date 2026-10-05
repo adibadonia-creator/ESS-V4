@@ -9,8 +9,8 @@ import type {
 import "./style.css";
 const root = document.querySelector<HTMLDivElement>("#app")!;
 root.innerHTML = `<header><div><strong>ESS <span>V4</span></strong><small>Personal knowledge, choice & execution</small></div><div id="clock">0.000 SD</div></header>
-<section class="controls"><label>Seed <input id="seed" value="spine"></label><button id="new">New world</button><button id="body-fixture">Body fixture</button><button id="autonomous-fixture">Autonomous adults</button><button id="exploration-fixture">Exploration proof</button><button id="play">Play</button><button id="step">+0.01 SD</button><label>Speed <select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="max">Max</option></select></label><button id="save">Save</button><button id="load">Load</button><input id="file" type="file" accept=".json" hidden></section>
-<main><section class="map-wrap"><div id="map"></div><div class="caption"><span id="fixture-label">DIAGNOSTIC EXECUTION FIXTURE · No autonomous decisions</span><br>Click a shell to inspect its Personal Lens. Wheel to zoom; drag to pan.</div></section><aside><h2>Analyst truth</h2><p id="meta"></p><label>Inspect entity <select id="actor"></select></label><div id="inspect"></div><details id="personal-lens" open><summary>Personal Lens · remembered evidence</summary><canvas id="personal-map" width="384" height="288"></canvas><p id="lens-summary"></p><div id="task-state"></div><div class="row"><button id="interrupt-task">Interrupt task</button><button id="resume-task">Resume task</button><button id="abandon-task">Abandon task</button></div><h3>Dated evidence</h3><div id="evidence-records"></div></details><details id="decision-panel"><summary>Personal decision</summary><pre id="decision-summary"></pre></details><h3>Diagnostic operations</h3><button id="move">Move selected shell</button><label>Source <select id="from"></select></label><label>Destination <select id="to"></select></label><label>Good <select id="good"><option>food</option><option>wood</option><option>stone</option><option>fibre</option></select></label><label>Quantity <input id="quantity" type="number" min="0.01" value="0.5" step="0.1"></label><div class="row"><button id="transfer">Transfer</button><button id="consume">Consume</button><button id="reserve">Reserve 0.5 SD</button><button id="release">Release</button></div><p id="message" role="status"></p><h3>Consequential record</h3><div id="history"></div><details><summary>Measurement counters</summary><pre id="counters"></pre></details></aside></main><footer>Pack 0 is not yet complete. Diagnostic selected intentions prove knowing and executing. The first autonomous-choice slice is available; the remaining Pack-0 proof is incomplete. <span id="hash"></span></footer>`;
+<section class="controls"><label>Seed <input id="seed" value="spine"></label><button id="new">New world</button><button id="body-fixture">Body fixture</button><button id="autonomous-fixture">Autonomous adults</button><button id="exploration-fixture">Exploration proof</button><button id="material-fixture">Material life</button><button id="play">Play</button><button id="step">+0.01 SD</button><label>Speed <select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="5">5×</option><option value="10">10×</option><option value="max">Max</option></select></label><button id="save">Save</button><button id="load">Load</button><input id="file" type="file" accept=".json" hidden></section>
+<main><section class="map-wrap"><div id="map"></div><div class="caption"><span id="fixture-label">DIAGNOSTIC EXECUTION FIXTURE · No autonomous decisions</span><br>Click a shell to inspect its Personal Lens. Wheel to zoom; drag to pan.</div></section><aside><h2>Analyst truth</h2><p id="meta"></p><label>Inspect entity <select id="actor"></select></label><div id="inspect"></div><details id="personal-lens" open><summary>Personal Lens · remembered evidence</summary><canvas id="personal-map" width="384" height="288"></canvas><p id="lens-summary"></p><div id="task-state"></div><div class="row"><button id="interrupt-task">Interrupt task</button><button id="resume-task">Resume task</button><button id="abandon-task">Abandon task</button></div><h3>Dated evidence</h3><div id="evidence-records"></div></details><details id="decision-panel"><summary>Personal decision</summary><pre id="decision-summary"></pre></details><h3>Diagnostic operations</h3><button id="move">Move selected shell</button><label>Source <select id="from"></select></label><label>Destination <select id="to"></select></label><label>Good <select id="good"><option>food</option><option>wood</option><option>stone</option><option>fibre</option></select></label><label>Quantity <input id="quantity" type="number" min="0.01" value="0.5" step="0.1"></label><div class="row"><button id="transfer">Transfer</button><button id="consume">Consume</button><button id="reserve">Reserve 0.5 SD</button><button id="release">Release</button></div><p id="message" role="status"></p><h3>Consequential record</h3><div id="history"></div><details><summary>Measurement counters</summary><pre id="counters"></pre></details></aside></main><footer>Stage I.1 draft · Stage I remains incomplete. I.2 Social boundary is next. <span id="hash"></span></footer>`;
 const element = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 const worker = new Worker(new URL("../runners/worker.ts", import.meta.url), {
@@ -114,7 +114,7 @@ function receive(s: Snapshot) {
       actors.delete(key);
     }
   for (const [key, g] of sites)
-    if (!s.containers.some((c) => c.key === key)) {
+    if (!s.containers.some((c) => c.key === key) && s.predator?.key !== key) {
       g.destroy();
       sites.delete(key);
     }
@@ -171,6 +171,18 @@ function receive(s: Snapshot) {
       );
     else g.rect(-0.045, -0.04, 0.09, 0.08).fill(0xa9784d);
     g.position.set(c.position.x, c.position.y);
+  }
+  if (s.predator) {
+    let g = sites.get(s.predator.key);
+    if (!g) {
+      g = new Graphics();
+      entities.addChild(g);
+      sites.set(s.predator.key, g);
+    }
+    g.clear()
+      .poly([-0.07, 0, 0, -0.06, 0.07, 0, 0, 0.06])
+      .fill(s.predator.retreating ? 0x987b66 : 0xa63427);
+    g.position.set(s.predator.position.x, s.predator.position.y);
   }
   for (const id of ["from", "to"]) {
     const selector = element<HTMLSelectElement>(id),
@@ -340,6 +352,20 @@ element("exploration-fixture").onclick = () => {
   fit = false;
   send({
     kind: "create-exploration",
+    seed: element<HTMLInputElement>("seed").value,
+  });
+};
+element("material-fixture").onclick = () => {
+  playing = false;
+  element("play").textContent = "Play";
+  for (const g of actors.values()) g.destroy();
+  for (const g of sites.values()) g.destroy();
+  actors.clear();
+  sites.clear();
+  snapshot = null;
+  fit = false;
+  send({
+    kind: "create-material",
     seed: element<HTMLInputElement>("seed").value,
   });
 };
@@ -533,10 +559,11 @@ interface LensDTO {
   decision: {
     periodicAt: number;
     pending: string[];
+    projects?: unknown[];
     traces: {
       at: number;
       causes: string[];
-      effort: { spent: number };
+      effort: { spent: number; allowance: number };
       winner: string;
       rule: string;
       agenda: unknown[];
@@ -641,8 +668,15 @@ function inspectPersonal() {
   const trace = lens.decision?.traces.at(-1);
   element("decision-summary").textContent = trace
     ? [
-        `Review ${(trace.at / 2 ** 20).toFixed(4)} SD · ${trace.causes.join(", ")} · ${trace.effort.spent}/600 EU`,
+        `Review ${(trace.at / 2 ** 20).toFixed(4)} SD · ${trace.causes.join(", ")} · ${trace.effort.spent}/${trace.effort.allowance} EU`,
         `Objectives: ${JSON.stringify(trace.agenda)}`,
+        `Projects: ${JSON.stringify(lens.decision?.projects ?? [])}`,
+        ...p.evidence
+          .filter((e) =>
+            ["items", "work-progress", "threat"].includes(e.property),
+          )
+          .slice(-6)
+          .map((e) => `${e.subject}/${e.property}: ${JSON.stringify(e.value)}`),
         ...trace.compared.map(
           (x) =>
             `${x.option.key === trace.winner ? "Chosen" : "Compared"} ${x.option.reference ? "continuation" : x.option.method}: value ${x.value.toFixed(3)}, held error ${x.error.toFixed(3)}, severe risk ${x.consequences.severeProbability.toFixed(3)}, ${x.feasible ? "feasible" : x.gate} · ${x.option.reason}`,

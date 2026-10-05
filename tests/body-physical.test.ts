@@ -22,6 +22,10 @@ import {
 } from "../src/world/body";
 import { stockAt, depletionSd } from "../src/world/resources";
 import type { Operation } from "../src/runtime/types";
+function consumedFood(s:PhysicalSimulation) {
+  const transactions=JSON.parse(s.checkpoint()).body.goods.transactions as {request:{kind:string;sink?:string;good?:string};amount:number}[];
+  return transactions.filter(t=>t.request.kind==="sink"&&t.request.sink==="consumption"&&t.request.good==="food").reduce((q,t)=>q+t.amount,0);
+}
 function fixture(kind = "food-patch", stock = 12) {
   const s = flatWorld("body-physical"),
     a = s.actorKeys()[0]!;
@@ -239,7 +243,8 @@ describe("selected physical execution", () => {
     ).toBeGreaterThan(0);
     s.advanceTo(time(0.1));
     s.diagnosticTaskInterrupt(a);
-    expect(s.snapshot().reconciliation.totals.food!.sinks).toBeCloseTo(0.2, 6);
+    expect(s.snapshot().reconciliation.totals.food!.sinks).toBeGreaterThan(0.2);
+    expect(consumedFood(s)).toBeCloseTo(0.2, 6);
     expect(execution(s).budget.spent.goods.food).toBeCloseTo(0.2, 6);
     const r = PhysicalSimulation.restore(s.checkpoint());
     s.diagnosticTaskResume(a);
@@ -247,7 +252,8 @@ describe("selected physical execution", () => {
     s.advanceTo(time(0.2));
     r.advanceTo(time(0.2));
     expect(r.causalHash()).toBe(s.causalHash());
-    expect(s.snapshot().reconciliation.totals.food!.sinks).toBeCloseTo(0.4, 6);
+    expect(consumedFood(s)).toBeCloseTo(0.4, 6);
+    expect(s.snapshot().reconciliation.ok).toBe(true);
     expect(s.analystBody(a)!.c).toBeGreaterThan(1);
   });
   it("locality, empty sites, unknown methods and cargo gates prevent extraction", () => {

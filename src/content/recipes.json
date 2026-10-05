@@ -1,0 +1,45 @@
+[
+  {
+    "id": "make-work-tool",
+    "inputs": {
+      "wood": 1,
+      "stone": 1
+    },
+    "work": 0.08,
+    "output": "work-tool",
+    "bulk": 0.1,
+    "effect": {
+      "kind": "rate",
+      "scope": "extraction",
+      "coefficient": 0.3
+    }
+  },
+  {
+    "id": "make-spear",
+    "inputs": {
+      "wood": 2,
+      "stone": 2
+    },
+    "work": 0.15,
+    "output": "spear",
+    "bulk": 0.15,
+    "effect": {
+      "kind": "access",
+      "scope": "fishing",
+      "coefficient": 0.4,
+      "forceCoefficient": 0.4
+    }
+  },
+  {
+    "id": "establish-cache",
+    "inputs": {},
+    "work": 0.02,
+    "output": "cache",
+    "bulk": 0,
+    "effect": {
+      "kind": "storage",
+      "scope": "food",
+      "coefficient": 0.2
+    }
+  }
+]

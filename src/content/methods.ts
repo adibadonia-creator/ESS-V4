@@ -1,4 +1,5 @@
 import data from "./physical.json";
+import { RECIPES, type RecipeIndex } from "./recipes";
 export interface MethodEntry {
   id: string;
   effects: string[];
@@ -11,8 +12,8 @@ export interface MethodSchema {
   target: "self" | "owned" | "site";
   targetProperty?: string;
   targetValue?: string;
-  prerequisites: { effect: string; good: string; consumes: boolean }[];
-  operation: "consume" | "extract" | "recover" | "material";
+  prerequisites: { effect: string; good: string; consumes: boolean; quantity?: number }[];
+  operation: "consume" | "extract" | "recover" | "material" | "make";
   law: string;
   good?: string;
   mode?: "rest" | "leisure";
@@ -30,7 +31,7 @@ export class MethodIndex {
   private byId = new Map<string, MethodEntry>();
   private byEffect = new Map<string, MethodEntry[]>();
   private byInput = new Map<string, MethodEntry[]>();
-  constructor(entries: readonly MethodEntry[]) {
+  constructor(entries: readonly MethodEntry[], readonly recipes:RecipeIndex=RECIPES) {
     for (const entry of entries) {
       if (this.byId.has(entry.id)) throw Error("Duplicate method content");
       if (

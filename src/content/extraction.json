@@ -31,6 +31,14 @@
       "renewal": 0,
       "habitat": 1,
       "sparseFactor": false
+    },
+    {
+      "id": "fishing-node",
+      "good": "fish",
+      "capacity": 24,
+      "renewal": 8,
+      "habitat": 1,
+      "sparseFactor": true
     }
   ],
   "methods": [
@@ -39,56 +47,105 @@
       "siteKind": "food-patch",
       "good": "food",
       "referenceRate": 6,
-      "weights": { "B": 0.25, "A": 0.2, "Field": 0.55 },
+      "weights": {
+        "B": 0.25,
+        "A": 0.2,
+        "Field": 0.55
+      },
       "classRatio": 0.62,
       "conditionExponent": 0.7,
       "woundExponent": 1,
       "fatiguePenalty": 0.2,
       "load": 0.2,
       "effort": 0.4,
-      "practice": { "Field": 1 }
+      "practice": {
+        "Field": 1
+      }
     },
     {
       "id": "wood",
       "siteKind": "wood-site",
       "good": "wood",
       "referenceRate": 4,
-      "weights": { "B": 0.35, "A": 0.1, "Field": 0.3, "Make": 0.25 },
+      "weights": {
+        "B": 0.35,
+        "A": 0.1,
+        "Field": 0.3,
+        "Make": 0.25
+      },
       "classRatio": 0.55,
       "conditionExponent": 0.7,
       "woundExponent": 1,
       "fatiguePenalty": 0.2,
       "load": 0.55,
       "effort": 0.7,
-      "practice": { "Field": 0.5, "Make": 0.5 }
+      "practice": {
+        "Field": 0.5,
+        "Make": 0.5
+      }
     },
     {
       "id": "stone",
       "siteKind": "stone-deposit",
       "good": "stone",
       "referenceRate": 3,
-      "weights": { "B": 0.4, "A": 0.1, "Make": 0.5 },
+      "weights": {
+        "B": 0.4,
+        "A": 0.1,
+        "Make": 0.5
+      },
       "classRatio": 0.5,
       "conditionExponent": 0.7,
       "woundExponent": 1,
       "fatiguePenalty": 0.2,
       "load": 0.55,
       "effort": 0.7,
-      "practice": { "Make": 1 }
+      "practice": {
+        "Make": 1
+      }
     },
     {
       "id": "fibre",
       "siteKind": "fibre-site",
       "good": "fibre",
       "referenceRate": 4,
-      "weights": { "A": 0.2, "Field": 0.6, "Make": 0.2 },
+      "weights": {
+        "A": 0.2,
+        "Field": 0.6,
+        "Make": 0.2
+      },
       "classRatio": 0.78,
       "conditionExponent": 0.7,
       "woundExponent": 1,
       "fatiguePenalty": 0.2,
       "load": 0.2,
       "effort": 0.4,
-      "practice": { "Field": 0.7, "Make": 0.3 }
+      "practice": {
+        "Field": 0.7,
+        "Make": 0.3
+      }
+    },
+    {
+      "id": "fish",
+      "siteKind": "fishing-node",
+      "good": "fish",
+      "referenceRate": 5,
+      "weights": {
+        "A": 0.15,
+        "Field": 0.75,
+        "Make": 0.1
+      },
+      "classRatio": 0.7,
+      "conditionExponent": 0.7,
+      "woundExponent": 1,
+      "fatiguePenalty": 0.2,
+      "load": 0.2,
+      "effort": 0.4,
+      "practice": {
+        "Field": 0.9,
+        "Make": 0.1
+      },
+      "requiredItemScope": "fishing"
     }
   ]
 }

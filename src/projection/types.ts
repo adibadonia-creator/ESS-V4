@@ -66,6 +66,11 @@ export interface TerrainView {
   readonly colors: readonly number[];
 }
 export interface Snapshot {
+  readonly predator?: Readonly<{
+    key: string;
+    position: PointView;
+    retreating: boolean;
+  }> | null;
   readonly personalLenses: readonly unknown[];
   readonly time: number;
   readonly seed: string;
@@ -99,7 +104,8 @@ export type Command =
         | "create-evidence"
         | "create-body"
         | "create-autonomous"
-        | "create-exploration";
+        | "create-exploration"
+        | "create-material";
       seed: string;
     }
   | {

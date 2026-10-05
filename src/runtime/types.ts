@@ -3,7 +3,9 @@ import type { GeographyVersion } from "../evidence/geography";
 import type { EffortAccount } from "../kernel/effort";
 import type { PersonalSearch } from "./routing";
 import type { PersonalView, Point, ExactSelf } from "../evidence/types";
-export type Operation =
+export type Operation = {
+  maintenance?: { from: string; good: string; rate: number; quantity: number };
+} & (
   | {
       family: "Move";
       target: Point;
@@ -32,6 +34,9 @@ export type Operation =
       duration: number;
       site?: string;
       compulsory?: boolean;
+      workObject?: string;
+      qualityTarget?: number;
+      preparation?: number;
       experiment?: import("../evidence/types").ExplorationOutcome;
     }
   | {
@@ -40,7 +45,8 @@ export type Operation =
       duration: number;
       mode?: "rest" | "leisure";
     }
-  | { family: "Engage"; law: string; duration: number };
+  | { family: "Engage"; law: string; duration: number; target?: string }
+);
 export interface Budget {
   time: number;
   goods: Record<string, number>;
@@ -65,6 +71,9 @@ export interface SelectedIntention {
     expires: number;
   }[];
   source: string;
+  project?: string;
+  projectFinal?: boolean;
+  projectMilestone?: number;
   effortAccount?: string;
   preparedRoutes?: Record<number, PersonalSearch>;
   envelope?: {
@@ -98,6 +107,7 @@ export interface Task extends SelectedIntention {
   bindingRevision: number;
   paidForStep: number;
   physicalStepOutput: number;
+  maintenanceForStep?: number;
   cursor: number;
   status:
     | "ready"
@@ -138,6 +148,7 @@ export interface ActivityState {
 }
 export interface RuntimeState {
   tasks: Task[];
+  suspended?: Task[];
   terminal: Task[];
   retry: Record<string, number>;
   purpose: Record<string, string>;
@@ -164,12 +175,20 @@ export interface RuntimePort {
     task: Task,
     step: Operation,
     remaining: number,
-  ): { ok: true; end: number } | { ok: false; observed: string };
+  ):
+    | {
+        ok: true;
+        end: number;
+        ownWrites?: { key: string; before: number; after: number }[];
+      }
+    | { ok: false; observed: string };
   endPhysical(
     task: Task,
     final: boolean,
   ): {
     quantity: number;
+    outputSubject?: string;
+    maintenanceCost?: number;
     good?: string;
     reason?: string;
     costs?: Record<string, number>;
@@ -225,5 +244,6 @@ export interface BoundRepair {
   objective: string;
   bindings: Record<string, string>;
   steps: Operation[];
-  dependsOn: { key: string; version: number }[];
+  dependsOn: { key: string; version: number; valueFingerprint?: string }[];
+  preparedRoutes?: Record<number, PersonalSearch>;
 }
