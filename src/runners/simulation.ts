@@ -1,6 +1,6 @@
-import {MethodIndex,type MethodEntry} from "../content/methods";
-import {RecipeIndex} from "../content/recipes";
-import {StorageLaw,type StorageState} from "../world/storage";
+import { MethodIndex, type MethodEntry } from "../content/methods";
+import { RecipeIndex } from "../content/recipes";
+import { StorageLaw, type StorageState } from "../world/storage";
 import { DangerLaw, type DangerState } from "../world/danger";
 import { boundedRepair } from "../mind/repair";
 import { MaterialLaw, type MaterialState } from "../world/material";
@@ -88,8 +88,9 @@ import { Mind } from "../mind/review";
 import type { MindState, WakeCause, Dispositions } from "../mind/types";
 import { bodySignals, ownedLots } from "../mind/signals";
 type PhysicalEvent =
-  | {kind:"predator-tick"}
-  | {kind:"danger-observe"|"mind-safety";actor:Key}
+  | { kind: "predator-tick" }
+  | { kind: "animal-harm"; actor: Key; wound: number; fatal: boolean }
+  | { kind: "danger-observe" | "mind-safety"; actor: Key }
   | { kind: "leg"; actor: Key; generation: number }
   | { kind: "lease"; reservation: Key }
   | { kind: "contact"; a: Key; b: Key; ga: number; gb: number; radius: number }
@@ -106,7 +107,8 @@ type PhysicalEvent =
   | { kind: "runtime-operation"; taskId: string; event: "operation" | "budget" }
   | { kind: "representative-closure"; actor: Key }
   | {
-      kind: "mind-periodic" | "mind-review" | "mind-food-crossing" | "mind-repair";
+      kind:
+        "mind-periodic" | "mind-review" | "mind-food-crossing" | "mind-repair";
       actor: Key;
     };
 interface RouteRequest {
@@ -143,8 +145,8 @@ interface Save {
   epistemicActors: Key[];
   adultPhysical: AdultPhysicalState;
   materials: MaterialState;
-  danger:DangerState;
-  storage:StorageState;
+  danger: DangerState;
+  storage: StorageState;
   mind: MindState[];
 }
 const FIELDS = [
@@ -177,8 +179,8 @@ export class PhysicalSimulation {
   private runtime: TaskRuntime;
   private adultPhysical: AdultPhysical;
   private materials: MaterialLaw;
-  private danger:DangerLaw;
-  private storage:StorageLaw;
+  private danger: DangerLaw;
+  private storage: StorageLaw;
   private mind: Mind;
   private epistemicActors = new Set<Key>();
   private carriedByActor = new Map<Key, Key>();
@@ -193,7 +195,10 @@ export class PhysicalSimulation {
       JSON.parse(JSON.stringify(config)) as PhysicalConfig,
     );
     this.config = config;
-    const catalogue=new MethodIndex(config.methods as MethodEntry[],new RecipeIndex(config.recipes));
+    const catalogue = new MethodIndex(
+      config.methods as MethodEntry[],
+      new RecipeIndex(config.recipes),
+    );
     this.materialKinds = new Map(config.materialKinds.map((k) => [k.id, k]));
     this.materialEffects = new Set(config.materialEffects);
     this.kernel = new Kernel(this.counters, saved?.kernel);
@@ -231,31 +236,105 @@ export class PhysicalSimulation {
       config.spatial,
     );
     this.epistemicActors = new Set(saved?.epistemicActors ?? []);
-    this.storage=new StorageLaw(this.ledger,()=>this.kernel.state.now,(from,good,quantity)=>{
-      this.goods({kind:"sink",sink:"spoilage",actor:this.ledger.get(from).custodian??from,from,good,quantity});
-      const c=this.ledger.get(from),owner=c.custodian;
-      if(owner&&this.epistemicActors.has(owner)){
-        const p=this.position(owner),q=this.ledger.location(from);if(c.kind==="carried"||(p.x-q.x)**2+(p.y-q.y)**2<=.08**2)this.publishOwnStocks(owner,from);
-      }
-    },saved?.storage);
-    if(!saved)for(const c of this.ledger.state.containers)this.storage.touch(c.key);
-    this.materials = new MaterialLaw(seed,this.ledger,{
-      position: actor=>this.position(actor),
-      input:(actor,good,quantity)=>{const from=this.ledger.carriedContainer(actor).key;this.goods({kind:"sink",sink:"recipe-input",actor,from,good,quantity});this.publishOwnStocks(actor,from);},
-      output:(actor,good,quantity)=>{const to=this.ledger.carriedContainer(actor).key;this.goods({kind:"source",source:"production",to,good,quantity});this.publishOwnStocks(actor,to);},
-      cache:(actor,point,key)=>{
-        const id=this.kernel.ids.allocate("constructed-cache",key);
-        this.ledger.add({...id,kind:"cache",location:{kind:"ground",point:{...point}},custodian:actor,capacityCu:12,stocks:{}});
-        this.spatial.put(id.key,point);this.evidence.selfHandle(actor,id.key);this.publishOwnStocks(actor,id.key);this.perceive(actor,"cache completion",true);
-        return id.key;
+    this.storage = new StorageLaw(
+      this.ledger,
+      () => this.kernel.state.now,
+      (from, good, quantity) => {
+        this.goods({
+          kind: "sink",
+          sink: "spoilage",
+          actor: this.ledger.get(from).custodian ?? from,
+          from,
+          good,
+          quantity,
+        });
+        const c = this.ledger.get(from),
+          owner = c.custodian;
+        if (owner && this.epistemicActors.has(owner)) {
+          const p = this.position(owner),
+            q = this.ledger.location(from);
+          if (
+            c.kind === "carried" ||
+            (p.x - q.x) ** 2 + (p.y - q.y) ** 2 <= 0.08 ** 2
+          )
+            this.publishOwnStocks(owner, from);
+        }
       },
-      fact:(actor,subject,property,value)=>this.evidence.fact(actor,subject==="self"?subject:this.evidence.selfHandle(actor,subject),property,value as import("../evidence/types").Value,this.kernel.state.now,"paid material law",subject==="self"?"self":"direct"),
-    },saved?.materials,catalogue.recipes);
+      saved?.storage,
+    );
+    if (!saved)
+      for (const c of this.ledger.state.containers) this.storage.touch(c.key);
+    this.materials = new MaterialLaw(
+      seed,
+      this.ledger,
+      {
+        position: (actor) => this.position(actor),
+        input: (actor, good, quantity) => {
+          const from = this.ledger.carriedContainer(actor).key;
+          this.goods({
+            kind: "sink",
+            sink: "recipe-input",
+            actor,
+            from,
+            good,
+            quantity,
+          });
+          this.publishOwnStocks(actor, from);
+        },
+        output: (actor, good, quantity) => {
+          const to = this.ledger.carriedContainer(actor).key;
+          this.goods({
+            kind: "source",
+            source: "production",
+            to,
+            good,
+            quantity,
+          });
+          this.publishOwnStocks(actor, to);
+        },
+        cache: (actor, point, key) => {
+          const id = this.kernel.ids.allocate("constructed-cache", key);
+          this.ledger.add({
+            ...id,
+            kind: "cache",
+            location: { kind: "ground", point: { ...point } },
+            custodian: actor,
+            capacityCu: 12,
+            stocks: {},
+          });
+          this.spatial.put(id.key, point);
+          this.evidence.selfHandle(actor, id.key);
+          this.publishOwnStocks(actor, id.key);
+          this.perceive(actor, "cache completion", true);
+          return id.key;
+        },
+        fact: (actor, subject, property, value) =>
+          this.evidence.fact(
+            actor,
+            subject === "self"
+              ? subject
+              : this.evidence.selfHandle(actor, subject),
+            property,
+            value as import("../evidence/types").Value,
+            this.kernel.state.now,
+            "paid material law",
+            subject === "self" ? "self" : "direct",
+          ),
+      },
+      saved?.materials,
+      catalogue.recipes,
+    );
     this.adultPhysical = new AdultPhysical(
       {
         now: () => this.kernel.state.now,
-        remainingGoods:(actor,good)=>{const b=this.runtime.currentExecution(actor).budget;return b?(b.authorised.goods[good]??0)-(b.spent.goods[good]??0):0;},
-        engage:(actor,target,duration)=>!!this.danger.engage(actor,target,duration),
+        remainingGoods: (actor, good) => {
+          const b = this.runtime.currentExecution(actor).budget;
+          return b
+            ? (b.authorised.goods[good] ?? 0) - (b.spent.goods[good] ?? 0)
+            : 0;
+        },
+        engage: (actor, target, duration) =>
+          !!this.danger.engage(actor, target, duration),
         workRadiusKm: config.movement.workRadiusKm,
         position: (actor) => this.position(actor),
         knownMethod: (actor, method) =>
@@ -405,24 +484,74 @@ export class PhysicalSimulation {
     );
     for (const site of this.adultPhysical.state.sites)
       this.spatial.put(site.key, site.point);
-    this.danger=new DangerLaw(seed,{
-      now:()=>this.kernel.state.now,position:actor=>this.position(actor),
-      nearby:(point,radius)=>this.spatial.query(point,radius).filter(key=>this.byActor.has(key)),
-      passable:point=>{const k=cell(this.terrain,point);return k>=0&&!!this.terrain.passable[k];},
-      alive:actor=>this.adultPhysical.body(actor)?.alive??false,
-      force:actor=>this.adultPhysical.force(actor)*this.materials.force(actor),
-      wounds:actor=>{const b=this.adultPhysical.body(actor);return b?materialiseBody(b,this.kernel.state.now).w:0;},
-      harm:(actor,wound,fatal)=>{const task=this.runtime.task(actor);if(task)this.runtime.interrupt(actor,"animal harm");this.adultPhysical.harm(actor,wound,fatal);if(task&&this.adultPhysical.body(actor)?.alive)this.runtime.resume(actor);},
-      fact:(actor,subject,property,value)=>this.evidence.fact(actor,this.evidence.selfHandle(actor,subject),property,value as import("../evidence/types").Value,this.kernel.state.now,"local physical encounter","direct"),
-    },saved?.danger);
-    if(this.danger.state.predator)this.spatial.put(this.danger.state.predator.key,this.danger.state.predator.point);
+    this.danger = new DangerLaw(
+      seed,
+      {
+        now: () => this.kernel.state.now,
+        position: (actor) => this.position(actor),
+        nearby: (point, radius) =>
+          this.spatial
+            .query(point, radius)
+            .filter((key) => this.byActor.has(key)),
+        passable: (point) => {
+          const k = cell(this.terrain, point);
+          return k >= 0 && !!this.terrain.passable[k];
+        },
+        alive: (actor) => this.adultPhysical.body(actor)?.alive ?? false,
+        force: (actor) =>
+          this.adultPhysical.force(actor) * this.materials.force(actor),
+        wounds: (actor) => {
+          const b = this.adultPhysical.body(actor);
+          return b ? materialiseBody(b, this.kernel.state.now).w : 0;
+        },
+        harm: (actor, wound, fatal) => {
+          const id = this.kernel.ids.allocate("animal-harm", actor);
+          this.kernel.schedule(
+            id.key,
+            this.kernel.state.now +
+              (this.kernel.state.phase > PHASE.harm ? 1 : 0),
+            PHASE.harm,
+            { kind: "animal-harm", actor, wound, fatal },
+          );
+        },
+        fact: (actor, subject, property, value) =>
+          this.evidence.fact(
+            actor,
+            this.evidence.selfHandle(actor, subject),
+            property,
+            value as import("../evidence/types").Value,
+            this.kernel.state.now,
+            "local physical encounter",
+            "direct",
+          ),
+      },
+      saved?.danger,
+    );
+    if (this.danger.state.predator)
+      this.spatial.put(
+        this.danger.state.predator.key,
+        this.danger.state.predator.point,
+      );
     this.runtime = new TaskRuntime(
       {
         beginPhysical: (task, step, remaining) => {
-          const before=task.dependsOn.map(d=>({key:d.key,before:this.evidence.version(task.actor,d.key)}));
+          const before = task.dependsOn.map((d) => ({
+            key: d.key,
+            before: this.evidence.version(task.actor, d.key),
+          }));
           const result = this.adultPhysical.begin(task, step, remaining);
           if (result.ok) this.refreshMindThresholds(task.actor, step);
-          return result.ok?{...result,ownWrites:before.map(d=>({...d,after:this.evidence.version(task.actor,d.key)})).filter(d=>d.before!==d.after)}:result;
+          return result.ok
+            ? {
+                ...result,
+                ownWrites: before
+                  .map((d) => ({
+                    ...d,
+                    after: this.evidence.version(task.actor, d.key),
+                  }))
+                  .filter((d) => d.before !== d.after),
+              }
+            : result;
         },
         endPhysical: (task, final) => {
           const before = task.dependsOn.map((d) => ({
@@ -436,7 +565,18 @@ export class PhysicalSimulation {
               after: this.evidence.version(task.actor, d.key),
             }))
             .filter((d) => d.before !== d.after);
-          return { ...result, ...("outputSubject" in result&&result.outputSubject?{outputSubject:this.evidence.selfHandle(task.actor,result.outputSubject)}:{}), ownWrites };
+          return {
+            ...result,
+            ...("outputSubject" in result && result.outputSubject
+              ? {
+                  outputSubject: this.evidence.selfHandle(
+                    task.actor,
+                    result.outputSubject,
+                  ),
+                }
+              : {}),
+            ownWrites,
+          };
         },
         paidPhysical: (task, start, end) =>
           this.adultPhysical.paid(task, start, end),
@@ -615,18 +755,35 @@ export class PhysicalSimulation {
         record: (kind, actor, detail) => {
           this.kernel.record(kind, actor, detail);
           if (kind === "task-complete") {
-            const d=detail as {project?:string;projectFinal?:boolean};
-            if(d.project&&d.projectFinal){const p=this.mind.person(actor)?.projects?.find(p=>p.key===d.project);if(p){p.status="complete";p.reason="authorised root milestone physically completed";}}
-            if(!this.runtime.resumeSuspended(actor))this.requestReview(actor,"completion");
+            const d = detail as {
+              project?: string;
+              projectFinal?: boolean;
+              projectMilestone?: number;
+            };
+            if (d.project && d.projectMilestone !== undefined)
+              this.mind.completedProject(
+                actor,
+                d.project,
+                d.projectMilestone,
+                !!d.projectFinal,
+              );
+            if (!this.runtime.resumeSuspended(actor))
+              this.requestReview(actor, "completion");
           }
           if (kind === "task-repair-required" && this.mind?.person(actor))
-            this.kernel.schedule(digest(["mind-repair",actor]),this.kernel.state.now+(this.kernel.state.phase===PHASE.decide?1:0),PHASE.decide,{kind:"mind-repair",actor});
+            this.kernel.schedule(
+              digest(["mind-repair", actor]),
+              this.kernel.state.now +
+                (this.kernel.state.phase === PHASE.decide ? 1 : 0),
+              PHASE.decide,
+              { kind: "mind-repair", actor },
+            );
         },
       },
       this.counters,
       saved?.runtime,
     );
-    this.mind = new Mind(seed, this.counters, saved?.mind,catalogue);
+    this.mind = new Mind(seed, this.counters, saved?.mind, catalogue);
   }
   private publishOwnStocks(actor: Key, container: Key): void {
     if (!this.epistemicActors.has(actor)) return;
@@ -642,6 +799,7 @@ export class PhysicalSimulation {
       "own paid goods receipt",
       "self",
     );
+    this.mind?.observeOwnStocks(this.personalReview(actor));
   }
   private actor(key: Key): PersonShell {
     const a = this.byActor.get(key);
@@ -694,31 +852,36 @@ export class PhysicalSimulation {
         capacityCu: 2 * d.nominalCargoCu,
         stocks: {},
       });
-      this.ledger.add({
-        ...cache,
-        kind: "cache",
-        location: { kind: "ground", point: { ...p } },
-        custodian: a.key,
-        capacityCu: d.cacheCapacityCu,
-        stocks: {},
-      });
-      this.ledger.transact(
-        this.kernel.ids.allocate("transaction", cache.key).key,
-        0,
-        {
-          kind: "source",
-          source: "initial-endowment",
-          to: cache.key,
-          good: "food",
-          quantity: d.cacheFoodFu,
-        },
-      );
+      if (d.foundingCaches) {
+        this.ledger.add({
+          ...cache,
+          kind: "cache",
+          location: { kind: "ground", point: { ...p } },
+          custodian: a.key,
+          capacityCu: d.cacheCapacityCu,
+          stocks: {},
+        });
+        if (d.cacheFoodFu > 0)
+          this.ledger.transact(
+            this.kernel.ids.allocate("transaction", cache.key).key,
+            0,
+            {
+              kind: "source",
+              source: "initial-endowment",
+              to: cache.key,
+              good: "food",
+              quantity: d.cacheFoodFu,
+            },
+          );
+      }
     }
     for (let i = 0; i < d.sites; i++) {
       const k = cells[Math.floor(((i + 0.25) * cells.length) / d.sites)]!,
         p = center(this.terrain, k),
         id = this.kernel.ids.allocate("resource-site", root, i);
-      const g = this.config.goods.filter(g => g.divisible)[i % this.config.goods.filter(g => g.divisible).length]!,
+      const g = this.config.goods.filter((g) => g.divisible)[
+          i % this.config.goods.filter((g) => g.divisible).length
+        ]!,
         quantity =
           g.id === "food"
             ? d.sourceFoodFu
@@ -870,7 +1033,7 @@ export class PhysicalSimulation {
     return state ? freezeProjection(clone(state)) : null;
   }
   requestReview(actor: Key, cause: WakeCause): void {
-    if(this.adultPhysical.body(actor)?.alive===false)return;
+    if (this.adultPhysical.body(actor)?.alive === false) return;
     if (!this.mind?.person(actor)) return;
     const at =
       this.kernel.state.now +
@@ -1001,16 +1164,71 @@ export class PhysicalSimulation {
     this.adultPhysical.found(actor, class_, profile);
     this.adultPhysical.experience(actor);
   }
-  diagnosticFoundUse(actor:Key,method:string,workSd:number){
-    if(this.kernel.state.now!==0||!Number.isFinite(workSd)||workSd<0||workSd>1||this.personalReview(actor).belief(`method:${method}`,"known")?.value!==true)throw Error("Invalid founding service prehistory");
-    this.evidence.fact(actor,`method:${method}`,"service-use",{workSd,since:0},0,"declared founding personal time allocation","self");
+  diagnosticFoundUse(actor: Key, method: string, workSd: number) {
+    if (
+      this.kernel.state.now !== 0 ||
+      !Number.isFinite(workSd) ||
+      workSd < 0 ||
+      workSd > 1 ||
+      this.personalReview(actor).belief(`method:${method}`, "known")?.value !==
+        true
+    )
+      throw Error("Invalid founding service prehistory");
+    this.evidence.fact(
+      actor,
+      `method:${method}`,
+      "service-use",
+      { workSd, since: 0 },
+      0,
+      "declared founding personal time allocation",
+      "self",
+    );
   }
-  diagnosticFoundRate(actor:Key,method:string,context:string,rate:number){
-    if(this.kernel.state.now!==0||!Number.isFinite(rate)||rate<=0||this.personalReview(actor).belief(`method:${method}`,"known")?.value!==true)throw Error("Invalid founding personal rate prior");
-    this.evidence.fact(actor,"self",`rate:${method}:${context}`,{priorRate:rate,priorWeight:1,weight:0,logSum:0,anchorAt:0,samples:1},0,"declared founding experienced rate prior","inference");
+  diagnosticFoundRate(
+    actor: Key,
+    method: string,
+    context: string,
+    rate: number,
+  ) {
+    if (
+      this.kernel.state.now !== 0 ||
+      !Number.isFinite(rate) ||
+      rate <= 0 ||
+      this.personalReview(actor).belief(`method:${method}`, "known")?.value !==
+        true
+    )
+      throw Error("Invalid founding personal rate prior");
+    this.evidence.fact(
+      actor,
+      "self",
+      `rate:${method}:${context}`,
+      {
+        priorRate: rate,
+        priorWeight: 1,
+        weight: 0,
+        logSum: 0,
+        anchorAt: 0,
+        samples: 1,
+      },
+      0,
+      "declared founding experienced rate prior",
+      "inference",
+    );
   }
-  diagnosticPredator(point:Point) {
-    const id=this.kernel.ids.allocate("predator",digest([this.seed,"founding-predator"]));this.danger.found(id.key,point);this.spatial.put(id.key,point);this.kernel.schedule(id.key,this.kernel.state.now+Math.ceil(.1*QUANTA),PHASE.harm,{kind:"predator-tick"});return id.key;
+  diagnosticPredator(point: Point) {
+    const id = this.kernel.ids.allocate(
+      "predator",
+      digest([this.seed, "founding-predator"]),
+    );
+    this.danger.found(id.key, point);
+    this.spatial.put(id.key, point);
+    this.kernel.schedule(
+      id.key,
+      this.kernel.state.now + Math.ceil(0.1 * QUANTA),
+      PHASE.harm,
+      { kind: "predator-tick" },
+    );
+    return id.key;
   }
   diagnosticResource(
     kind: string,
@@ -1094,9 +1312,27 @@ export class PhysicalSimulation {
     )) {
       if (key === actor || (focus && key !== focus)) continue;
       this.counters.perceptionCandidateChecks++;
-      const predator=this.danger?.state.predator;
-      if(predator?.key===key){
-        if(visible(this.terrain,p,predator.point,sight))facts.push({reference:key,kind:"animal",position:predator.point,detection:1,properties:[{property:"threat",value:{force:1.6,point:predator.point,active:predator.retreatUntil<=this.kernel.state.now} as unknown as import("../evidence/types").Value,volatility:"fast",uncertainty:0}]});
+      const predator = this.danger?.state.predator;
+      if (predator?.key === key) {
+        if (visible(this.terrain, p, predator.point, sight))
+          facts.push({
+            reference: key,
+            kind: "animal",
+            position: predator.point,
+            detection: 1,
+            properties: [
+              {
+                property: "threat",
+                value: {
+                  force: 1.6,
+                  point: predator.point,
+                  active: predator.retreatUntil <= this.kernel.state.now,
+                } as unknown as import("../evidence/types").Value,
+                volatility: "fast",
+                uncertainty: 0,
+              },
+            ],
+          });
         continue;
       }
       const resource = this.adultPhysical.site(key);
@@ -1227,7 +1463,14 @@ export class PhysicalSimulation {
       context,
       directed,
     );
-    if(this.mind?.person(actor)&&facts.some(f=>f.kind==="animal"))this.kernel.schedule(digest(["mind-safety",actor]),this.kernel.state.now+(this.kernel.state.phase===PHASE.decide?1:0),PHASE.decide,{kind:"mind-safety",actor});
+    if (this.mind?.person(actor) && facts.some((f) => f.kind === "animal"))
+      this.kernel.schedule(
+        digest(["mind-safety", actor]),
+        this.kernel.state.now +
+          (this.kernel.state.phase === PHASE.decide ? 1 : 0),
+        PHASE.decide,
+        { kind: "mind-safety", actor },
+      );
     // A newly visible obstruction of the selected physical path is consequential.
     const task = this.runtime?.task(actor);
     if (task?.active?.family === "Move" && task.route) {
@@ -1256,7 +1499,6 @@ export class PhysicalSimulation {
           true,
         );
       this.runtime.evidenceBoundary(actor);
-
     }
   }
   private startPersonalPrefix(
@@ -1489,7 +1731,12 @@ export class PhysicalSimulation {
           y: (leg.from.y + leg.to.y) / 2,
         };
         for (const key of this.spatial.query(mid, r + s.cellKm * 2)) {
-          if (this.byActor.has(key) || this.adultPhysical.site(key) || this.danger.state.predator?.key===key) continue;
+          if (
+            this.byActor.has(key) ||
+            this.adultPhysical.site(key) ||
+            this.danger.state.predator?.key === key
+          )
+            continue;
           for (const radius of [r, this.config.movement.workRadiusKm]) {
             const u = entryFraction(
               leg.from,
@@ -1601,19 +1848,55 @@ export class PhysicalSimulation {
   }
   private execute(e: Event<PhysicalEvent>): void {
     const p = e.payload;
-    if(p.kind==="predator-tick"){
-      this.danger.tick();const predator=this.danger.state.predator!;this.spatial.put(predator.key,predator.point);
-      for(const actor of this.spatial.query(predator.point,this.config.movement.sightKm).filter(key=>this.epistemicActors.has(key)))this.kernel.schedule(digest(["danger-observe",actor]),e.at,PHASE.observe,{kind:"danger-observe",actor});
-      this.kernel.schedule(predator.key,e.at+Math.ceil(.1*QUANTA),PHASE.harm,{kind:"predator-tick"});
+    if (p.kind === "animal-harm") {
+      const task = this.runtime.task(p.actor);
+      if (task) this.runtime.interrupt(p.actor, "animal harm");
+      this.adultPhysical.harm(p.actor, p.wound, p.fatal);
+      if (this.adultPhysical.body(p.actor)?.alive) {
+        if (task) this.runtime.resume(p.actor);
+      } else {
+        this.runtime.abandon(p.actor);
+        this.runtime.discardSuspended(p.actor);
+      }
     }
-    if(p.kind==="danger-observe")this.perceive(p.actor,"local moving animal",true);
-    if(p.kind==="mind-safety"){
-      if(!this.adultPhysical.body(p.actor)?.alive)return;
-      const trace=this.mind.safety(this.personalReview(p.actor),this.runtime.currentExecution(p.actor));
-      if(trace){this.runtime.admitEffort(trace.effort,trace.selected);if(trace.selected){this.runtime.suspendForSafety(p.actor);this.runtime.select(trace.selected);}}
+    if (p.kind === "predator-tick") {
+      this.danger.tick();
+      const predator = this.danger.state.predator!;
+      this.spatial.put(predator.key, predator.point);
+      for (const actor of this.spatial
+        .query(predator.point, this.config.movement.sightKm)
+        .filter((key) => this.epistemicActors.has(key)))
+        this.kernel.schedule(
+          digest(["danger-observe", actor]),
+          e.at,
+          PHASE.observe,
+          { kind: "danger-observe", actor },
+        );
+      this.kernel.schedule(
+        predator.key,
+        e.at + Math.ceil(0.1 * QUANTA),
+        PHASE.harm,
+        { kind: "predator-tick" },
+      );
+    }
+    if (p.kind === "danger-observe")
+      this.perceive(p.actor, "local moving animal", true);
+    if (p.kind === "mind-safety") {
+      if (!this.adultPhysical.body(p.actor)?.alive) return;
+      const trace = this.mind.safety(
+        this.personalReview(p.actor),
+        this.runtime.currentExecution(p.actor),
+      );
+      if (trace) {
+        this.runtime.admitEffort(trace.effort, trace.selected);
+        if (trace.selected) {
+          this.runtime.suspendForSafety(p.actor);
+          this.runtime.select(trace.selected);
+        }
+      }
     }
     if (p.kind === "mind-periodic") {
-      if(!this.adultPhysical.body(p.actor)?.alive)return;
+      if (!this.adultPhysical.body(p.actor)?.alive) return;
       const state = this.mind.person(p.actor)!;
       this.requestReview(p.actor, "periodic");
       state.periodicAt = e.at + 2 * QUANTA;
@@ -1623,20 +1906,46 @@ export class PhysicalSimulation {
       this.runtime.reviewBoundary(p.actor);
       this.refreshMindThresholds(p.actor);
     }
-    if(p.kind==="mind-repair") {
-      const state=this.mind.person(p.actor)!,execution=this.runtime.currentExecution(p.actor),review=this.personalReview(p.actor);
-      if(!execution.task||!execution.budget||execution.task.status!=="blocked")return;
-      const signature=digest([execution.task.semanticKey,execution.task.cursor,execution.task.failure,review.geographyId]);
-      if(state.repairSignature===signature){this.requestReview(p.actor,"failure");return;}
-      state.repairSignature=signature;
-      const result=boundedRepair(review,execution.task,execution.budget,this.counters);
+    if (p.kind === "mind-repair") {
+      const state = this.mind.person(p.actor)!,
+        execution = this.runtime.currentExecution(p.actor),
+        review = this.personalReview(p.actor);
+      if (
+        !execution.task ||
+        !execution.budget ||
+        execution.task.status !== "blocked"
+      )
+        return;
+      const signature = digest([
+        execution.task.semanticKey,
+        execution.task.cursor,
+        execution.task.failure,
+        review.geographyId,
+      ]);
+      if (state.repairSignature === signature) {
+        this.requestReview(p.actor, "failure");
+        return;
+      }
+      state.repairSignature = signature;
+      const result = boundedRepair(
+        review,
+        execution.task,
+        execution.budget,
+        this.counters,
+      );
       this.runtime.admitEffort(result.effort);
-      if(result.repair)this.runtime.installBoundRepair(p.actor,result.repair);
-      else this.requestReview(p.actor,"failure");
-      this.kernel.record("bounded-repair-result",p.actor,{semanticKey:execution.task.semanticKey,installed:!!result.repair,reason:result.reason,effort:result.effort});
+      if (result.repair)
+        this.runtime.installBoundRepair(p.actor, result.repair);
+      else this.requestReview(p.actor, "failure");
+      this.kernel.record("bounded-repair-result", p.actor, {
+        semanticKey: execution.task.semanticKey,
+        installed: !!result.repair,
+        reason: result.reason,
+        effort: result.effort,
+      });
     }
     if (p.kind === "mind-review") {
-      if(!this.adultPhysical.body(p.actor)?.alive)return;
+      if (!this.adultPhysical.body(p.actor)?.alive) return;
       const state = this.mind.person(p.actor)!;
       const admission = this.mind.admit(
         this.personalReview(p.actor),
@@ -1691,7 +2000,8 @@ export class PhysicalSimulation {
           !!this.adultPhysical.body(p.actor) && a.motion?.status === "moving";
       if (moving) this.movement.settle(a, this.kernel.state.now);
       this.runtime.closure(p.actor);
-      for(const c of this.ledger.ownedContainers(p.actor))this.storage.settle(c.key);
+      for (const c of this.ledger.ownedContainers(p.actor))
+        this.storage.settle(c.key);
       this.refreshMindThresholds(p.actor);
       if (moving && a.motion?.status === "moving") {
         this.kernel.invalidate(motionScope(p.actor));
@@ -1769,20 +2079,44 @@ export class PhysicalSimulation {
       ordinal = this.kernel.state.ids.ordinals[tag] ?? 0,
       key = lineage("transaction", parent, ordinal),
       now = this.kernel.state.now;
-    if(this.storage&&!(request.kind==="sink"&&request.sink==="spoilage")){
-      const projected=this.storage.preview(request);this.ledger.validateProjected(key,now,request,projected);
-      for(const container of projected.keys())this.storage.settle(container);
+    if (
+      this.storage &&
+      !(request.kind === "sink" && request.sink === "spoilage")
+    ) {
+      const projected = this.storage.preview(request);
+      this.ledger.validateProjected(key, now, request, projected);
+      for (const container of projected.keys()) this.storage.settle(container);
     }
-    const prepared = this.ledger.prepare(lineage("transaction",parent,this.kernel.state.ids.ordinals[tag]??0), now, request);
+    const prepared = this.ledger.prepare(
+      lineage("transaction", parent, this.kernel.state.ids.ordinals[tag] ?? 0),
+      now,
+      request,
+    );
     for (const actor of prepared.loadActors)
       this.movement.settle(this.actor(actor), now);
     this.kernel.ids.allocate("transaction", parent);
-    const committed=prepared.commit();
-    if(this.storage&&!(request.kind==="sink"&&request.sink==="spoilage")){
-      const keys=request.kind==="source"?[request.to]:request.kind==="transfer"?[request.from,request.to]:request.kind==="sink"?[request.from]:[];
-      for(const container of keys)this.storage.touch(container);
+    const committed = prepared.commit();
+    if (
+      this.storage &&
+      !(request.kind === "sink" && request.sink === "spoilage")
+    ) {
+      const keys =
+        request.kind === "source"
+          ? [request.to]
+          : request.kind === "transfer"
+            ? [request.from, request.to]
+            : request.kind === "sink"
+              ? [request.from]
+              : [];
+      for (const container of keys) this.storage.touch(container);
     }
-    if(request.kind==="transfer")this.materials?.transfer(request.from,request.to,request.good,request.quantity);
+    if (request.kind === "transfer")
+      this.materials?.transfer(
+        request.from,
+        request.to,
+        request.good,
+        request.quantity,
+      );
     for (const actor of prepared.loadActors) {
       const a = this.actor(actor),
         r = this.routes.get(actor);
@@ -1929,18 +2263,26 @@ export class PhysicalSimulation {
       seed: this.seed,
       hash: this.causalHash(),
       eventHash: this.kernel.state.historyHash,
+      predator: this.danger.state.predator
+        ? {
+            key: this.danger.state.predator.key,
+            position: { ...this.danger.state.predator.point },
+            retreating:
+              this.danger.state.predator.retreatUntil > this.kernel.state.now,
+          }
+        : null,
       fixture:
-        this.mind.state.length &&
-        this.config.spatial.width === 6 &&
-        this.config.spatial.height === 6
-          ? "Pack 0C3A exploration proof — autonomous adults, no selected actions"
-          : this.mind.state.length
-            ? "Pack 0C2 autonomous personal review"
-            : this.adultPhysical.state.bodies.length
-              ? "Pack 0C1 diagnostic body/work/recovery fixture — no autonomous choice"
-              : this.epistemicActors.size
-                ? "Pack 0B diagnostic selected-intention fixture — no autonomous choice"
-                : "Diagnostic physical execution fixture — no autonomous choice",
+        this.mind.state.length && this.config.spatial.width === 16
+          ? "Stage I.1 material life — autonomous adults, no selected actions"
+          : this.config.spatial.width === 6 && this.config.spatial.height === 6
+            ? "Pack 0C3A exploration proof — autonomous adults, no selected actions"
+            : this.mind.state.length
+              ? "Pack 0C2 autonomous personal review"
+              : this.adultPhysical.state.bodies.length
+                ? "Pack 0C1 diagnostic body/work/recovery fixture — no autonomous choice"
+                : this.epistemicActors.size
+                  ? "Pack 0B diagnostic selected-intention fixture — no autonomous choice"
+                  : "Diagnostic physical execution fixture — no autonomous choice",
       actors,
       containers,
       reservations: this.ledger.state.reservations.map((r) => ({ ...r })),
@@ -1984,8 +2326,8 @@ export class PhysicalSimulation {
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
       materials: this.materials.state,
-      danger:this.danger.state,
-      storage:this.storage.state,
+      danger: this.danger.state,
+      storage: this.storage.state,
       mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
@@ -1994,7 +2336,9 @@ export class PhysicalSimulation {
     };
   }
   private terrainDigestCache: { version: number; hash: string } | null = null;
-  materialSnapshot(): MaterialState { return freezeProjection(clone(this.materials.state)); }
+  materialSnapshot(): MaterialState {
+    return freezeProjection(clone(this.materials.state));
+  }
   causalHash(): string {
     if (!this.kernel.committed)
       throw new Error("Hash requires committed boundary");
@@ -2023,8 +2367,8 @@ export class PhysicalSimulation {
       runtime: this.runtime.state,
       adultPhysical: this.adultPhysical.state,
       materials: this.materials.state,
-      danger:this.danger.state,
-      storage:this.storage.state,
+      danger: this.danger.state,
+      storage: this.storage.state,
       mind: this.mind.state,
       epistemicActors: [...this.epistemicActors].sort(),
       routes: [...this.routes.values()].sort((a, b) =>
@@ -2400,7 +2744,11 @@ function validateSaved(s: Save): void {
     )
       throw Error("Missing review authorization backing");
   const taskIds = new Set<string>();
-  for (const t of [...s.runtime.tasks, ...(s.runtime.suspended??[]), ...s.runtime.terminal]) {
+  for (const t of [
+    ...s.runtime.tasks,
+    ...(s.runtime.suspended ?? []),
+    ...s.runtime.terminal,
+  ]) {
     const budget = s.runtime.budgets[t.actor + ":" + t.semanticKey];
     if (
       !owners.has(t.actor) ||
@@ -2425,6 +2773,22 @@ function validateSaved(s: Save): void {
       t.cursor > t.steps.length
     )
       throw Error("Invalid runtime task");
+    if (
+      t.maintenanceForStep !== undefined &&
+      (!Number.isFinite(t.maintenanceForStep) || t.maintenanceForStep < 0)
+    )
+      throw Error("Invalid paid maintenance cursor");
+    for (const step of t.steps)
+      if (
+        step.maintenance &&
+        (!(step.family === "Work" || step.family === "Move") ||
+          !step.maintenance.from ||
+          !step.maintenance.good ||
+          ![step.maintenance.rate, step.maintenance.quantity].every(
+            (x) => Number.isFinite(x) && x > 0,
+          ))
+      )
+        throw Error("Invalid saved standing nourishment");
     taskIds.add(t.taskId);
     if (s.runtime.purpose[canonical([t.actor, t.objective])] !== t.semanticKey)
       throw Error("Invalid original purpose backing");

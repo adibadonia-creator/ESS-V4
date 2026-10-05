@@ -82,17 +82,44 @@ export class TaskRuntime {
       this.state.reviewAuthorizations[account.key] = digest(selected);
     }
   }
-  suspendForSafety(actor:string) {
-    const t=this.task(actor);if(!t)return;
-    if(t.source==="bounded-safety-reflex"){this.abandon(actor);return;}
-    if((this.state.suspended??[]).some(s=>s.actor===actor))throw Error("Nested ordinary safety suspension");
-    this.interrupt(actor,"immediate personal danger");
-    this.state.tasks.splice(this.state.tasks.indexOf(t),1);this.current.delete(actor);this.byId.delete(t.taskId);
-    (this.state.suspended??=[]).push(t);
+  suspendForSafety(actor: string) {
+    const t = this.task(actor);
+    if (!t) return;
+    if (t.source === "bounded-safety-reflex") {
+      this.abandon(actor);
+      return;
+    }
+    if ((this.state.suspended ?? []).some((s) => s.actor === actor))
+      throw Error("Nested ordinary safety suspension");
+    this.interrupt(actor, "immediate personal danger");
+    this.state.tasks.splice(this.state.tasks.indexOf(t), 1);
+    this.current.delete(actor);
+    this.byId.delete(t.taskId);
+    (this.state.suspended ??= []).push(t);
   }
-  resumeSuspended(actor:string) {
-    const rows=this.state.suspended??[],index=rows.findIndex(t=>t.actor===actor);if(index<0||this.current.has(actor))return false;
-    const t=rows.splice(index,1)[0]!;this.state.tasks.push(t);this.current.set(actor,t);this.byId.set(t.taskId,t);this.resume(actor);return true;
+  discardSuspended(actor: string) {
+    const rows = this.state.suspended ?? [],
+      index = rows.findIndex((t) => t.actor === actor);
+    if (index < 0) return;
+    const t = rows.splice(index, 1)[0]!;
+    this.release(t);
+    t.status = "abandoned";
+    const archived = this.state.terminal.length;
+    this.state.terminal.push(t);
+    this.state.retry[t.actor + ":" + t.semanticKey] = archived;
+    this.state.latestTerminal[t.actor] = archived;
+    this.port.unpinGeography(t.taskId);
+  }
+  resumeSuspended(actor: string) {
+    const rows = this.state.suspended ?? [],
+      index = rows.findIndex((t) => t.actor === actor);
+    if (index < 0 || this.current.has(actor)) return false;
+    const t = rows.splice(index, 1)[0]!;
+    this.state.tasks.push(t);
+    this.current.set(actor, t);
+    this.byId.set(t.taskId, t);
+    this.resume(actor);
+    return true;
   }
   private budget(t: Task) {
     return this.state.budgets[t.actor + ":" + t.semanticKey]!;
@@ -136,6 +163,16 @@ export class TaskRuntime {
       throw Error("Selection differs from the admitted review envelope");
     // Reject malformed bindings before committing budgets, reservations or history.
     for (const step of input.steps) {
+      if (
+        step.maintenance &&
+        (!(step.family === "Work" || step.family === "Move") ||
+          !step.maintenance.from ||
+          !step.maintenance.good ||
+          ![step.maintenance.rate, step.maintenance.quantity].every(
+            (x) => Number.isFinite(x) && x > 0,
+          ))
+      )
+        throw Error("Invalid standing nourishment grant");
       if (
         step.family === "Work" &&
         step.compulsory !== undefined &&
@@ -327,14 +364,18 @@ export class TaskRuntime {
       this.release(t);
       this.archive(t);
       this.port.record("task-complete", t.actor, {
-        project:t.project??null,projectFinal:t.projectFinal??false,
+        project: t.project ?? null,
+        projectFinal: t.projectFinal ?? false,
+        projectMilestone: t.projectMilestone ?? null,
         semanticKey: t.semanticKey,
       });
       return;
     }
     const step = t.steps[t.cursor]!;
     if (
-      !["Move", "Attend", "Transfer", "Work", "Recover", "Engage"].includes(step.family)
+      !["Move", "Attend", "Transfer", "Work", "Recover", "Engage"].includes(
+        step.family,
+      )
     ) {
       t.status = "failed";
       t.failure = `not-yet-implemented law: ${step.family}`;
@@ -401,7 +442,16 @@ export class TaskRuntime {
       return;
     }
     if (step.family === "Transfer") {
-      for(const role of ["from","to"] as const){if(step[role].startsWith("$output:")){const binding=t.bindings[step[role]];if(!binding){this.block(t,"authorised production has not completed");return;}step[role]=binding;}}
+      for (const role of ["from", "to"] as const) {
+        if (step[role].startsWith("$output:")) {
+          const binding = t.bindings[step[role]];
+          if (!binding) {
+            this.block(t, "authorised production has not completed");
+            return;
+          }
+          step[role] = binding;
+        }
+      }
       const b = this.budget(t),
         spent = b.spent.goods[step.good] ?? 0;
       if (
@@ -422,7 +472,7 @@ export class TaskRuntime {
       end: now + duration,
     };
     const physical = this.port.beginPhysical(t, step, duration);
-    if(physical.ok)this.advanceOwnWrites(t,physical.ownWrites??[]);
+    if (physical.ok) this.advanceOwnWrites(t, physical.ownWrites ?? []);
     if (!physical.ok) {
       this.block(t, physical.observed);
       return;
@@ -650,8 +700,24 @@ export class TaskRuntime {
     }
     this.complete(t);
   }
-  private advanceOwnWrites(t:Task,writes:{key:string;before:number;after:number}[]) {
-    for(const write of writes){const d=t.dependsOn.find(d=>d.key===write.key&&d.version===write.before);if(d){d.version=write.after;if(d.valueFingerprint){const [subject,property]=JSON.parse(d.key) as [string,string];d.valueFingerprint=digest(this.port.personal(t.actor).belief(subject,property)?.value);}}}
+  private advanceOwnWrites(
+    t: Task,
+    writes: { key: string; before: number; after: number }[],
+  ) {
+    for (const write of writes) {
+      const d = t.dependsOn.find(
+        (d) => d.key === write.key && d.version === write.before,
+      );
+      if (d) {
+        d.version = write.after;
+        if (d.valueFingerprint) {
+          const [subject, property] = JSON.parse(d.key) as [string, string];
+          d.valueFingerprint = digest(
+            this.port.personal(t.actor).belief(subject, property)?.value,
+          );
+        }
+      }
+    }
   }
   private settlePhysical(t: Task, final: boolean) {
     const result = this.port.endPhysical(t, final),
@@ -672,8 +738,11 @@ export class TaskRuntime {
         }
       }
     }
-    if(result.maintenanceCost)t.maintenanceForStep=(t.maintenanceForStep??0)+result.maintenanceCost;
-    if(result.outputSubject)t.bindings[`$output:${t.cursor}`]=result.outputSubject;
+    if (result.maintenanceCost)
+      t.maintenanceForStep =
+        (t.maintenanceForStep ?? 0) + result.maintenanceCost;
+    if (result.outputSubject)
+      t.bindings[`$output:${t.cursor}`] = result.outputSubject;
     if (step?.family === "Work") t.physicalStepOutput += result.quantity;
     for (const [good, quantity] of Object.entries(result.costs ?? {})) {
       const budget = this.budget(t);
@@ -707,7 +776,7 @@ export class TaskRuntime {
     t.cursor++;
     t.paidForStep = 0;
     t.physicalStepOutput = 0;
-    t.maintenanceForStep=0;
+    t.maintenanceForStep = 0;
     t.route = null;
     this.port.unpinGeography(t.taskId);
     this.counts.runtimeStepCompletions++;
@@ -883,7 +952,7 @@ export class TaskRuntime {
           end: this.port.now() + remaining,
         };
         const result = this.port.beginPhysical(t, step, remaining);
-        if(result.ok)this.advanceOwnWrites(t,result.ownWrites??[]);
+        if (result.ok) this.advanceOwnWrites(t, result.ownWrites ?? []);
         if (!result.ok) {
           this.block(t, result.observed);
           return;
@@ -978,10 +1047,24 @@ export class TaskRuntime {
           throw Error("Repair target is not an authorised known place");
         if (next.exploratory !== previous.exploratory)
           throw Error("Repair changes authorised exposure");
-      } else if(next.family==="Transfer"&&previous.family==="Transfer"&&next.from!==previous.from){
-        const role=`input:${t.cursor+i}`;
-        const stocks=next.from===view.self.carried.subject?view.self.carried.stocks:view.belief(next.from,"own-local-stocks")?.value as Record<string,number>|undefined;
-        if(!scope.bindings[role]?.includes(next.from)||repair.bindings[role]!==next.from||!stocks||canonical({...next,from:previous.from})!==canonical(previous))throw Error("Repair changes fixed input terms or supplier");
+      } else if (
+        next.family === "Transfer" &&
+        previous.family === "Transfer" &&
+        next.from !== previous.from
+      ) {
+        const role = `input:${t.cursor + i}`;
+        const stocks =
+          next.from === view.self.carried.subject
+            ? view.self.carried.stocks
+            : (view.belief(next.from, "own-local-stocks")?.value as
+                Record<string, number> | undefined);
+        if (
+          !scope.bindings[role]?.includes(next.from) ||
+          repair.bindings[role] !== next.from ||
+          !stocks ||
+          canonical({ ...next, from: previous.from }) !== canonical(previous)
+        )
+          throw Error("Repair changes fixed input terms or supplier");
       } else if (canonical(next) !== canonical(previous))
         throw Error("Repair changes fixed operation terms");
     }
@@ -991,10 +1074,49 @@ export class TaskRuntime {
       )
     )
       throw Error("Repair depends on stale personal knowledge");
+    const replaced = old.filter(
+      (step, i) =>
+        step.family === "Transfer" &&
+        repair.steps[i]?.family === "Transfer" &&
+        (repair.steps[i] as Extract<Operation, { family: "Transfer" }>).from !==
+          step.from,
+    ) as Extract<Operation, { family: "Transfer" }>[];
+    for (const d of t.dependsOn) {
+      const [subject, property] = JSON.parse(d.key) as [string, string];
+      if (
+        old.some(
+          (step, i) =>
+            step.family === "Transfer" &&
+            step.from === subject &&
+            ["stocks", "own-local-stocks"].includes(property) &&
+            repair.steps[i]?.family === "Transfer" &&
+            scope.bindings[`input:${t.cursor + i}`]?.includes(
+              (repair.steps[i] as Extract<Operation, { family: "Transfer" }>)
+                .from,
+            ),
+        )
+      )
+        continue;
+      const next = repair.dependsOn.find((x) => x.key === d.key);
+      if (
+        !next ||
+        (next.version !== d.version &&
+          (!d.valueFingerprint || next.valueFingerprint !== d.valueFingerprint))
+      )
+        throw Error("Repair drops a fixed assumption");
+    }
+    for (const step of replaced)
+      for (const r of t.reservations.filter(
+        (r) => r.subject === step.from && r.good === step.good,
+      ))
+        this.port.release(t.actor, r.key);
+    this.port.unpin(t);
     t.steps = [...t.steps.slice(0, t.cursor), ...clone(repair.steps)];
-    if(repair.preparedRoutes){
-      t.preparedRoutes={};for(const [index,route] of Object.entries(repair.preparedRoutes))t.preparedRoutes[t.cursor+Number(index)]=clone(route);
-    }else if(t.preparedRoutes)delete t.preparedRoutes[t.cursor];
+    if (repair.preparedRoutes) {
+      t.preparedRoutes = {};
+      for (const [index, route] of Object.entries(repair.preparedRoutes))
+        t.preparedRoutes[t.cursor + Number(index)] = clone(route);
+    } else if (t.preparedRoutes) delete t.preparedRoutes[t.cursor];
     t.bindings = clone(repair.bindings);
     t.dependsOn = clone(repair.dependsOn);
     t.bindingRevision++;

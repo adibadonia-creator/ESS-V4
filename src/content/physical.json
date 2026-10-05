@@ -115,16 +115,8 @@
     "sightKm": 0.6
   },
   "generator": {
-    "scales": [
-      15,
-      7,
-      3
-    ],
-    "weights": [
-      0.6,
-      0.3,
-      0.1
-    ],
+    "scales": [15, 7, 3],
+    "weights": [0.6, 0.3, 0.1],
     "warpCells": 3,
     "forestMoisture": 0.55,
     "scrubMoisture": 0.35,
@@ -132,7 +124,7 @@
     "cliffElevation": 0.72,
     "riverFlow": 25,
     "fordModulo": 11,
-    "floodEpsilon": 1e-06
+    "floodEpsilon": 1e-6
   },
   "diagnostic": {
     "actors": 8,
@@ -144,8 +136,9 @@
     "sourceWood": 21,
     "sourceStone": 120,
     "sourceFibre": 16.8,
-    "quantityTolerance": 1e-09,
-    "routeExpansionsPerResume": 4096
+    "quantityTolerance": 1e-9,
+    "routeExpansionsPerResume": 4096,
+    "foundingCaches": true
   },
   "evidence": {
     "routineObservations": 12,
@@ -178,36 +171,23 @@
       "uncertainty": 1,
       "context": "declared founding cultural unseen-terrain expectation"
     },
-    "foundingOperations": [
-      "strike"
-    ]
+    "foundingOperations": ["strike"]
   },
   "methods": [
     {
       "id": "contact",
-      "effects": [
-        "contact"
-      ],
+      "effects": ["contact"],
       "inputs": []
     },
     {
       "id": "exchange",
-      "effects": [
-        "transfer"
-      ],
-      "inputs": [
-        "goods"
-      ]
+      "effects": ["transfer"],
+      "inputs": ["goods"]
     },
     {
       "id": "gather",
-      "effects": [
-        "extract:food",
-        "have:food"
-      ],
-      "inputs": [
-        "site:food-patch"
-      ],
+      "effects": ["extract:food", "have:food"],
+      "inputs": ["site:food-patch"],
       "schema": {
         "target": "site",
         "targetProperty": "resource-kind",
@@ -224,13 +204,8 @@
     },
     {
       "id": "wood",
-      "effects": [
-        "extract:wood",
-        "have:wood"
-      ],
-      "inputs": [
-        "site:wood-site"
-      ],
+      "effects": ["extract:wood", "have:wood"],
+      "inputs": ["site:wood-site"],
       "schema": {
         "target": "site",
         "targetProperty": "resource-kind",
@@ -247,13 +222,8 @@
     },
     {
       "id": "stone",
-      "effects": [
-        "extract:stone",
-        "have:stone"
-      ],
-      "inputs": [
-        "site:stone-deposit"
-      ],
+      "effects": ["extract:stone", "have:stone"],
+      "inputs": ["site:stone-deposit"],
       "schema": {
         "target": "site",
         "targetProperty": "resource-kind",
@@ -270,13 +240,8 @@
     },
     {
       "id": "fibre",
-      "effects": [
-        "extract:fibre",
-        "have:fibre"
-      ],
-      "inputs": [
-        "site:fibre-site"
-      ],
+      "effects": ["extract:fibre", "have:fibre"],
+      "inputs": ["site:fibre-site"],
       "schema": {
         "target": "site",
         "targetProperty": "resource-kind",
@@ -293,16 +258,12 @@
     },
     {
       "id": "recover",
-      "effects": [
-        "recover"
-      ],
+      "effects": ["recover"],
       "inputs": []
     },
     {
       "id": "consume",
-      "effects": [
-        "service:nourishment"
-      ],
+      "effects": ["service:nourishment"],
       "inputs": [],
       "schema": {
         "target": "owned",
@@ -323,9 +284,7 @@
     },
     {
       "id": "rest",
-      "effects": [
-        "recovered"
-      ],
+      "effects": ["recovered"],
       "inputs": [],
       "schema": {
         "target": "self",
@@ -340,9 +299,7 @@
     },
     {
       "id": "leisure",
-      "effects": [
-        "enjoyed"
-      ],
+      "effects": ["enjoyed"],
       "inputs": [],
       "schema": {
         "target": "self",
@@ -357,27 +314,18 @@
     },
     {
       "id": "inquire",
-      "effects": [
-        "knows"
-      ],
+      "effects": ["knows"],
       "inputs": []
     },
     {
       "id": "try-compatible",
-      "effects": [
-        "tried"
-      ],
+      "effects": ["tried"],
       "inputs": []
     },
     {
       "id": "edge-flaking",
-      "effects": [
-        "have:edged-flake"
-      ],
-      "inputs": [
-        "property:glassy",
-        "hammer:stone"
-      ],
+      "effects": ["have:edged-flake"],
+      "inputs": ["property:glassy", "hammer:stone"],
       "schema": {
         "target": "site",
         "targetProperty": "material-kind",
@@ -394,14 +342,8 @@
     },
     {
       "id": "make-work-tool",
-      "effects": [
-        "have:work-tool",
-        "service:capital"
-      ],
-      "inputs": [
-        "have:wood",
-        "have:stone"
-      ],
+      "effects": ["have:work-tool", "service:capital"],
+      "inputs": ["have:wood", "have:stone"],
       "schema": {
         "target": "self",
         "prerequisites": [
@@ -428,14 +370,8 @@
     },
     {
       "id": "make-spear",
-      "effects": [
-        "have:spear",
-        "service:capital"
-      ],
-      "inputs": [
-        "have:wood",
-        "have:stone"
-      ],
+      "effects": ["have:spear", "service:capital"],
+      "inputs": ["have:wood", "have:stone"],
       "schema": {
         "target": "self",
         "prerequisites": [
@@ -462,10 +398,7 @@
     },
     {
       "id": "establish-cache",
-      "effects": [
-        "have:cache",
-        "service:capital"
-      ],
+      "effects": ["have:cache", "service:capital"],
       "inputs": [],
       "schema": {
         "target": "self",
@@ -480,12 +413,8 @@
     },
     {
       "id": "fish",
-      "effects": [
-        "have:fish"
-      ],
-      "inputs": [
-        "have:spear"
-      ],
+      "effects": ["have:fish"],
+      "inputs": ["have:spear"],
       "schema": {
         "target": "site",
         "targetProperty": "resource-kind",
@@ -509,12 +438,8 @@
     },
     {
       "id": "eat-fish",
-      "effects": [
-        "service:nourishment"
-      ],
-      "inputs": [
-        "have:fish"
-      ],
+      "effects": ["service:nourishment"],
+      "inputs": ["have:fish"],
       "schema": {
         "target": "owned",
         "prerequisites": [
@@ -534,16 +459,12 @@
     },
     {
       "id": "escape",
-      "effects": [
-        "service:safety"
-      ],
+      "effects": ["service:safety"],
       "inputs": []
     },
     {
       "id": "defend",
-      "effects": [
-        "service:safety"
-      ],
+      "effects": ["service:safety"],
       "inputs": []
     }
   ],
@@ -553,9 +474,7 @@
     "repair": 40,
     "routeExpansionsPerEu": 64
   },
-  "materialEffects": [
-    "edge-flaking"
-  ],
+  "materialEffects": ["edge-flaking"],
   "exploration": {
     "outcomeClasses": 3,
     "candidatesPerReview": 2,
@@ -584,10 +503,7 @@
   "compatibleOperations": [
     {
       "id": "strike",
-      "properties": [
-        "hard",
-        "glassy"
-      ],
+      "properties": ["hard", "glassy"],
       "input": "stone",
       "hammer": "stone",
       "durationSd": 0.03,
@@ -598,13 +514,8 @@
   "materialKinds": [
     {
       "id": "glassy-stone",
-      "perceptible": [
-        "hard",
-        "glassy"
-      ],
-      "revealed": [
-        "edge-flaking"
-      ]
+      "perceptible": ["hard", "glassy"],
+      "revealed": ["edge-flaking"]
     }
   ]
 }

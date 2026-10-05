@@ -137,3 +137,30 @@ test("exploration proof exposes an autonomous paid trial and provisional knowled
   });
   expect(errors).toEqual([]);
 });
+
+test("material life renders its autonomous fixture and inert project/danger panel", async ({
+  page,
+}, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await expect(page.locator("#meta")).toContainText("conservation verified");
+  await page
+    .getByRole("button", { name: "Material life", exact: true })
+    .click();
+  await expect(page.locator("#fixture-label")).toContainText("material life");
+  const before = await page.locator("#clock").textContent();
+  await page.getByRole("button", { name: "+0.01 SD", exact: true }).click();
+  await expect(page.locator("#clock")).not.toHaveText(before!);
+  await page.locator("#decision-panel summary").click();
+  await expect(page.locator("#decision-summary")).toContainText("Projects:");
+  const hash = await page.locator("#hash").textContent();
+  await page.locator("#decision-panel summary").click();
+  await page.locator("#decision-panel summary").click();
+  await expect(page.locator("#hash")).toHaveText(hash!);
+  await page.screenshot({
+    path: testInfo.outputPath("material-life.png"),
+    fullPage: true,
+  });
+  expect(errors).toEqual([]);
+});

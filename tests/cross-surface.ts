@@ -208,6 +208,33 @@ export async function crossSurface(
       digest(explorationEnd.personalLenses)
   )
     throw Error("Exploration partition/replay mismatch");
+  stage(
+    "i1-material-founding",
+    (await call({ kind: "create-material", seed: "material-life" })).snapshot!,
+  );
+  await call({ kind: "advance", time: Math.ceil(0.02 * 2 ** 20) });
+  const materialSave = (await call({ kind: "checkpoint" })).checkpoint!;
+  const materialEnd = (await call({ kind: "advance", time: 2 ** 20 }))
+    .snapshot!;
+  stage("i1-material-active", materialEnd);
+  await call({ kind: "restore", checkpoint: materialSave });
+  for (
+    let q = Math.ceil(0.037 * 2 ** 20);
+    q < 2 ** 20;
+    q += Math.ceil(0.073 * 2 ** 20)
+  ) {
+    await call({ kind: "advance", time: q });
+    await call({ kind: "snapshot" });
+    await frame();
+  }
+  const materialReplay = (await call({ kind: "advance", time: 2 ** 20 }))
+    .snapshot!;
+  stage("i1-material-replay", materialReplay);
+  if (
+    materialReplay.hash !== materialEnd.hash ||
+    digest(materialReplay.personalLenses) !== digest(materialEnd.personalLenses)
+  )
+    throw Error("Material life partition/replay mismatch");
   return {
     math: [
       math.exp(-0.2),

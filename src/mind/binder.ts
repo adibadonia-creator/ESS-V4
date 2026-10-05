@@ -28,9 +28,22 @@ export function optionKey(
   return digest([o.objective, o.steps, o.bindings]);
 }
 export class Binder {
-  method(id:string){return this.catalogue.get(id);}
-  counterfactual(good:string,quantity=1){return new Binder(this.review,this.state,this.meter,this.catalogue,this.sharedLots,{...this.assumedGoods,[good]:quantity});}
-  get recipes(){return this.catalogue.recipes;}
+  method(id: string) {
+    return this.catalogue.get(id);
+  }
+  counterfactual(good: string, quantity = 1) {
+    return new Binder(
+      this.review,
+      this.state,
+      this.meter,
+      this.catalogue,
+      this.sharedLots,
+      { ...this.assumedGoods, [good]: quantity },
+    );
+  }
+  get recipes() {
+    return this.catalogue.recipes;
+  }
   methods: string[] = [];
   dependencies: Dependency[] = [];
   constructor(
@@ -39,7 +52,7 @@ export class Binder {
     private meter: ReviewEffort,
     private catalogue: MethodIndex = METHOD_INDEX,
     private sharedLots?: ReturnType<typeof ownedLots>,
-    private assumedGoods:Record<string,number>={},
+    private assumedGoods: Record<string, number> = {},
   ) {}
   private read(subject: string, property: string) {
     const e = this.review.belief(subject, property);
@@ -120,7 +133,14 @@ export class Binder {
     const s = method.schema;
     if (!s)
       return fail("unsupported", "no current declarative operation template");
-    if (s.prerequisites.some((p) => p.effect === effectOf(objective) && (this.review.self.carried.stocks[p.good] ?? 0) < (p.quantity ?? objective.quantity)))
+    if (
+      s.prerequisites.some(
+        (p) =>
+          p.effect === effectOf(objective) &&
+          (this.review.self.carried.stocks[p.good] ?? 0) <
+            (p.quantity ?? objective.quantity),
+      )
+    )
       return fail(
         "impossible-under-personal-assumptions",
         "cyclic prerequisite",
@@ -191,10 +211,24 @@ export class Binder {
       o.reason = "ordinary binding from personally observed provisional method";
       return finish();
     }
-    if (s.operation === "make" || (s.operation === "extract" && s.prerequisites.length)) {
-      const result=this.produce(o,method,objective.quantity,read,new Set());
-      if (result) return fail(result.status,result.reason);
-      o.duration=o.steps.reduce((sum,step,i)=>sum+(step.family==="Move"?this.routeDuration(o,i):step.duration),0);
+    if (
+      s.operation === "make" ||
+      (s.operation === "extract" && s.prerequisites.length)
+    ) {
+      const result = this.produce(
+        o,
+        method,
+        objective.quantity,
+        read,
+        new Set(),
+      );
+      if (result) return fail(result.status, result.reason);
+      o.duration = o.steps.reduce(
+        (sum, step, i) =>
+          sum +
+          (step.family === "Move" ? this.routeDuration(o, i) : step.duration),
+        0,
+      );
       return finish();
     }
     // Consumed/requiring input nodes are interpreted uniformly as typed have ends.
@@ -204,7 +238,8 @@ export class Binder {
           return fail("computationally-deferred", "input frontier deferred");
         let remaining = objective.quantity;
         const lots =
-          (prerequisite.good === "food" ? this.sharedLots : undefined) ?? ownedLots(this.review, prerequisite.good);
+          (prerequisite.good === "food" ? this.sharedLots : undefined) ??
+          ownedLots(this.review, prerequisite.good);
         for (const lot of lots) {
           if (!this.meter.spend("retrieval"))
             return fail(
@@ -236,8 +271,8 @@ export class Binder {
         }
         if (remaining > 1e-9) {
           const producers = this.admission(prerequisite.effect);
-          const producer = producers.find(
-            (m) => ["extract","make"].includes(m.schema?.operation ?? ""),
+          const producer = producers.find((m) =>
+            ["extract", "make"].includes(m.schema?.operation ?? ""),
           );
           if (!producer)
             return fail(
@@ -278,58 +313,169 @@ export class Binder {
     return finish();
   }
   private produce(
-    o:BoundOption, method:MethodEntry, quantity:number,
-    read:(subject:string,property:string)=>ReturnType<PersonalReview["belief"]>,
-    ancestry:Set<string>,
-    funding={held:{...this.review.self.carried.stocks,...this.assumedGoods} as Record<string,number>,withdrawn:new Map<string,number>()},
-  ): {status:BoundOption["status"];reason:string}|null {
-    const schema=method.schema;
-    if (!schema || !["make","extract"].includes(schema.operation)) return {status:"unsupported",reason:"no declarative producer"};
-    const effect=`have:${schema.good}`;
-    if (ancestry.has(effect)) return {status:"impossible-under-personal-assumptions",reason:"unfunded prerequisite cycle"};
-    if (!this.meter.spend("binding")) return {status:"computationally-deferred",reason:"project prerequisite frontier allowance exhausted"};
-    ancestry.add(effect);read(`method:${method.id}`,"known");
-    if(schema.operation==="make") {
-      const wip=this.review.places(`work-recipe:${schema.law}`,2).entries.find(e=>{
-        const w=e.value as unknown as {point:{x:number;y:number};complete:boolean};
-        return !w.complete;
-      });
-      if(wip){
-        const w=wip.value as unknown as {progress:number;required:number;point:{x:number;y:number}};const travel=this.locate(o,w.point);if(travel)return travel;read(wip.subject,"work-progress");
-        o.steps.push({family:"Work",law:schema.law,workObject:wip.subject,duration:time(Math.max(.001,w.required-w.progress)/(this.review.rateEstimate(schema.law,"making")?.rate??1))});
-        funding.held[schema.good!]=(funding.held[schema.good!]??0)+quantity;ancestry.delete(effect);return null;
+    o: BoundOption,
+    method: MethodEntry,
+    quantity: number,
+    read: (
+      subject: string,
+      property: string,
+    ) => ReturnType<PersonalReview["belief"]>,
+    ancestry: Set<string>,
+    funding = {
+      held: {
+        ...this.review.self.carried.stocks,
+        ...this.assumedGoods,
+      } as Record<string, number>,
+      withdrawn: new Map<string, number>(),
+    },
+  ): { status: BoundOption["status"]; reason: string } | null {
+    const schema = method.schema;
+    if (!schema || !["make", "extract"].includes(schema.operation))
+      return { status: "unsupported", reason: "no declarative producer" };
+    if (schema.operation === "make") quantity = Math.ceil(quantity);
+    const effect = `have:${schema.good}`;
+    if (ancestry.has(effect))
+      return {
+        status: "impossible-under-personal-assumptions",
+        reason: "unfunded prerequisite cycle",
+      };
+    if (!this.meter.spend("binding"))
+      return {
+        status: "computationally-deferred",
+        reason: "project prerequisite frontier allowance exhausted",
+      };
+    ancestry.add(effect);
+    read(`method:${method.id}`, "known");
+    if (schema.operation === "make") {
+      const wip = this.review
+        .places(`work-recipe:${schema.law}`, 2)
+        .entries.find((e) => {
+          const w = e.value as unknown as {
+            point: { x: number; y: number };
+            complete: boolean;
+          };
+          return !w.complete;
+        });
+      if (wip) {
+        const w = wip.value as unknown as {
+          progress: number;
+          required: number;
+          point: { x: number; y: number };
+        };
+        const travel = this.locate(o, w.point);
+        if (travel) return travel;
+        read(wip.subject, "work-progress");
+        o.steps.push({
+          family: "Work",
+          law: schema.law,
+          workObject: wip.subject,
+          duration: time(
+            Math.max(0.001, w.required - w.progress) /
+              (this.review.rateEstimate(schema.law, "making")?.rate ?? 1),
+          ),
+        });
+        funding.held[schema.good!] =
+          (funding.held[schema.good!] ?? 0) + quantity;
+        ancestry.delete(effect);
+        return null;
       }
     }
     for (const prerequisite of schema.prerequisites) {
-      const required=(prerequisite.quantity ?? 1)*(schema.operation==="make"&&prerequisite.consumes?quantity:1);
-      let remaining=Math.max(0,required-(funding.held[prerequisite.good]??0));
-      const lots=ownedLots(this.review,prerequisite.good).filter(l=>l.subject!==this.review.self.carried.subject);
+      const required =
+        (prerequisite.quantity ?? 1) *
+        (schema.operation === "make" && prerequisite.consumes ? quantity : 1);
+      let remaining = Math.max(
+        0,
+        required - (funding.held[prerequisite.good] ?? 0),
+      );
+      const lots = ownedLots(this.review, prerequisite.good).filter(
+        (l) => l.subject !== this.review.self.carried.subject,
+      );
       for (const lot of lots) {
-        if (!this.meter.spend("retrieval")) return {status:"computationally-deferred",reason:"complementary input retrieval deferred"};
-        read(lot.subject,lot.subject===this.review.self.carried.subject?"stocks":"own-local-stocks");
-        const tag=lot.subject+":"+prerequisite.good;
-        const q=Math.min(remaining,lot.quantity-(funding.withdrawn.get(tag)??0));if (q<=0) continue;
-        funding.withdrawn.set(tag,(funding.withdrawn.get(tag)??0)+q);funding.held[prerequisite.good]=(funding.held[prerequisite.good]??0)+q;
-        o.goods[prerequisite.good]=(o.goods[prerequisite.good]??0)+q;
-        if (lot.subject!==this.review.self.carried.subject) o.steps.push({family:"Transfer",from:lot.subject,to:this.review.self.carried.subject,good:prerequisite.good,quantity:q,basis:"own-custody",duration:time(.02)});
-        remaining-=q;if (remaining<=1e-9) break;
+        if (!this.meter.spend("retrieval"))
+          return {
+            status: "computationally-deferred",
+            reason: "complementary input retrieval deferred",
+          };
+        read(
+          lot.subject,
+          lot.subject === this.review.self.carried.subject
+            ? "stocks"
+            : "own-local-stocks",
+        );
+        const tag = lot.subject + ":" + prerequisite.good;
+        const q = Math.min(
+          remaining,
+          lot.quantity - (funding.withdrawn.get(tag) ?? 0),
+        );
+        if (q <= 0) continue;
+        funding.withdrawn.set(tag, (funding.withdrawn.get(tag) ?? 0) + q);
+        funding.held[prerequisite.good] =
+          (funding.held[prerequisite.good] ?? 0) + q;
+        o.goods[prerequisite.good] = (o.goods[prerequisite.good] ?? 0) + q;
+        if (lot.subject !== this.review.self.carried.subject)
+          o.steps.push({
+            family: "Transfer",
+            from: lot.subject,
+            to: this.review.self.carried.subject,
+            good: prerequisite.good,
+            quantity: q,
+            basis: "own-custody",
+            duration: time(0.02),
+          });
+        remaining -= q;
+        if (remaining <= 1e-9) break;
       }
-      if (remaining>1e-9) {
-        const producer=this.admission(prerequisite.effect)[0];
-        if (!producer) return {status:"epistemically-unresolved",reason:"complement lacks personally known producer"};
-        const result=this.produce(o,producer,remaining,read,ancestry,funding);if(result)return result;
+      if (remaining > 1e-9) {
+        const producer = this.admission(prerequisite.effect)[0];
+        if (!producer)
+          return {
+            status: "epistemically-unresolved",
+            reason: "complement lacks personally known producer",
+          };
+        const result = this.produce(
+          o,
+          producer,
+          remaining,
+          read,
+          ancestry,
+          funding,
+        );
+        if (result) return result;
       }
-      if(prerequisite.consumes){o.goods[prerequisite.good]=(o.goods[prerequisite.good]??0)+required;funding.held[prerequisite.good]=(funding.held[prerequisite.good]??0)-required;}
-      o.prerequisites.push({effect:prerequisite.effect,status:"executable"});
+      if (prerequisite.consumes) {
+        o.goods[prerequisite.good] =
+          (o.goods[prerequisite.good] ?? 0) + required;
+        funding.held[prerequisite.good] =
+          (funding.held[prerequisite.good] ?? 0) - required;
+      }
+      o.prerequisites.push({
+        effect: prerequisite.effect,
+        status: "executable",
+      });
     }
-    if(o.steps.length>=12)return {status:"computationally-deferred",reason:"paid project prefix step allowance exhausted"};
-    if(schema.operation==="make") {
-      for(let i=0;i<Math.ceil(quantity);i++)o.steps.push({family:"Work",law:schema.law,duration:time(schema.durationSd/(this.review.rateEstimate(schema.law,"making")?.rate??1))});
+    if (o.steps.length >= 12)
+      return {
+        status: "computationally-deferred",
+        reason: "paid project prefix step allowance exhausted",
+      };
+    if (schema.operation === "make") {
+      for (let i = 0; i < Math.ceil(quantity); i++)
+        o.steps.push({
+          family: "Work",
+          law: schema.law,
+          duration: time(
+            schema.durationSd /
+              (this.review.rateEstimate(schema.law, "making")?.rate ?? 1),
+          ),
+        });
     } else {
-      const result=this.extract(o,method,quantity,read);if(result)return result;
+      const result = this.extract(o, method, quantity, read);
+      if (result) return result;
     }
-    funding.held[schema.good!]=(funding.held[schema.good!]??0)+quantity;
-    ancestry.delete(effect);return null;
+    funding.held[schema.good!] = (funding.held[schema.good!] ?? 0) + quantity;
+    ancestry.delete(effect);
+    return null;
   }
   private routeDuration(o: BoundOption, i: number) {
     const r = o.routes[i]!;
@@ -342,10 +488,17 @@ export class Binder {
           (1 - 0.2 * b.fatigue)),
     );
   }
-  private location(o:BoundOption){const last=[...o.steps].reverse().find(s=>s.family==="Move");return last?.family==="Move"?last.target:this.review.self.location;}
-  private locate(o:BoundOption,point:{x:number;y:number}):{status:BoundOption["status"];reason:string}|null {
-    const origin=this.location(o);
-    if((point.x-origin.x)**2+(point.y-origin.y)**2<=.08**2)return null;
+  private location(o: BoundOption) {
+    const last = [...o.steps].reverse().find((s) => s.family === "Move");
+    return last?.family === "Move" ? last.target : this.review.self.location;
+  }
+  private locate(
+    o: BoundOption,
+    point: { x: number; y: number },
+  ): { status: BoundOption["status"]; reason: string } | null {
+    const origin = this.location(o);
+    if ((point.x - origin.x) ** 2 + (point.y - origin.y) ** 2 <= 0.08 ** 2)
+      return null;
     {
       const p = this.review.profile,
         k = (point: { x: number; y: number }) =>
@@ -454,8 +607,7 @@ export class Binder {
           subject: e.subject,
           point: p,
           distance:
-            (p.x - this.location(o).x) ** 2 +
-            (p.y - this.location(o).y) ** 2,
+            (p.x - this.location(o).x) ** 2 + (p.y - this.location(o).y) ** 2,
         });
     }
     candidates.sort(
@@ -474,7 +626,8 @@ export class Binder {
         status: "epistemically-unresolved",
         reason: "no personal expected rate",
       };
-    const travel=this.locate(o,target.point);if(travel)return travel;
+    const travel = this.locate(o, target.point);
+    if (travel) return travel;
     // Dated rate evidence already includes the actor's paid expression; project
     // only the public condition/fatigue changes relative to the observed signal.
     const duration = time(quantity / rate.rate);

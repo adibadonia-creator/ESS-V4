@@ -23,3 +23,11 @@ Local animal evidence now reaches the same mind and arbiter through a coalesced 
 Content edits now compile one recipe index shared by mind and physical making. The ordinary arbiter selects an evidenced high-use tool, rejects an unused one, and executes paid manufacture through active restore. A 24-link retained project reaches a leaf through ordinary reviews. Changed spear inputs execute without a capability-specific controller. Completed cache output handles support paid deposit and withdrawal with capacity, custody and spoilage checks. Selected Work/Move envelopes may include bounded nourishment from existing own backing when they have no explicit meal schedule; delivered extraction settles that stream before updating storage. Exact-instant interruption closes a consumption flow even when no time has elapsed.
 
 Validation at this checkpoint: boundary checks, typecheck, 199 tests and production build pass. Full autonomous deep-project completion, the natural material-life panel, browser verification and remaining safety/repair breadth are still outstanding; this is not a completion certificate.
+
+## Fourth checkpoint
+
+A 13-stage physical project now completes all paid material dependencies through ordinary reviews, including active restore and altered host partitions. This is separate from the 220-link frontier traversal proof. Ordinary autonomous valuation also constructs and uses a real cache for a carried surplus. The Material life fixture supplies finite founding endowments, declared prehistory and observations, and no selected task or action sequence.
+
+Standing nourishment and concurrent extraction settle once; recipe input order is normalized at compilation for exact restore replay. Located manufacture survives actual paid defence and resumes its original semantic purpose and quality draw. Same-target detour and preauthorised own-input repair preserve spent authority inside 40 EU. Hidden physical predators leave personal decisions unchanged until perceived. Closed projects can retire from the two active slots into retained cold history. Schema 11 rejects incompatible saves.
+
+Validation at this checkpoint: boundary checks, typecheck, **207 tests** and production build pass. Browser and natural-run receipts are being completed. Stage I remains incomplete.
