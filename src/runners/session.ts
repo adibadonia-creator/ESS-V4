@@ -17,13 +17,17 @@ export class Session {
         command.kind === "create-autonomous" ||
         command.kind === "create-exploration"
       ) {
-        this.simulation = command.kind === "create-exploration" ? createExplorationFixture(command.seed) : new PhysicalSimulation(command.seed);
+        this.simulation =
+          command.kind === "create-exploration"
+            ? createExplorationFixture(command.seed)
+            : new PhysicalSimulation(command.seed);
         if (command.kind === "create") launchPhysicalFixture(this.simulation);
         else if (command.kind === "create-autonomous")
           launchAutonomousFixture(this.simulation);
         else if (command.kind === "create-body")
           launchBodyFixture(this.simulation);
-        else if (command.kind !== "create-exploration") launchEvidenceFixture(this.simulation);
+        else if (command.kind !== "create-exploration")
+          launchEvidenceFixture(this.simulation);
         return {
           id: command.id,
           ok: true,

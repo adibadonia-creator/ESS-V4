@@ -185,16 +185,23 @@ export function feasibility(
   }
   if (
     !o.reference &&
-    (o.objective.kind === "knows" || o.objective.kind === "tried")
+    (o.optionalDuration !== undefined ||
+      o.objective.kind === "knows" ||
+      o.objective.kind === "tried")
   ) {
     // This ceiling covers the optional experiment prefix. An explicitly bound
     // ordinary continuation remains funded and assessed separately.
-    const duration=(o.optionalDuration ?? o.duration)/QUANTA;
-    if (duration > EXPLORATION.optionalTimeSd) return "optional inquiry/trial prefix ceiling exceeded";
-    const experimentFoodCost=duration * review.quietRequirement();
-    if (experimentFoodCost>EXPLORATION.optionalFoodSd*review.quietRequirement()) return "optional food ceiling exceeded";
+    const duration = (o.optionalDuration ?? o.duration) / QUANTA;
+    if (duration > EXPLORATION.optionalTimeSd)
+      return "optional inquiry/trial prefix ceiling exceeded";
+    const experimentFoodCost = duration * review.quietRequirement();
+    if (
+      experimentFoodCost >
+      EXPLORATION.optionalFoodSd * review.quietRequirement()
+    )
+      return "optional food ceiling exceeded";
   }
-  if (!o.reference && !reserveExempt) {
+  if (!o.reference && (!reserveExempt || o.optionalDuration !== undefined)) {
     const last = x.consequences.blocks.at(-1)!;
     // This reserve counts ONLY existing owned accessible backing after spending,
     // never hoped-for output appearing in the forecast.

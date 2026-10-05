@@ -159,6 +159,8 @@ export class PhysicalSimulation {
   private ledger: GoodsLedger;
   private movement: Movement;
   private spatial: SpatialIndex;
+  private materialKinds: Map<string, PhysicalConfig["materialKinds"][number]>;
+  private materialEffects: Set<string>;
   private routes = new Map<Key, RouteRequest>();
   private evidence: EvidenceService;
   private runtime: TaskRuntime;
@@ -177,6 +179,8 @@ export class PhysicalSimulation {
       JSON.parse(JSON.stringify(config)) as PhysicalConfig,
     );
     this.config = config;
+    this.materialKinds = new Map(config.materialKinds.map((k) => [k.id, k]));
+    this.materialEffects = new Set(config.materialEffects);
     this.kernel = new Kernel(this.counters, saved?.kernel);
     this.terrain = saved
       ? restoreTerrain(saved.terrain, config)
@@ -272,7 +276,19 @@ export class PhysicalSimulation {
             cognitive,
             field,
           ),
-        effectInstalled: (id) => config.materialEffects.includes(id),
+        effectInstalled: (id) => this.materialEffects.has(id),
+        methodConfidence: (actor, method, context) =>
+          Number(
+            this.personalReview(actor).belief(
+              `method:${method}`,
+              `confidence:${context}`,
+            )?.value ??
+              this.personalReview(actor).belief(
+                `method:${method}`,
+                "confidence",
+              )?.value ??
+              1,
+          ),
         frustration: (actor, context) => {
           const e = this.personalReview(actor).belief("exploration", context);
           const s = e?.value as Record<string, number> | undefined;
@@ -383,9 +399,12 @@ export class PhysicalSimulation {
           this.evidence.pinGeographyVersion(id, scope),
         unpinGeography: (scope) => this.evidence.unpinGeography(scope),
         pin: (task) => {
-          for (const [index,route] of Object.entries(task.preparedRoutes ?? {})) {
-            const scope=`prepared:${task.actor}:${task.semanticKey}:${index}`;
-            if (+index>=task.cursor && route.geographyId) this.evidence.pinGeographyVersion(route.geographyId,scope);
+          for (const [index, route] of Object.entries(
+            task.preparedRoutes ?? {},
+          )) {
+            const scope = `prepared:${task.actor}:${task.semanticKey}:${index}`;
+            if (+index >= task.cursor && route.geographyId)
+              this.evidence.pinGeographyVersion(route.geographyId, scope);
             else this.evidence.unpinGeography(scope);
           }
           const subjects = [
@@ -413,8 +432,12 @@ export class PhysicalSimulation {
           );
         },
         unpin: (task) => {
-          this.evidence.unpin(task.actor,task.taskId);
-          if (task.status === "done") for (const index of Object.keys(task.preparedRoutes ?? {})) this.evidence.unpinGeography(`prepared:${task.actor}:${task.semanticKey}:${index}`);
+          this.evidence.unpin(task.actor, task.taskId);
+          if (task.status === "done")
+            for (const index of Object.keys(task.preparedRoutes ?? {}))
+              this.evidence.unpinGeography(
+                `prepared:${task.actor}:${task.semanticKey}:${index}`,
+              );
         },
         exactSelf: (actor) => this.exactSelf(actor),
         blockedCells: (actor, cells) =>
@@ -432,13 +455,13 @@ export class PhysicalSimulation {
           if (task && step?.family === "Attend" && step.experiment) {
             const count = this.personalReview(actor).belief(
               "local-survey",
-              "site-detection-count",
+              `site-detection-count:${step.experiment.targetKind.split(":")[0]}`,
             )?.value;
             this.evidence.observeExploration(
               actor,
               {
                 ...step.experiment,
-                paid: duration,
+                paid: 0,
                 completed: true,
                 success: typeof count === "number" && count > 0,
               },
@@ -910,7 +933,12 @@ export class PhysicalSimulation {
       capability: import("../world/body").AdultCapability;
       mastery: import("../world/body").Masteries;
       wound?: number;
-      initial?: { condition: number; fatigue: number; enjoyment: number; satiation?: number };
+      initial?: {
+        condition: number;
+        fatigue: number;
+        enjoyment: number;
+        satiation?: number;
+      };
     },
   ) {
     this.enablePersonal(actor);
@@ -1006,9 +1034,7 @@ export class PhysicalSimulation {
         const distance = math.sqrt(
           (p.x - resource.point.x) ** 2 + (p.y - resource.point.y) ** 2,
         );
-        const material = this.config.materialKinds.find(
-          (k) => k.id === resource.materialKind,
-        );
+        const material = this.materialKinds.get(resource.materialKind ?? "");
         facts.push({
           reference: key,
           kind: "site",
@@ -1794,15 +1820,18 @@ export class PhysicalSimulation {
       seed: this.seed,
       hash: this.causalHash(),
       eventHash: this.kernel.state.historyHash,
-      fixture: this.mind.state.length && this.config.spatial.width === 6 && this.config.spatial.height === 6
-        ? "Pack 0C3A exploration proof — autonomous adults, no selected actions"
-        : this.mind.state.length
-        ? "Pack 0C2 autonomous personal review"
-        : this.adultPhysical.state.bodies.length
-          ? "Pack 0C1 diagnostic body/work/recovery fixture — no autonomous choice"
-          : this.epistemicActors.size
-            ? "Pack 0B diagnostic selected-intention fixture — no autonomous choice"
-            : "Diagnostic physical execution fixture — no autonomous choice",
+      fixture:
+        this.mind.state.length &&
+        this.config.spatial.width === 6 &&
+        this.config.spatial.height === 6
+          ? "Pack 0C3A exploration proof — autonomous adults, no selected actions"
+          : this.mind.state.length
+            ? "Pack 0C2 autonomous personal review"
+            : this.adultPhysical.state.bodies.length
+              ? "Pack 0C1 diagnostic body/work/recovery fixture — no autonomous choice"
+              : this.epistemicActors.size
+                ? "Pack 0B diagnostic selected-intention fixture — no autonomous choice"
+                : "Diagnostic physical execution fixture — no autonomous choice",
       actors,
       containers,
       reservations: this.ledger.state.reservations.map((r) => ({ ...r })),

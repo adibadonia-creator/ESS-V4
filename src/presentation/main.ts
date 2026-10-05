@@ -541,7 +541,12 @@ interface LensDTO {
       rule: string;
       agenda: unknown[];
       compared: {
-        option: { key: string; method: string; reference: boolean; reason: string };
+        option: {
+          key: string;
+          method: string;
+          reference: boolean;
+          reason: string;
+        };
         value: number;
         error: number;
         feasible: boolean;
@@ -644,9 +649,23 @@ function inspectPersonal() {
         ),
         `Rule: ${trace.rule} · deferred ${trace.deferrals.length}`,
         `Envelope: ${JSON.stringify(trace.selected)}`,
-        ...p.evidence.filter(e => e.property === "outcome").slice(-3).map(e => `Observed ${e.subject}: ${JSON.stringify(e.value)}`),
-        ...p.evidence.filter(e => e.subject.startsWith("method:") && e.modality === "trial").slice(-8).map(e => `Provisional ${e.subject}/${e.property}: ${JSON.stringify(e.value)} · v${e.version} · provenance ${e.provenance}`),
-        ...p.evidence.filter(e => e.subject === "exploration").slice(-3).map(e => `Attempt ${e.property}: ${JSON.stringify(e.value)}`),
+        ...p.evidence
+          .filter((e) => e.property === "outcome")
+          .slice(-3)
+          .map((e) => `Observed ${e.subject}: ${JSON.stringify(e.value)}`),
+        ...p.evidence
+          .filter(
+            (e) => e.subject.startsWith("method:") && e.modality === "trial",
+          )
+          .slice(-8)
+          .map(
+            (e) =>
+              `Provisional ${e.subject}/${e.property}: ${JSON.stringify(e.value)} · v${e.version} · provenance ${e.provenance}`,
+          ),
+        ...p.evidence
+          .filter((e) => e.subject === "exploration")
+          .slice(-3)
+          .map((e) => `Attempt ${e.property}: ${JSON.stringify(e.value)}`),
       ].join("\n")
     : `Waiting for a personal wake. Next periodic review ${((lens.decision?.periodicAt ?? 0) / 2 ** 20).toFixed(4)} SD`;
   element("evidence-records").replaceChildren(

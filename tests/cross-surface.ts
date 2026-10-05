@@ -178,6 +178,36 @@ export async function crossSurface(
     digest(autoChunked.personalLenses) !== digest(autoEnd.personalLenses)
   )
     throw Error("Autonomous choice/runtime partition mismatch");
+  const exploration = (
+    await call({ kind: "create-exploration", seed: "spine" })
+  ).snapshot!;
+  stage("pack0c3a-natural-founding", exploration);
+  await call({ kind: "advance", time: Math.ceil(0.015 * 2 ** 20) });
+  const explorationSave = (await call({ kind: "checkpoint" })).checkpoint!;
+  const explorationEnd = (await call({ kind: "advance", time: 2 ** 20 }))
+    .snapshot!;
+  stage("pack0c3a-observed-trial", explorationEnd);
+  if (
+    !JSON.stringify(explorationEnd.personalLenses).includes(
+      "method:edge-flaking",
+    )
+  )
+    throw Error("Natural trial did not produce observed knowledge");
+  await call({ kind: "restore", checkpoint: explorationSave });
+  for (let q = Math.ceil(0.015 * 2 ** 20) + 27113; q < 2 ** 20; q += 27113) {
+    await call({ kind: "advance", time: q });
+    await call({ kind: "snapshot" });
+    await frame();
+  }
+  const explorationChunked = (await call({ kind: "advance", time: 2 ** 20 }))
+    .snapshot!;
+  stage("pack0c3a-restored-partitioned", explorationChunked);
+  if (
+    explorationChunked.hash !== explorationEnd.hash ||
+    digest(explorationChunked.personalLenses) !==
+      digest(explorationEnd.personalLenses)
+  )
+    throw Error("Exploration partition/replay mismatch");
   return {
     math: [
       math.exp(-0.2),

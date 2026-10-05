@@ -1,5 +1,5 @@
 import { EXPLORATION } from "../content/exploration";
-import type { ExplorationOutcome } from "./types";
+import type { Point, ExplorationOutcome } from "./types";
 import { EXTRACTION_INDEX } from "../content/extraction";
 import { METHOD_INDEX } from "../content/methods";
 import {
@@ -163,6 +163,29 @@ export class EvidenceService {
         !p.explorationProvenance
       )
         throw Error("Missing rate continuation state");
+      for (const posterior of Object.values(p.occupancy))
+        if (
+          ![posterior.alpha, posterior.beta].every(
+            (n) => Number.isFinite(n) && n > 0,
+          )
+        )
+          throw Error("Invalid occupancy posterior");
+      for (const coverage of Object.values(p.occupancyCoverage))
+        for (const detection of Object.values(coverage))
+          if (!Number.isFinite(detection) || detection < 0 || detection > 1)
+            throw Error("Invalid occupancy coverage");
+      for (const summary of Object.values(p.exploration))
+        if (
+          ![summary.alpha, summary.beta].every(
+            (n) => Number.isFinite(n) && n > 0,
+          ) ||
+          ![summary.failures, summary.paid, summary.attempts].every(
+            (n) => Number.isFinite(n) && n >= 0,
+          ) ||
+          !Number.isSafeInteger(summary.at) ||
+          typeof summary.completed !== "boolean"
+        )
+          throw Error("Invalid exploration continuation");
       for (const stat of Object.values(p.rateStatistics))
         if (
           !Number.isSafeInteger(stat.at) ||
@@ -710,15 +733,16 @@ export class EvidenceService {
         "inference",
       );
     }
-    this.fact(
-      owner,
-      outcome.descriptor,
-      "outcome",
-      outcome,
-      at,
-      provenance,
-      "trial",
-    );
+    if (outcome.completed)
+      this.fact(
+        owner,
+        outcome.descriptor,
+        "outcome",
+        outcome,
+        at,
+        provenance,
+        "trial",
+      );
     if (
       outcome.completed &&
       !outcome.success &&
@@ -735,6 +759,16 @@ export class EvidenceService {
       this.fact(owner, subject, property, old * 0.6, at, provenance, "trial");
     }
     if (outcome.completed && outcome.success && outcome.method) {
+      if (outcome.target)
+        this.fact(
+          owner,
+          outcome.target,
+          `revealed-property:${outcome.operation}`,
+          outcome,
+          at,
+          provenance,
+          "trial",
+        );
       this.fact(
         owner,
         `affordance:${outcome.operation}:${outcome.targetKind}`,
@@ -804,6 +838,43 @@ export class EvidenceService {
         "record",
       );
   }
+  private recordDetectedSite(
+    owner: string,
+    subject: string,
+    resource: string,
+    at: number,
+    point?: Point,
+  ): void {
+    const p = this.person(owner);
+    const original = p.links[subject] ?? subject;
+    if (p.discoveredSites[original]) return;
+    p.discoveredSites[original] = true;
+    const position =
+      point ??
+      (this.latest(owner, subject, "location")?.value as Point | undefined);
+    if (!position) throw Error("Detected site has no personal location");
+    const k =
+      Math.floor(position.x / this.profile.cellKm) +
+      this.profile.width * Math.floor(position.y / this.profile.cellKm);
+    const scope = `${resource}:${p.cells[k]?.terrain ?? 0}`;
+    const posterior = (p.occupancy[scope] ??= {
+      alpha:
+        resource === "food-patch"
+          ? EXPLORATION.foodDensityKm2
+          : EXPLORATION.rawDensityKm2,
+      beta: EXPLORATION.occupancyStrengthKm2,
+    });
+    posterior.alpha++;
+    this.fact(
+      owner,
+      "occupancy",
+      scope,
+      { ...posterior },
+      at,
+      "independent personally detected site",
+      "inference",
+    );
+  }
   observeResourceStock(
     owner: string,
     subject: string,
@@ -814,6 +885,7 @@ export class EvidenceService {
     cognitive: number,
     field: number,
   ): void {
+    this.recordDetectedSite(owner, subject, kind, at);
     const logSd = 0.35 / Math.max(0.25, math.sqrt(cognitive * field));
     const value =
       stock > 0
@@ -977,6 +1049,7 @@ export class EvidenceService {
       }
     }
     if (packet.resourceClasses && (deliveredSurvey || directed)) {
+      const changed = new Set<string>();
       for (const resource of packet.resourceClasses) {
         const coverage = (p.occupancyCoverage[resource] ??= {});
         for (const c of packet.terrain) {
@@ -993,17 +1066,19 @@ export class EvidenceService {
             this.profile.cellKm ** 2 *
             Math.max(0, detection - (coverage[c.cell] ?? 0));
           coverage[c.cell] = Math.max(coverage[c.cell] ?? 0, detection);
-          this.fact(
-            owner,
-            "occupancy",
-            scope,
-            { ...posterior },
-            at,
-            "qualified personal coverage",
-            "inference",
-          );
+          changed.add(scope);
         }
       }
+      for (const scope of changed)
+        this.fact(
+          owner,
+          "occupancy",
+          scope,
+          { ...p.occupancy[scope]! },
+          at,
+          "qualified personal coverage",
+          "inference",
+        );
     }
     // Incremental personally represented frontier: only affected geometry and
     // its immediate neighbours. No unseen terrain or whole-map enumeration.
@@ -1073,6 +1148,7 @@ export class EvidenceService {
         }
       }
     }
+    const detected: Record<string, number> = {};
     // Packet order is geometric and independent of hidden allocation/keys.
     for (const f of packet.facts) {
       if (
@@ -1088,29 +1164,9 @@ export class EvidenceService {
       const resource = f.properties.find(
         (item) => item.property === "resource-kind",
       )?.value;
-      if (typeof resource === "string" && !p.discoveredSites[f.reference]) {
-        p.discoveredSites[f.reference] = true;
-        const k =
-          Math.floor(f.position.x / this.profile.cellKm) +
-          this.profile.width * Math.floor(f.position.y / this.profile.cellKm);
-        const scope = `${resource}:${p.cells[k]?.terrain ?? 0}`;
-        const posterior = (p.occupancy[scope] ??= {
-          alpha:
-            resource === "food-patch"
-              ? EXPLORATION.foodDensityKm2
-              : EXPLORATION.rawDensityKm2,
-          beta: EXPLORATION.occupancyStrengthKm2,
-        });
-        posterior.alpha++;
-        this.fact(
-          owner,
-          "occupancy",
-          scope,
-          { ...posterior },
-          at,
-          "independent personally detected site",
-          "inference",
-        );
+      if (typeof resource === "string") {
+        this.recordDetectedSite(owner, subject, resource, at, f.position);
+        detected[resource] = (detected[resource] ?? 0) + 1;
       }
       this.fact(owner, subject, "existence", true, at, context);
       this.fact(owner, subject, "location", f.position, at, context);
@@ -1148,7 +1204,7 @@ export class EvidenceService {
         owner,
         "local-survey",
         "site-detection-count",
-        packet.facts.filter((f) => f.kind === "site").length,
+        Object.values(detected).reduce((a, b) => a + b, 0),
         at,
         context,
         "direct",
@@ -1156,6 +1212,20 @@ export class EvidenceService {
         "fast",
         packet.footprint,
       );
+    if (directed && packet.footprint.duration > 0)
+      for (const resource of packet.resourceClasses ?? [])
+        this.fact(
+          owner,
+          "local-survey",
+          `site-detection-count:${resource}`,
+          detected[resource] ?? 0,
+          at,
+          context,
+          "direct",
+          0,
+          "fast",
+          packet.footprint,
+        );
     this.enforceMemory(owner);
   }
   route(

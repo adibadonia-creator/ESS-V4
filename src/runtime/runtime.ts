@@ -281,15 +281,22 @@ export class TaskRuntime {
     return clone(t);
   }
   private valid(t: Task): boolean {
-    return t.dependsOn.every(d => {
-      const version=this.port.version(t.actor,d.key);
-      if (version===d.version) return true;
+    return t.dependsOn.every((d) => {
+      const version = this.port.version(t.actor, d.key);
+      if (version === d.version) return true;
       // A newer own receipt with the SAME balances does not invalidate paid
       // movement. Changed backing still takes the existing Reconsider path.
       if (d.valueFingerprint) {
-        const [subject,property]=JSON.parse(d.key) as string[];
-        const e=this.port.personal(t.actor).belief(subject!,property!);
-        if (e && (e.modality === "self" || e.modality === "direct") && digest(e.value)===d.valueFingerprint) {d.version=version;return true;}
+        const [subject, property] = JSON.parse(d.key) as string[];
+        const e = this.port.personal(t.actor).belief(subject!, property!);
+        if (
+          e &&
+          (e.modality === "self" || e.modality === "direct") &&
+          digest(e.value) === d.valueFingerprint
+        ) {
+          d.version = version;
+          return true;
+        }
       }
       return false;
     });
@@ -640,8 +647,10 @@ export class TaskRuntime {
       if (d) {
         d.version = write.after;
         if (d.valueFingerprint) {
-          const [subject,property]=JSON.parse(d.key) as string[];
-          d.valueFingerprint=digest(this.port.personal(t.actor).belief(subject!,property!)?.value);
+          const [subject, property] = JSON.parse(d.key) as string[];
+          d.valueFingerprint = digest(
+            this.port.personal(t.actor).belief(subject!, property!)?.value,
+          );
         }
       }
     }

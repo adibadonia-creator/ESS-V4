@@ -1,3 +1,4 @@
+import { OPERATION_INDEX } from "../content/exploration";
 import { canonical, digest, compareKey } from "../kernel/canonical";
 import { QUANTA, time } from "../kernel/time";
 import { math } from "../kernel/numerics";
@@ -137,6 +138,12 @@ export class Binder {
       return finish();
     }
     if (s.operation === "material") {
+      const operation = OPERATION_INDEX.get(s.law);
+      if (!operation)
+        return fail(
+          "epistemically-unresolved",
+          "unknown personally bound operation",
+        );
       const sources = this.review.places(
         `class:${s.targetProperty}:${JSON.stringify(s.targetValue)}`,
         2,
@@ -149,16 +156,22 @@ export class Binder {
           (p.x - this.review.self.location.x) ** 2 +
             (p.y - this.review.self.location.y) ** 2 <=
             0.08 ** 2 &&
-          Number(this.review.belief(e.subject, "stock:stone")?.value ?? 0) >= 1
+          Number(
+            this.review.belief(e.subject, `stock:${operation.input}`)?.value ??
+              0,
+          ) >= 1
         );
       });
-      if (!source || Number(this.review.self.carried.stocks.stone ?? 0) < 1)
+      if (
+        !source ||
+        Number(this.review.self.carried.stocks[operation.hammer] ?? 0) < 1
+      )
         return fail(
           "epistemically-unresolved",
           "known material method lacks personally accessible input/hammer",
         );
       read(source.subject, "location");
-      read(source.subject, "stock:stone");
+      read(source.subject, `stock:${operation.input}`);
       read(source.subject, s.targetProperty!);
       read(`method:${method.id}`, "confidence");
       read(`method:${method.id}`, "observed-yield");
@@ -169,7 +182,7 @@ export class Binder {
         duration: time(s.durationSd),
       });
       o.bindings["target:0"] = source.subject;
-      o.goods.stone = 1;
+      o.goods[operation.input] = 1;
       o.duration = time(s.durationSd);
       o.reason = "ordinary binding from personally observed provisional method";
       return finish();
@@ -191,7 +204,12 @@ export class Binder {
           this.meter.counts.targetsVisited++;
           const q = Math.min(remaining, lot.quantity);
           if (q <= 0) continue;
-          read(lot.subject,lot.subject === this.review.self.carried.subject ? "stocks" : "own-local-stocks");
+          read(
+            lot.subject,
+            lot.subject === this.review.self.carried.subject
+              ? "stocks"
+              : "own-local-stocks",
+          );
           o.bindings[`input:${o.steps.length}`] = lot.subject;
           o.steps.push({
             family: "Transfer",

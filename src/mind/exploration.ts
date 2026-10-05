@@ -194,6 +194,22 @@ export function inquiryValue(
     classes: P.outcomeClasses,
   };
 }
+// A service-use receipt is personal evidence, never an inference from unknown
+// output content. This slice has no capital/project valuation or asset model.
+export function trialInstrumentalValue(
+  review: PersonalReview,
+  operation: string,
+  probability: number,
+  meter: ReviewEffort,
+): number | null {
+  if (!meter.spend("information")) return null;
+  const receipt = review.belief("self", `service-use:${operation}`)?.value as
+    { discountedService?: number; improvementCap?: number } | undefined;
+  if (!receipt) return 0;
+  const service = Math.max(0, Number(receipt.discountedService ?? 0));
+  const cap = Math.max(0, Number(receipt.improvementCap ?? 0));
+  return probability * Math.min(P.relativeGain * service, cap);
+}
 function read(
   o: BoundOption,
   review: PersonalReview,
@@ -306,12 +322,22 @@ export function explorationOptions(
             experiment,
           });
           o.duration += time(P.surveySd);
-          route(review,state,meter,o,{...review.self.location},point);
+          route(review, state, meter, o, { ...review.self.location }, point);
+          for (const step of o.steps)
+            if (step.family === "Move") step.experiment = experiment;
           o.optionalDuration = o.duration;
           o.informationValue = estimate.value;
           o.reason = `personal EVSI ${estimate.value}; absent/poor/useful ${canonical(estimate.probabilities)}`;
-          const posterior=review.belief("occupancy",`food-patch:${ground}`);
-          o.valuationDependencies=posterior ? [{subject:"occupancy",property:`food-patch:${ground}`,version:posterior.version}] : [];
+          const posterior = review.belief("occupancy", `food-patch:${ground}`);
+          o.valuationDependencies = posterior
+            ? [
+                {
+                  subject: "occupancy",
+                  property: `food-patch:${ground}`,
+                  version: posterior.version,
+                },
+              ]
+            : [];
         }
       } else if (o.status === "executable") {
         o.status = "epistemically-unresolved";
@@ -429,6 +455,8 @@ export function explorationOptions(
           duration: time(operation.durationSd),
           experiment,
         });
+        for (const step of o.steps)
+          if (step.family === "Move") step.experiment = experiment;
         o.duration += time(operation.durationSd);
         o.optionalDuration = o.duration;
         o.goods[operation.input] = 1;
@@ -438,12 +466,37 @@ export function explorationOptions(
           "exploration",
           `T1:${operation.id}:${kind}`,
         )?.value as Record<string, number> | undefined;
+        const broad = review.belief("exploration", `T1:${operation.id}:*`)
+          ?.value as Record<string, number> | undefined;
         const probability =
-          (prior?.alpha ?? P.alpha) /
-          ((prior?.alpha ?? P.alpha) + (prior?.beta ?? P.beta));
+          (prior?.alpha ?? broad?.alpha ?? P.alpha) /
+          ((prior?.alpha ?? broad?.alpha ?? P.alpha) +
+            (prior?.beta ?? broad?.beta ?? P.beta));
+        const instrumental = trialInstrumentalValue(
+          review,
+          operation.id,
+          probability,
+          meter,
+        );
+        if (instrumental === null) {
+          o.status = "computationally-deferred";
+          o.reason = "instrumental estimate EU exhausted";
+        } else {
+          o.informationValue = instrumental;
+          const receipt = review.belief("self", `service-use:${operation.id}`);
+          o.valuationDependencies = receipt
+            ? [
+                {
+                  subject: "self",
+                  property: receipt.property,
+                  version: receipt.version,
+                },
+              ]
+            : [];
+        }
         // This Stage-I material has no personally represented production use:
         // instrumental potential is explicitly zero, despite a success prior.
-        o.reason = `T1 compatible unfamiliar material; contextual success prior ${probability}; represented instrumental service 0`;
+        o.reason = `T1 compatible unfamiliar material; contextual success prior ${probability}; represented instrumental service ${instrumental ?? "deferred"}`;
       }
       o.key = optionKey(o);
       options.push(o);

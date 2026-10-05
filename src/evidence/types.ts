@@ -145,6 +145,7 @@ export interface ExplorationOutcome {
   paid: number;
   completed: boolean;
   success: boolean;
+  target?: string;
   method?: string;
   good?: string;
   yield?: number;

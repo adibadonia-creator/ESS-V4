@@ -1,0 +1,7593 @@
+{
+  "natural": {
+    "seed": "spine",
+    "sd": 8,
+    "hash": "0e15af2fa0d806b5d15e39c5d5857081",
+    "restore": true,
+    "conservation": true,
+    "maxReviewEu": 107,
+    "trials": [
+      {
+        "actor": "220ffe84ef51b6b3d3905d7bc4f263f6",
+        "at": 1,
+        "method": "try-compatible",
+        "steps": [
+          {
+            "family": "Work",
+            "law": "strike",
+            "site": "seen:8",
+            "duration": 31458,
+            "experiment": {
+              "form": "T1",
+              "operation": "strike",
+              "targetKind": "glassy-stone",
+              "descriptor": "T1:strike:seen:8:glassy-stone",
+              "evidenceVersion": 3728626990,
+              "paid": 0,
+              "completed": false,
+              "success": false
+            }
+          },
+          {
+            "family": "Recover",
+            "law": "leisure",
+            "mode": "leisure",
+            "duration": 125830
+          },
+          {
+            "family": "Transfer",
+            "from": "seen:2",
+            "to": "seen:2",
+            "good": "food",
+            "quantity": 3,
+            "basis": "own-custody",
+            "use": "consume",
+            "duration": 2859753
+          }
+        ],
+        "alternatives": [
+          {
+            "method": "ordinary-continuation",
+            "value": 0,
+            "gate": null
+          },
+          {
+            "method": "consume",
+            "value": -2.7728105242964074,
+            "gate": null
+          },
+          {
+            "method": "try-compatible",
+            "value": -2.3529344673768486,
+            "gate": null
+          },
+          {
+            "method": "leisure",
+            "value": -2.366011733094439,
+            "gate": null
+          },
+          {
+            "method": "rest",
+            "value": -2.527883906144276,
+            "gate": null
+          },
+          {
+            "method": "try-compatible",
+            "value": -2.340849993173326,
+            "gate": null
+          }
+        ]
+      }
+    ],
+    "inquiries": 0,
+    "learned": [
+      {
+        "actor": "220ffe84ef51b6b3d3905d7bc4f263f6",
+        "known": {
+          "owner": "220ffe84ef51b6b3d3905d7bc4f263f6",
+          "subject": "method:edge-flaking",
+          "property": "known",
+          "value": true,
+          "observedAt": 31459,
+          "receivedAt": 31459,
+          "modality": "trial",
+          "provenance": "cbe8c7aee7bc7cc4e65f606e3b6b8623",
+          "context": "61222937ecf8c72464a4614e7d901582:0:31459",
+          "reliability": 1,
+          "uncertainty": 0,
+          "volatilityClass": "fixed",
+          "expiry": null,
+          "pinned": false,
+          "version": 1
+        },
+        "confidence": {
+          "owner": "220ffe84ef51b6b3d3905d7bc4f263f6",
+          "subject": "method:edge-flaking",
+          "property": "confidence",
+          "value": 0.4,
+          "observedAt": 31459,
+          "receivedAt": 31459,
+          "modality": "trial",
+          "provenance": "61320a638d0ab9f86aef34900bfbbb7e",
+          "context": "61222937ecf8c72464a4614e7d901582:0:31459",
+          "reliability": 1,
+          "uncertainty": 0,
+          "volatilityClass": "fixed",
+          "expiry": null,
+          "pinned": false,
+          "version": 1
+        },
+        "ordinaryIndex": [
+          "method:edge-flaking"
+        ]
+      },
+      {
+        "actor": "6886faa5b2bde72b6a052425a14177da",
+        "known": null,
+        "confidence": null,
+        "ordinaryIndex": []
+      }
+    ],
+    "counters": {
+      "reviewWakesRequested": 16,
+      "reviewWakesExecuted": 16,
+      "reviewWakesCoalesced": 0,
+      "wakeSameStateDrops": 0,
+      "wakeCapDeferrals": 0,
+      "periodicWakes": 10,
+      "thresholdWakes": 4,
+      "completionWakes": 0,
+      "failureWakes": 2,
+      "reviewEuTotal": 1243,
+      "trialEu": 72,
+      "informationEu": 17,
+      "trialCandidates": 24,
+      "inquiryClasses": 0,
+      "descriptorEu": 71,
+      "retrievalEu": 92,
+      "bindingEu": 344,
+      "forecastEu": 639,
+      "routeEu": 8,
+      "agendaAdmitted": 65,
+      "agendaDeferred": 0,
+      "drivesConsidered": 65,
+      "bindingNodes": 86,
+      "methodsConsidered": 53,
+      "targetsVisited": 39,
+      "forecastOptions": 82,
+      "forecastBlocks": 639,
+      "feasibilityRejected": 20,
+      "severeRiskRejected": 45,
+      "incumbentRetained": 0,
+      "alternativeSelected": 16,
+      "autonomousIntentionsCommitted": 16,
+      "workSettlements": 0,
+      "extractionBoundaries": 0,
+      "conditionSegments": 106,
+      "fatigueClosures": 16,
+      "enjoymentClosures": 16,
+      "bodyMaterialisations": 2,
+      "bodyCommits": 106,
+      "resourceMaterialisations": 2,
+      "workGoodsTransactions": 0,
+      "workSegmentsStarted": 1,
+      "consumptionSettlements": 25,
+      "learningSettlements": 0,
+      "representativeBodyClosures": 16,
+      "bodyEvidenceDeliveries": 140,
+      "methodRecordsConsulted": 1,
+      "recoverPaidSegments": 10,
+      "currentTaskLookups": 258,
+      "terminalTaskRowsVisited": 0,
+      "activeTaskRowsVisited": 0,
+      "paidPrefixRowsVisited": 0,
+      "personalReadEntriesVisited": 27326,
+      "personalReadPagesVisited": 128,
+      "personalGeographyCopied": 0,
+      "personalRegionRecordsConsulted": 0,
+      "personalRouteHeapPushes": 112,
+      "personalRouteHeapPops": 32,
+      "personalRouteHeapRebuilds": 0,
+      "personalRouteHostResumes": 8,
+      "personalRouteCellsConsulted": 768,
+      "reservationRecordsVisited": 168,
+      "contentEntriesVisited": 179,
+      "geographyRegionBuildCells": 72,
+      "perceptionCandidateChecks": 14,
+      "routineObservations": 15,
+      "evidenceUpdates": 317,
+      "personalMapUpdates": 72,
+      "memoryEvictions": 0,
+      "personalRouteRegionExpansions": 0,
+      "personalRouteSearches": 8,
+      "personalRouteExpansions": 32,
+      "runtimeStepStarts": 26,
+      "runtimeStepCompletions": 10,
+      "continueTransitions": 10,
+      "repairRequiredTransitions": 2,
+      "taskInterruptions": 12,
+      "personalViewProjections": 2,
+      "autonomousDeliberations": 16,
+      "events": 54,
+      "staleEvents": 48,
+      "heapPushes": 117,
+      "heapPops": 102,
+      "heapCompactions": 0,
+      "transactionCommits": 62,
+      "transactionRejections": 0,
+      "routeSearches": 0,
+      "routeExpansions": 0,
+      "routeRegionExpansions": 0,
+      "spatialQueries": 2,
+      "projectionEntities": 9,
+      "checkpoints": 1,
+      "checkpointBytes": 557066
+    },
+    "checkpointBytes": 557066
+  },
+  "profile": "Controlled 8/32 autonomous adults, canonical raster, eight SD, one repetition. Founding observation only; no selected tasks or action quota. Timing excludes observer trace publication. Not final Pack-0 performance certification.",
+  "versions": {
+    "model": "ESS-4.0-pack0c3a",
+    "schema": 8,
+    "source": "6bb1d1d6e3415c13ef855035b7c62c5c458be199df3f1629da9fb20fb6356251",
+    "spec": "d9c1c63060e9a2cbf56a1e4fe4ace994f21c24b74d21c5f24e27610322b59882",
+    "rng": "philox4x32-10-semantic-v1",
+    "sampler": "marsaglia-polar-binary64-v1",
+    "numerical": "binary64-polynomial-survival-v1-finite-guard",
+    "hash": "fnv4-avalanche-128-v1",
+    "runtime": "binary64-js-certified-v1",
+    "generator": "warped-fields-priority-flood-v1"
+  },
+  "machine": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor"
+  },
+  "rows": [
+    {
+      "adults": 8,
+      "sd": 8,
+      "hash": "077d2dd9e3d2551def4a9dba9e328cb9",
+      "checkpointBytes": 7490783,
+      "mindHotBytesPerPerson": 2570.25,
+      "traceBytesPerPerson": 215166.375,
+      "reviewsPerPersonSd": 1.28125,
+      "euPerPersonSd": 250.9375,
+      "selected": {
+        "consume": 65,
+        "continuation": 17
+      },
+      "arbitrationRules": {
+        "safe-response": 42,
+        "least-harm": 30,
+        "incumbent-margin": 10
+      },
+      "counters": {
+        "reviewWakesRequested": 82,
+        "reviewWakesExecuted": 82,
+        "reviewWakesCoalesced": 0,
+        "wakeSameStateDrops": 0,
+        "wakeCapDeferrals": 0,
+        "periodicWakes": 32,
+        "thresholdWakes": 35,
+        "completionWakes": 0,
+        "failureWakes": 15,
+        "reviewEuTotal": 16060,
+        "trialEu": 0,
+        "informationEu": 246,
+        "trialCandidates": 0,
+        "inquiryClasses": 246,
+        "descriptorEu": 456,
+        "retrievalEu": 9400,
+        "bindingEu": 1968,
+        "forecastEu": 3907,
+        "routeEu": 83,
+        "agendaAdmitted": 328,
+        "agendaDeferred": 0,
+        "drivesConsidered": 328,
+        "bindingNodes": 492,
+        "methodsConsidered": 328,
+        "targetsVisited": 196,
+        "forecastOptions": 433,
+        "forecastBlocks": 3907,
+        "feasibilityRejected": 295,
+        "severeRiskRejected": 329,
+        "incumbentRetained": 17,
+        "alternativeSelected": 65,
+        "autonomousIntentionsCommitted": 65,
+        "workSettlements": 42,
+        "extractionBoundaries": 0,
+        "conditionSegments": 482,
+        "fatigueClosures": 64,
+        "enjoymentClosures": 64,
+        "bodyMaterialisations": 8,
+        "bodyCommits": 482,
+        "resourceMaterialisations": 61,
+        "workGoodsTransactions": 35,
+        "workSegmentsStarted": 43,
+        "consumptionSettlements": 130,
+        "learningSettlements": 42,
+        "representativeBodyClosures": 64,
+        "bodyEvidenceDeliveries": 636,
+        "methodRecordsConsulted": 43,
+        "recoverPaidSegments": 0,
+        "currentTaskLookups": 1177,
+        "terminalTaskRowsVisited": 0,
+        "activeTaskRowsVisited": 0,
+        "paidPrefixRowsVisited": 0,
+        "personalReadEntriesVisited": 141062,
+        "personalReadPagesVisited": 51083,
+        "personalGeographyCopied": 0,
+        "personalRegionRecordsConsulted": 0,
+        "personalRouteHeapPushes": 5004,
+        "personalRouteHeapPops": 2038,
+        "personalRouteHeapRebuilds": 0,
+        "personalRouteHostResumes": 164,
+        "personalRouteCellsConsulted": 51412,
+        "reservationRecordsVisited": 865,
+        "contentEntriesVisited": 1049,
+        "geographyRegionBuildCells": 587,
+        "perceptionCandidateChecks": 8,
+        "routineObservations": 16,
+        "evidenceUpdates": 1327,
+        "personalMapUpdates": 587,
+        "memoryEvictions": 0,
+        "personalRouteRegionExpansions": 0,
+        "personalRouteSearches": 164,
+        "personalRouteExpansions": 1902,
+        "runtimeStepStarts": 108,
+        "runtimeStepCompletions": 43,
+        "continueTransitions": 43,
+        "repairRequiredTransitions": 15,
+        "taskInterruptions": 42,
+        "personalViewProjections": 8,
+        "autonomousDeliberations": 82,
+        "events": 285,
+        "staleEvents": 348,
+        "heapPushes": 722,
+        "heapPops": 633,
+        "heapCompactions": 0,
+        "transactionCommits": 296,
+        "transactionRejections": 0,
+        "routeSearches": 0,
+        "routeExpansions": 0,
+        "routeRegionExpansions": 0,
+        "spatialQueries": 8,
+        "projectionEntities": 32,
+        "checkpoints": 1,
+        "checkpointBytes": 7490783
+      },
+      "bodyAtEnd": [
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "body": {
+            "c": 0.8715847735161352,
+            "w": 0,
+            "d": 0.9998356552727111,
+            "f": 0.10718293824975501,
+            "intake": 1.076867545441161,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5283119460452435,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3475065231323242,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "body": {
+            "c": 0.7413118748894374,
+            "w": 0,
+            "d": 0.9997036065135831,
+            "f": 0.34380274115099574,
+            "intake": 0.8591449629989399,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5261947976617414,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.4046821594238281,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "body": {
+            "c": 0.6921340957404635,
+            "w": 0,
+            "d": 0.9993209167657248,
+            "f": 0.3673784548718125,
+            "intake": 1.0137304656837256,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5209485065931512,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.0810813903808594,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "body": {
+            "c": 0.44210102786650834,
+            "w": 0,
+            "d": 0.9996906168818128,
+            "f": 0.1061490741646023,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5256529003891128,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.4239683151245117,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "body": {
+            "c": 0.7847815372150788,
+            "w": 0,
+            "d": 0.9997527452442106,
+            "f": 0.35991515143305797,
+            "intake": 1.00199122779802,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5272287537191914,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3578824996948242,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "body": {
+            "c": 0.83436712958648,
+            "w": 0,
+            "d": 0.9992924536090039,
+            "f": 0.3685871888628665,
+            "intake": 0.88384876871552,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5255777053095405,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.2995529174804688,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "body": {
+            "c": 0.7525287829184201,
+            "w": 0,
+            "d": 0.9993742016967757,
+            "f": 0.1123029674673389,
+            "intake": 0.9406497394538423,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5237012465662402,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.2126293182373047,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "body": {
+            "c": 0.8771002789891835,
+            "w": 0,
+            "d": 0.9993689493545208,
+            "f": 0.3652287692580835,
+            "intake": 0.9179020703769039,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5262589603803457,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.5009765625,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        }
+      ],
+      "traceSummaries": [
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 0.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 0.6385898590087891,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 0.8347902297973633,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 0.9184112548828125,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 0.9613037109375,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 1.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 1.0911884307861328,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 1.1322479248046875,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 1.2056055068969727,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 1.213963508605957,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 1.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 1.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 1.6030874252319336,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 197,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 1.8181829452514648,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 198,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 1.8369331359863281,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 1.8403759002685547,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 2.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 2.638589859008789,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 2.7239255905151367,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 2.757380485534668,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 2.8347902297973633,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 2.837697982788086,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 2.8916854858398438,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 2.9680967330932617,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 3.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 3.0920591354370117,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 3.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 176,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 3.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 3.6030874252319336,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 3.703864097595215,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 3.8403759002685547,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 4.0446577072143555,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 4.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 4.139308929443359,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 198,
+          "steps": []
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 4.265341758728027,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 4.270740509033203,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 4.412888526916504,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 186,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 4.449176788330078,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 4.484494209289551,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 4.504755020141602,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 4.638589859008789,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 4.7566633224487305,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 4.834790229797363,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 4.932435989379883,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 4.989194869995117,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 5.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 5.15399169921875,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 5.189236640930176,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 5.43536376953125,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 5.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 5.50529670715332,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 176,
+          "steps": []
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 5.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 5.603087425231934,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 5.661145210266113,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 5.7910966873168945,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 5.840375900268555,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 5.881255149841309,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 6.056215286254883,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 6.097050666809082,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 6.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 6.139629364013672,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 6.374670028686523,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 6.592746734619141,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 6.619885444641113,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 6.638589859008789,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 6.689517974853516,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 6.834790229797363,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 196,
+          "steps": []
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 6.837018013000488,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 6.941575050354004,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 7.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 7.202550888061523,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 7.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 188,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 7.545421600341797,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 7.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 7.603087425231934,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 7.814239501953125,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 7.840375900268555,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 7.906988143920898,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        }
+      ],
+      "advancementPerSdMedianMs": 72.8659100000009,
+      "advancementPerSdP95Ms": 109.31887599999982,
+      "checkpointMedianMs": 278.22052699999995,
+      "checkpointP95Ms": 278.22052699999995
+    },
+    {
+      "adults": 32,
+      "sd": 8,
+      "hash": "092d76a05a97e0742d027ccbd8e0e633",
+      "checkpointBytes": 16470847,
+      "mindHotBytesPerPerson": 3723.4375,
+      "traceBytesPerPerson": 229942.53125,
+      "reviewsPerPersonSd": 1.29296875,
+      "euPerPersonSd": 251.83984375,
+      "selected": {
+        "consume": 257,
+        "continuation": 74
+      },
+      "arbitrationRules": {
+        "safe-response": 159,
+        "incumbent-margin": 48,
+        "least-harm": 124
+      },
+      "counters": {
+        "reviewWakesRequested": 331,
+        "reviewWakesExecuted": 331,
+        "reviewWakesCoalesced": 0,
+        "wakeSameStateDrops": 0,
+        "wakeCapDeferrals": 0,
+        "periodicWakes": 128,
+        "thresholdWakes": 141,
+        "completionWakes": 0,
+        "failureWakes": 62,
+        "reviewEuTotal": 64471,
+        "trialEu": 0,
+        "informationEu": 993,
+        "trialCandidates": 0,
+        "inquiryClasses": 993,
+        "descriptorEu": 1843,
+        "retrievalEu": 37617,
+        "bindingEu": 7936,
+        "forecastEu": 15640,
+        "routeEu": 442,
+        "agendaAdmitted": 1324,
+        "agendaDeferred": 0,
+        "drivesConsidered": 1324,
+        "bindingNodes": 1984,
+        "methodsConsidered": 1322,
+        "targetsVisited": 780,
+        "forecastOptions": 1749,
+        "forecastBlocks": 15640,
+        "feasibilityRejected": 1202,
+        "severeRiskRejected": 1360,
+        "incumbentRetained": 74,
+        "alternativeSelected": 257,
+        "autonomousIntentionsCommitted": 257,
+        "workSettlements": 179,
+        "extractionBoundaries": 1,
+        "conditionSegments": 1940,
+        "fatigueClosures": 256,
+        "enjoymentClosures": 256,
+        "bodyMaterialisations": 32,
+        "bodyCommits": 1940,
+        "resourceMaterialisations": 262,
+        "workGoodsTransactions": 155,
+        "workSegmentsStarted": 188,
+        "consumptionSettlements": 515,
+        "learningSettlements": 179,
+        "representativeBodyClosures": 256,
+        "bodyEvidenceDeliveries": 2559,
+        "methodRecordsConsulted": 188,
+        "recoverPaidSegments": 0,
+        "currentTaskLookups": 4669,
+        "terminalTaskRowsVisited": 0,
+        "activeTaskRowsVisited": 0,
+        "paidPrefixRowsVisited": 0,
+        "personalReadEntriesVisited": 562761,
+        "personalReadPagesVisited": 205962,
+        "personalGeographyCopied": 0,
+        "personalRegionRecordsConsulted": 0,
+        "personalRouteHeapPushes": 30524,
+        "personalRouteHeapPops": 15953,
+        "personalRouteHeapRebuilds": 0,
+        "personalRouteHostResumes": 662,
+        "personalRouteCellsConsulted": 389616,
+        "reservationRecordsVisited": 3346,
+        "contentEntriesVisited": 4308,
+        "geographyRegionBuildCells": 2327,
+        "perceptionCandidateChecks": 42,
+        "routineObservations": 64,
+        "evidenceUpdates": 5405,
+        "personalMapUpdates": 2327,
+        "memoryEvictions": 0,
+        "personalRouteRegionExpansions": 0,
+        "personalRouteSearches": 662,
+        "personalRouteExpansions": 13698,
+        "runtimeStepStarts": 423,
+        "runtimeStepCompletions": 166,
+        "continueTransitions": 166,
+        "repairRequiredTransitions": 62,
+        "taskInterruptions": 163,
+        "personalViewProjections": 32,
+        "autonomousDeliberations": 331,
+        "events": 1151,
+        "staleEvents": 731,
+        "heapPushes": 2839,
+        "heapPops": 1882,
+        "heapCompactions": 5,
+        "transactionCommits": 1181,
+        "transactionRejections": 0,
+        "routeSearches": 0,
+        "routeExpansions": 0,
+        "routeRegionExpansions": 0,
+        "spatialQueries": 32,
+        "projectionEntities": 128,
+        "checkpoints": 1,
+        "checkpointBytes": 16470847
+      },
+      "bodyAtEnd": [
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "body": {
+            "c": 0.8715847735161352,
+            "w": 0,
+            "d": 0.9998356552727111,
+            "f": 0.10718293824975501,
+            "intake": 1.076867545441161,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5283119460452435,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3475065231323242,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "body": {
+            "c": 0.7413118748894374,
+            "w": 0,
+            "d": 0.9997036065135831,
+            "f": 0.34380274115099574,
+            "intake": 0.8591449629989399,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5261947976617414,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.4046821594238281,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "body": {
+            "c": 0.6921340957404635,
+            "w": 0,
+            "d": 0.9993209167657248,
+            "f": 0.3673784548718125,
+            "intake": 1.0137304656837256,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5209485065931512,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.0810813903808594,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "body": {
+            "c": 0.44210102786650834,
+            "w": 0,
+            "d": 0.9996906168818128,
+            "f": 0.1061490741646023,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5256529003891128,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.4239683151245117,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "body": {
+            "c": 0.7847815372150788,
+            "w": 0,
+            "d": 0.9997527452442106,
+            "f": 0.35991515143305797,
+            "intake": 1.00199122779802,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5272287537191914,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3578824996948242,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "body": {
+            "c": 0.83436712958648,
+            "w": 0,
+            "d": 0.9992924536090039,
+            "f": 0.3685871888628665,
+            "intake": 0.88384876871552,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5255777053095405,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.2995529174804688,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "body": {
+            "c": 0.7525287829184201,
+            "w": 0,
+            "d": 0.9993742016967757,
+            "f": 0.1123029674673389,
+            "intake": 0.9406497394538423,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5237012465662402,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.2126293182373047,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "body": {
+            "c": 0.8771002789891835,
+            "w": 0,
+            "d": 0.9993689493545208,
+            "f": 0.3652287692580835,
+            "intake": 0.9179020703769039,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5262589603803457,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.5009765625,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "body": {
+            "c": 0.687759442613046,
+            "w": 0,
+            "d": 0.999845749137561,
+            "f": 0.34658260799176815,
+            "intake": 1.0409267999650607,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5296536708521224,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.6531028747558594,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "body": {
+            "c": 0.7627396349080341,
+            "w": 0,
+            "d": 0.999595933824779,
+            "f": 0.10844079213629407,
+            "intake": 0.8515476565194053,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5263574269825186,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.5071735382080078,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "body": {
+            "c": 0.3349162411562057,
+            "w": 0,
+            "d": 0.9992765706952684,
+            "f": 0.36924237044120384,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5187654174464205,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 0.970606803894043,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "body": {
+            "c": 0.8691582237965109,
+            "w": 0,
+            "d": 0.9997042542333977,
+            "f": 0.34374257464135216,
+            "intake": 0.8626551759631061,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5246383870097933,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3556928634643555,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "body": {
+            "c": 0.2757535730403706,
+            "w": 0,
+            "d": 0.9996536421448526,
+            "f": 0.1137698537180195,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5237741792099795,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.1870536804199219,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "body": {
+            "c": 0.25557983534385853,
+            "w": 0,
+            "d": 0.9995433845277485,
+            "f": 0.3558966437510977,
+            "intake": 0.884456153676059,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5308722877770833,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.7555170059204102,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "body": {
+            "c": 0.9310717343481716,
+            "w": 0,
+            "d": 0.9993601434804215,
+            "f": 0.3656338963754919,
+            "intake": 1.0686285976738394,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5262828028470211,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.374542236328125,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "body": {
+            "c": 0.8265039330329235,
+            "w": 0,
+            "d": 0.9995920300135576,
+            "f": 0.10852423640012814,
+            "intake": 0.8620735274921568,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5267835948482926,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.4130830764770508,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "body": {
+            "c": 0.8587301818875536,
+            "w": 0,
+            "d": 0.9996952277577241,
+            "f": 0.3659877843984375,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5239855695369589,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3382501602172852,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "body": {
+            "c": 0.1072001814738366,
+            "w": 0,
+            "d": 0.9996646229240358,
+            "f": 0.3472182249100025,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5370263406061462,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.9560432434082031,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "body": {
+            "c": 0.7953175609421215,
+            "w": 0,
+            "d": 0.9995590222768421,
+            "f": 0.10920180418924973,
+            "intake": 1.0609162720900693,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5233511147771819,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.2226953506469727,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "body": {
+            "c": 0.3850564852858067,
+            "w": 0,
+            "d": 0.9996899611753121,
+            "f": 0.34504292688945465,
+            "intake": 0.9011922986354471,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5361083492300174,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.9840803146362305,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "body": {
+            "c": 0.8468526733135362,
+            "w": 0,
+            "d": 0.9997136746799136,
+            "f": 0.36416427420022623,
+            "intake": 1.0711525853072144,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5273993634204897,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3622369766235352,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "body": {
+            "c": 0.7643755667021013,
+            "w": 0,
+            "d": 0.9995442933032596,
+            "f": 0.10948920804839363,
+            "intake": 0.9043237400657544,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5296347936388901,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.7188568115234375,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "body": {
+            "c": 0.1881690076005477,
+            "w": 0,
+            "d": 0.9997078215683401,
+            "f": 0.34340901738573093,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5321959586269079,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.7189559936523438,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "body": {
+            "c": 0.3532504967557838,
+            "w": 0,
+            "d": 0.9994364766206945,
+            "f": 0.36193684612139154,
+            "intake": 0.9039872664051549,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5291892305271294,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.7069091796875,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "body": {
+            "c": 0.8138936843652037,
+            "w": 0,
+            "d": 0.9998133019696553,
+            "f": 0.10828202656219117,
+            "intake": 1.0211562300636337,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5288282784589844,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.4463624954223633,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "body": {
+            "c": 0.4441054678166967,
+            "w": 0,
+            "d": 0.9996571336611643,
+            "f": 0.347832237606223,
+            "intake": 0.8724360290838764,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.532854718257604,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.7099189758300781,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "body": {
+            "c": 0.21668563043668346,
+            "w": 0,
+            "d": 0.9995759914913114,
+            "f": 0.353793466330327,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5226828467944787,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.215153694152832,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "body": {
+            "c": 0.790678146945836,
+            "w": 0,
+            "d": 0.9994509043263,
+            "f": 0.11113435245856894,
+            "intake": 0.892328559312302,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5237059584784433,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.2855987548828125,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "body": {
+            "c": 0.6919346570321165,
+            "w": 0,
+            "d": 0.9997995289227437,
+            "f": 0.35392618536135306,
+            "intake": 1.0317765166241009,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5294061815921852,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.5078439712524414,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "body": {
+            "c": 0.11343411859268267,
+            "w": 0,
+            "d": 0.999512009688083,
+            "f": 0.3577937406228026,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5258628384800248,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.4587678909301758,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "body": {
+            "c": 0.12505386026341103,
+            "w": 0,
+            "d": 0.9993020113455546,
+            "f": 0.11328811501120134,
+            "intake": 0,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5176841760249103,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 0.9662141799926758,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "body": {
+            "c": 0.8914422942613628,
+            "w": 0,
+            "d": 0.999365104113638,
+            "f": 0.3654063108141921,
+            "intake": 0.9363868954923261,
+            "capability": {
+              "B": 1,
+              "A": 1,
+              "C": 1,
+              "P": 1,
+              "displayPotential": 1,
+              "efficiency": 1
+            },
+            "mastery": {
+              "Field": 0.5248398944105528,
+              "Fight": 0.5,
+              "Make": 0.5,
+              "Organise": 0.5,
+              "Social": 0.5
+            },
+            "practice": {
+              "Field": 1.3859319686889648,
+              "Fight": 0,
+              "Make": 0,
+              "Organise": 0,
+              "Social": 0
+            }
+          }
+        }
+      ],
+      "traceSummaries": [
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 9.5367431640625e-07,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 0.10567855834960938,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 0.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 0.17276859283447266,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 0.19430160522460938,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 155,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 0.24269390106201172,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 0.4996500015258789,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 0.5311422348022461,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 0.5317468643188477,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 0.5639972686767578,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 0.5659494400024414,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 212,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 0.6032381057739258,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 0.630279541015625,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 0.6385898590087891,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 0.6417980194091797,
+          "causes": [
+            "rest"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 0.6514129638671875,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 0.6756496429443359,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 0.7745456695556641,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 0.7919111251831055,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 0.8156509399414062,
+          "causes": [
+            "rest"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 197,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 0.8347902297973633,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 0.8377361297607422,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 0.9162940979003906,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 0.9184112548828125,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 0.9613037109375,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 0.9634914398193359,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 0.9756269454956055,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 1.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 1.0689888000488281,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 206,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 1.0911884307861328,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 1.1047887802124023,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 1.1322479248046875,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 210,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 1.185995101928711,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 1.1917476654052734,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 158,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 1.1995306015014648,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 1.2056055068969727,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 1.213963508605957,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 1.2444419860839844,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 196,
+          "steps": []
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 1.2574586868286133,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 1.2694616317749023,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 197,
+          "steps": []
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 1.2780799865722656,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 196,
+          "steps": []
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 1.3187828063964844,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 205,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 1.3447189331054688,
+          "causes": [
+            "rest"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 197,
+          "steps": []
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 1.383744239807129,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 1.3952980041503906,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 1.4315996170043945,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 1.4599885940551758,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 1.4626960754394531,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 1.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 1.5291500091552734,
+          "causes": [
+            "rest"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 1.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 1.5622224807739258,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 1.590911865234375,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 1.595637321472168,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 1.6030874252319336,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 205,
+          "steps": []
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 1.808720588684082,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 169,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 1.8181829452514648,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 198,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 1.8181829452514648,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 1.8181829452514648,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 1.8189411163330078,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 1.8369331359863281,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 1.8403759002685547,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 1.9834070205688477,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 1.9895591735839844,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 173,
+          "steps": []
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 2.0094223022460938,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 2.1056785583496094,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 2.11224365234375,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 2.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 2.1509323120117188,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 2.1727685928344727,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 2.1922807693481445,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 2.1943016052246094,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 175,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 2.2426939010620117,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 191,
+          "steps": []
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 2.4297103881835938,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 2.499650001525879,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 2.5317468643188477,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 2.5598602294921875,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 2.5659494400024414,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 201,
+          "steps": []
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 2.5809707641601562,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 2.5952491760253906,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 2.617156982421875,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 2.630279541015625,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 2.638589859008789,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 2.6589670181274414,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 2.675649642944336,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 2.696073532104492,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 2.698261260986328,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 179,
+          "steps": []
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 2.7239255905151367,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 201,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 2.757380485534668,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 2.774545669555664,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 2.7810773849487305,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 2.7919111251831055,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 2.8347902297973633,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 2.837697982788086,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 2.8916854858398438,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 2.9062585830688477,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 2.925013542175293,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 183,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 2.9680967330932617,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 3.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 3.0920591354370117,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 3.1081628799438477,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 3.115243911743164,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 3.185995101928711,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 3.222715377807617,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 3.2444419860839844,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 3.2574586868286133,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 3.2694616317749023,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 3.2780799865722656,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 3.3357162475585938,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 3.383744239807129,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 3.3952980041503906,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 3.4315996170043945,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 3.459988594055176,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 3.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 3.5151844024658203,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 3.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 3.562222480773926,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 3.595637321472168,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 3.6030874252319336,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 197,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 3.6202354431152344,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 3.703864097595215,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 3.749751091003418,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 3.8403759002685547,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 182,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 3.8813982009887695,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 3.882767677307129,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 162,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 3.888554573059082,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 3.8920888900756836,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 3.942045211791992,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 3.957554817199707,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 3.9764404296875,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 3.9791555404663086,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 3.9834070205688477,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 3.9895591735839844,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 4.0446577072143555,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 4.103554725646973,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 4.105678558349609,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 4.107976913452148,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 4.108692169189453,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 150,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 4.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 4.139308929443359,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 198,
+          "steps": []
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 4.172768592834473,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 4.179655075073242,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 4.185114860534668,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 4.194301605224609,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 140,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 4.196413040161133,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 4.203900337219238,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 4.221776962280273,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 4.242693901062012,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 191,
+          "steps": []
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 4.243358612060547,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 4.265341758728027,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 4.270740509033203,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 4.276385307312012,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 4.294129371643066,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 4.358970642089844,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 4.412888526916504,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 4.4259490966796875,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 4.449176788330078,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 4.484494209289551,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 4.499650001525879,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 4.50156307220459,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 4.504755020141602,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 188,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 4.518959045410156,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 4.5207977294921875,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 4.531746864318848,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 4.536511421203613,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 4.565949440002441,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 4.611329078674316,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 4.630279541015625,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 4.638589859008789,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 4.643552780151367,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 4.675649642944336,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 4.6844024658203125,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 4.754182815551758,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 4.7566633224487305,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 4.774545669555664,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 4.7919111251831055,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 4.79503059387207,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 4.829622268676758,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 4.834790229797363,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 4.857852935791016,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 4.861666679382324,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 4.872359275817871,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 4.913776397705078,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 4.932435989379883,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 4.989194869995117,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 5.001307487487793,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 157,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 5.014213562011719,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 5.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 5.0545454025268555,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 5.068431854248047,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 5.15399169921875,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 206,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 5.175390243530273,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 5.185995101928711,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 5.189236640930176,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 5.203603744506836,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 5.226655960083008,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 5.227566719055176,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 172,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 5.238874435424805,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 5.244441986083984,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 5.257458686828613,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 5.259540557861328,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 5.269461631774902,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 5.278079986572266,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 5.383744239807129,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 5.395298004150391,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 5.4315996170043945,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 5.43536376953125,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 5.459988594055176,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 196,
+          "steps": []
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 5.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 5.50529670715332,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 5.531548500061035,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 5.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 5.562222480773926,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 5.572915077209473,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 208,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 5.585777282714844,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 198,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 5.595637321472168,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 196,
+          "steps": []
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 5.603087425231934,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 194,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 5.658965110778809,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 5.661145210266113,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 5.693791389465332,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 5.702139854431152,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 5.7910966873168945,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 5.840375900268555,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 5.881255149841309,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 5.927148818969727,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 200,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 5.943939208984375,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 5.952596664428711,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 5.972550392150879,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 5.982621192932129,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 5.983407020568848,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 5.989559173583984,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 6.006522178649902,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 6.007735252380371,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 6.008501052856445,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 6.056215286254883,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 6.097050666809082,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 6.105678558349609,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 6.114471435546875,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 6.139629364013672,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 6.172768592834473,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b98355f60d3c2a2a00f28ef875e31166",
+          "atSd": 6.194301605224609,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 141,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 6.1989336013793945,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 6.242693901062012,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 192,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 6.271292686462402,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 6.374670028686523,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 6.4682416915893555,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 6.482593536376953,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 206,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 6.499650001525879,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 6.531746864318848,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "0ed0f86f7a8701bc5c6a2e0ef5ba44ce",
+          "atSd": 6.565949440002441,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 6.592746734619141,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 6.619885444641113,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 155,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 6.624014854431152,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 6.630279541015625,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 6.638589859008789,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 6.675649642944336,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "d5fea537193da05d81da75bba9b36c65",
+          "atSd": 6.689517974853516,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 204,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 6.706264495849609,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9a849c70f757765620047b008d4ab734",
+          "atSd": 6.774545669555664,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 190,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 6.778661727905273,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 6.7919111251831055,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 6.807531356811523,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 6.825361251831055,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7fa1bb6c26b9c1155115e3d1be7cc18d",
+          "atSd": 6.834790229797363,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 147,
+          "steps": []
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 6.837018013000488,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 6.90754508972168,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 6.941575050354004,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 6.980823516845703,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 6.984373092651367,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 7.030026435852051,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 7.049851417541504,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 7.052801132202148,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 7.080796241760254,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 7.081995010375977,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 7.082054138183594,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 7.185995101928711,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "b9d46c41cdaf22623c1340b7429dc52e",
+          "atSd": 7.188786506652832,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 7.202550888061523,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 7.210323333740234,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 7.244441986083984,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "a9f68a003a8febbae88c8dc6be1d675e",
+          "atSd": 7.24893856048584,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 7.250414848327637,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f3f3d3c290308f7e0efbaa62c3287f8f",
+          "atSd": 7.257458686828613,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 7.269461631774902,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 7.274412155151367,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 7.278079986572266,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "3a8fee593cad4febe294d81fb9287766",
+          "atSd": 7.278289794921875,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 7.281520843505859,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 203,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "5ab41feeb0a67bb63051674583176734",
+          "atSd": 7.304206848144531,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2f871b049ef8a779ae92c48a3a11ad37",
+          "atSd": 7.307548522949219,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 7.331949234008789,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 7.348915100097656,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 199,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 7.383744239807129,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 189,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "a96d868085599ee4220d44686ec3df9b",
+          "atSd": 7.395298004150391,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f50e0aa44d2d58b61ff071f15a50d3f5",
+          "atSd": 7.4315996170043945,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "8a49e2c8b0f0cea4829a1d013669a6dd",
+          "atSd": 7.459988594055176,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 7.468611717224121,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "7c3838f4b5194b9fbc7d17e2f3af9c2b",
+          "atSd": 7.474320411682129,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "28dc50eb58c0057fceb2e4ef5d1eb1d0",
+          "atSd": 7.545421600341797,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "462f23563e8c637cb38c3a5160963887",
+          "atSd": 7.552835464477539,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "de6bcf20973f69dcc485adda7f0a6c30",
+          "atSd": 7.562222480773926,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": []
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 7.573855400085449,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 199,
+          "steps": [
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "9762c1797ca8601f58d2bde84cf11a94",
+          "atSd": 7.595637321472168,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 194,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "27e9d5f868eb37b1a3bcd46f1b321db0",
+          "atSd": 7.603087425231934,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 191,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "8f2a8622f4f1f6c829d7a6bc634d0ce8",
+          "atSd": 7.687735557556152,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "40226350cc5a59953ff99480dcf2dfde",
+          "atSd": 7.756617546081543,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 7.760126113891602,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "d17de7eab3813b66408cc8ba6dbf6a76",
+          "atSd": 7.788084983825684,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 192,
+          "steps": []
+        },
+        {
+          "actor": "f0055de3a5358edbe73bde653ba17582",
+          "atSd": 7.814239501953125,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "4a0dc41aadb6ad22abc28b4c409ea924",
+          "atSd": 7.815676689147949,
+          "causes": [
+            "failure"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 202,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "e2ff2819e2bb32acab539c8f57c33147",
+          "atSd": 7.8390703201293945,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 196,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "77a11af1f6ee8a6d3e554edf585f6180",
+          "atSd": 7.840375900268555,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "f9d37e8adcb0628831755d71092583f8",
+          "atSd": 7.84425163269043,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "2cb0ff4781179ed495e9df6f87a90622",
+          "atSd": 7.845304489135742,
+          "causes": [
+            "food"
+          ],
+          "method": "continuation",
+          "rule": "least-harm",
+          "eu": 194,
+          "steps": []
+        },
+        {
+          "actor": "83a19527c199aa4255ea1139e0734a29",
+          "atSd": 7.906988143920898,
+          "causes": [
+            "food"
+          ],
+          "method": "consume",
+          "rule": "least-harm",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        },
+        {
+          "actor": "b9b37824871d7dfcbf5295080a9519bc",
+          "atSd": 7.983407020568848,
+          "causes": [
+            "periodic"
+          ],
+          "method": "continuation",
+          "rule": "incumbent-margin",
+          "eu": 193,
+          "steps": []
+        },
+        {
+          "actor": "f8ea46e08384bd6fcc3406086b8993a9",
+          "atSd": 7.989559173583984,
+          "causes": [
+            "periodic"
+          ],
+          "method": "consume",
+          "rule": "safe-response",
+          "eu": 195,
+          "steps": [
+            "Transfer",
+            "Work:gather",
+            "Transfer"
+          ]
+        }
+      ],
+      "advancementPerSdMedianMs": 193.69902399999955,
+      "advancementPerSdP95Ms": 281.05757300000005,
+      "checkpointMedianMs": 694.209793,
+      "checkpointP95Ms": 694.209793
+    }
+  ]
+}

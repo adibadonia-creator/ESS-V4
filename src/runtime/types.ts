@@ -8,6 +8,7 @@ export type Operation =
       family: "Move";
       target: Point;
       exploratory: boolean;
+      experiment?: import("../evidence/types").ExplorationOutcome;
     }
   | {
       family: "Attend";

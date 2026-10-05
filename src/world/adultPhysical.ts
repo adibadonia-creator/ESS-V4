@@ -1,4 +1,8 @@
 import effects from "../content/material-effects.json";
+// Startup compilation; runtime lookup touches only the matching trigger.
+const EFFECT_INDEX = new Map(
+  effects.map((e) => [`${e.operation}:${e.kind}`, e]),
+);
 import {
   COMPATIBLE_OPERATIONS,
   MATERIAL_KINDS,
@@ -105,6 +109,7 @@ export interface PhysicalPort {
   ): void;
   recipeInput(actor: string, good: string, quantity: number): void;
   effectInstalled(id: string): boolean;
+  methodConfidence(actor: string, method: string, context: string): number;
   frustration(actor: string, context: string): number;
   outcome(actor: string, outcome: ExplorationOutcome, provenance: string): void;
   consume(
@@ -206,7 +211,12 @@ export class AdultPhysical {
       capability: AdultCapability;
       mastery: Masteries;
       wound?: number;
-      initial?: { condition: number; fatigue: number; enjoyment: number; satiation?: number };
+      initial?: {
+        condition: number;
+        fatigue: number;
+        enjoyment: number;
+        satiation?: number;
+      };
     },
   ) {
     if (this.port.now() !== 0 || this.bodies.has(actor))
@@ -516,7 +526,9 @@ export class AdultPhysical {
       }
     }
     if (
-      (step.family === "Work" || step.family === "Attend") &&
+      (step.family === "Work" ||
+        step.family === "Attend" ||
+        step.family === "Move") &&
       step.experiment
     ) {
       const context = `${step.experiment.form}:${step.experiment.operation}:${step.experiment.targetKind}`;
@@ -563,6 +575,8 @@ export class AdultPhysical {
           observed: "operation not authorised from personal knowledge",
         };
       seg.category = "work";
+      seg.compulsory = step.compulsory ?? false;
+      if (seg.compulsory) seg.pleasant = 0;
       seg.load = operation.load;
       seg.effort = operation.effort;
       this.active.set(task.actor, seg);
@@ -693,14 +707,24 @@ export class AdultPhysical {
           this.port.recipeInput(task.actor, operation.input, 1);
           costs[operation.input] = 1;
           // The first successful-schema lookup is AFTER all required paid work.
-          const effect = effects.find(
-            (e) =>
-              e.operation === step.law &&
-              e.kind === site.materialKind &&
-              this.port.effectInstalled(e.id),
+          const candidate = EFFECT_INDEX.get(
+            `${step.law}:${site.materialKind}`,
           );
+          const effect =
+            candidate && this.port.effectInstalled(candidate.id)
+              ? candidate
+              : undefined;
           quantity = effect
-            ? effect.yield * (step.experiment ? EXPLORATION.trialYield : 1)
+            ? effect.yield *
+              (step.experiment
+                ? EXPLORATION.trialYield
+                : 0.7 +
+                  0.3 *
+                    this.port.methodConfidence(
+                      task.actor,
+                      task.method,
+                      `T1:${step.law}:${site.materialKind ?? site.kind}`,
+                    ))
             : 0;
           if (quantity > 0 && effect) {
             this.port.source(
@@ -716,6 +740,7 @@ export class AdultPhysical {
               task.actor,
               {
                 ...step.experiment,
+                target: step.site,
                 paid: now - s.start,
                 completed: true,
                 success: quantity > 0,
@@ -725,26 +750,36 @@ export class AdultPhysical {
               },
               `${task.semanticKey}:${task.cursor}:${now}`,
             );
-          else if (effect)
+          else
             this.port.outcome(
               task.actor,
               {
                 form: "T1",
                 operation: step.law,
                 targetKind: site.materialKind ?? site.kind,
-                descriptor: `use:${effect.id}:${step.site}`,
+                descriptor: `use:${task.method}:${step.site}`,
                 evidenceVersion: 0,
                 paid: now - s.start,
                 completed: true,
                 success: quantity > 0,
-                method: effect.id,
-                good: effect.output,
-                yield: quantity,
+                method: task.method,
+                ...(effect ? { good: effect.output, yield: quantity } : {}),
               },
               `${task.semanticKey}:${task.cursor}:${now}`,
             );
           this.observeSite(task.actor, site.key);
-        }
+        } else if (step.experiment)
+          this.port.outcome(
+            task.actor,
+            {
+              ...step.experiment,
+              target: step.site,
+              paid: now - s.start,
+              completed: true,
+              success: false,
+            },
+            `${task.semanticKey}:${task.cursor}:${now}`,
+          );
       } else if (step.experiment && now > s.start)
         this.port.outcome(
           task.actor,
@@ -757,6 +792,21 @@ export class AdultPhysical {
           `${task.semanticKey}:${task.cursor}:${now}`,
         );
     }
+    if (
+      (step?.family === "Move" || step?.family === "Attend") &&
+      step.experiment &&
+      now > s.start
+    )
+      this.port.outcome(
+        task.actor,
+        {
+          ...step.experiment,
+          paid: now - s.start,
+          completed: false,
+          success: false,
+        },
+        `${task.semanticKey}:${task.cursor}:${now}:paid`,
+      );
     if (s.from && s.reservation && now > s.start) {
       const r = this.goods.reservation(s.reservation);
       quantity = Math.min((s.rate * (now - s.start)) / QUANTA, r.remaining);
@@ -782,13 +832,13 @@ export class AdultPhysical {
         this.observeSite(task.actor, s.site!);
       }
     }
-    if (
-      s.descriptor &&
-      now > s.start &&
-      b.lastLeisure !== `${s.taskId}:${task.cursor}`
-    ) {
+    const exposureKey =
+      step && "experiment" in step && step.experiment
+        ? task.semanticKey
+        : `${s.taskId}:${task.cursor}`;
+    if (s.descriptor && now > s.start && b.lastLeisure !== exposureKey) {
       exposeLeisure(b, s.descriptor, now);
-      b.lastLeisure = `${s.taskId}:${task.cursor}`;
+      b.lastLeisure = exposureKey;
     }
     this.active.delete(task.actor);
     const slot = this.segmentSlots.get(s.actor)!,

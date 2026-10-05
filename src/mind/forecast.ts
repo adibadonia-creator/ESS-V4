@@ -1,3 +1,4 @@
+import { OPERATION_INDEX } from "../content/exploration";
 import { math } from "../kernel/numerics";
 import { QUANTA } from "../kernel/time";
 import type { PersonalReview } from "../evidence/read";
@@ -60,14 +61,18 @@ function activity(
       a.effort = law.effort;
       a.rate = review.rateEstimate(step.law, law.siteKind)?.rate ?? 0;
     }
+    const compatible = OPERATION_INDEX.get(step.law);
+    if (compatible) {
+      a.load = compatible.load;
+      a.effort = compatible.effort;
+    }
     if (step.experiment) {
-      a.load = 0.2;
-      a.effort = 0.4;
       a.pleasant = explorationWeight(review, step.experiment);
     }
     a.compulsory = step.compulsory ?? false;
+    if (a.compulsory) a.pleasant = 0;
   }
-  if (step.family === "Attend" && step.experiment)
+  if ((step.family === "Attend" || step.family === "Move") && step.experiment)
     a.pleasant = explorationWeight(review, step.experiment);
   if (step.family === "Recover") {
     a.rest = (step.mode ?? step.law) === "rest";
